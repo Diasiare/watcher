@@ -1,0 +1,4 @@
+Dependancice 
+
+Ghost.py
+pyside
