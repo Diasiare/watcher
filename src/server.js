@@ -1,7 +1,7 @@
 'use strict';
 
 const express = require('express');
-
+const image_sequence = require('./image_sequence/image_sequence');
 // Constants
 const PORT = 8080;
 
@@ -13,3 +13,7 @@ app.get('/', function (req, res) {
 
 app.listen(PORT);
 console.log('Running on http://localhost:' + PORT);
+
+image_sequence.download_sequence("http://www.gogetaroomie.com/comic/rolling-with-it","//div[@id='cc-comicbody']//img","//div[@id='cc-comicbody']/a"
+	,"ggar", 1 , true);
+
