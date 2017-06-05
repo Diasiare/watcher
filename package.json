@@ -1,11 +1,11 @@
 {
-  "name": "dwatcher",
-  "version": "0.1",
+  "name": "watcher",
+  "version": "0.0.1",
   "description": "It watches the web",
   "author": "Felix Plymouth <f.plymouth@gmail.com>",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node src/server.js"
   },
   "dependencies": {
     "express": "^4.13.3"
