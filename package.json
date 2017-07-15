@@ -5,16 +5,18 @@
   "author": "Felix Plymouth <f.plymouth@gmail.com>",
   "main": "src/server.js",
   "scripts": {
-    "start": "node src/server.js"
+    "start": "nodejs --harmony src/server.js"
   },
   "dependencies": {
     "express": "^4.13.3",
     "request": "^2.81.0",
-    "gm"     : "^1.23.0",
-    "xpath"  : "^0.0.24",
-    "xmldom" : "^0.1.27",
-    "parse5" : "^3.0.2",
-    "xmlserializer" : "0.6.0"
-
+    "gm": "^1.23.0",
+    "xpath": "^0.0.24",
+    "xmldom": "^0.1.27",
+    "parse5": "^3.0.2",
+    "xmlserializer": "0.6.0",
+    "sqlite": "~2.8.0",
+    "promise": "^8.0.1",
+    "bluebird": "~3.5.0"
   }
 }
