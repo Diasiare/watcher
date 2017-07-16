@@ -1,0 +1,13 @@
+{
+    "storage_location" : "~/watcher_data",
+    "shows" :[
+    	{
+        "identifier":"ggar",
+        "name" : "Go Get A Roomie",
+        "image_xpath":"//div[@id='cc-comicbody']//img",
+       	"next_xpath":"//div[@id='cc-comicbody']/a",
+        "base_url" : "http://www.gogetaroomie.com/comic/catching-the-flusters"
+    	}
+    ]
+
+}

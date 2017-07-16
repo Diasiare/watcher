@@ -11,39 +11,34 @@ const dom = require('xmldom').DOMParser;
 const path = require('path');
 const url = require('url');
 const Promise = require('bluebird');
+const db = require('./../dblayer/db')
 
 //Download a sequence of images
 //Due to some stupid stuff the xpaths have to be in the x namespace so /html should be /x:html
-var download_sequence =  function(base_url, image_xpath, next_xpath, identifier, sequence_number ,download_this) {
+var download_sequence =  function(data) {
 	return new Promise(function (resolve,reject) {
-		request(base_url, function (error,response,body){
+		request(data.base_url, function (error,response,body){
 		    if (error) reject(error);
-		    console.log("stuff");
 		    var document = parse5.parse(body);
 		    var xhtml = xmlser.serializeToString(document);
 		    var doc = new dom().parseFromString(xhtml);
-			var csn = sequence_number;
-			resolve({sequence:csn,
-				doc:doc,
-				image_xpath:image_xpath,
-				identifier:identifier,
-				download_this:download_this,
-				next_xpath:next_xpath,
-				base_url:base_url});
+			data.doc=doc
+			resolve(data);
 		})
 	}).then(download_images).then(
 		function (data){
+			console.log("HANDLING " + data.number);
 			if (!is_last(data.doc,data.base_url,data.next_xpath)) {
 				var link = xpath(xpath_replace(data.next_xpath + "/@href"),data.doc);
 				link = link[0].value;
-				data.next_url = url.resolve(data.base_url,link);
+				data.base_url = url.resolve(data.base_url,link);
 				data.download_this = true;
-				return new Promise(function (r) {setTimeout(r,50,data)}).then(function () {
-					download_sequence(data.next_url,data.image_xpath,data.next_xpath
-						,data.identifier,data.sequence,true)})
+				return Promise.delay(50).then(()=>
+					download_sequence(data))
 			} else {
 				return new Promise(function (resolve) {
-					//TODO SAVE RESULTS
+					db.update_show(data);
+					resolve(data);
 				})
 			}
 	});
@@ -56,8 +51,10 @@ var	is_last = function(doc,base_url,next_xpath){
 
 
 //Download an image
-var download_image = function(url ,  filename, err) {
-	gm(request(url)).write(filename,err);
+var download_image = function(data) {
+	return new Promise((r,e)=>{gm(request(data.url)).write(data.filename,e);
+		r(data)
+	});
 }
 
 var xpath_replace = function(s) {
@@ -68,32 +65,27 @@ var download_images = function(data) {
 	return new Promise(function (resolve,reject){
 		var image_xpath = data.image_xpath;
 		var doc = data.doc;
-		var identifier = data.identifier; 
-		var base_url = data.base_url;
-		var csn = data.sequence;
-		var download_this = data.download_this;
-		if (download_this) {
+		var identifier = data.identifier;
+		var csn = data.number;
+		if (data.download_this) {
 			var images = xpath(xpath_replace(image_xpath + "/@src"),doc);
-			var final_url = undefined;
 			for (var i = 0;i<images.length;i++){
-				var image_url = url.resolve(base_url,images[i].value);
+				csn++;
+				var image_url = url.resolve(data.base_url,images[i].value);
 				var filename = path.join(identifier,csn+".jpg");
 	
 				fs.mkdir(identifier, function (err) {
-					download_image(image_url, filename,
-						function (error){
-							reject({sequence:csn,
-								url:image_url,
-								name:filename,
-								base_url:base_url})
-						}
-					);
+					Promise.join(download_image({url:image_url
+						,filename:filename
+						,number:csn
+						,identifier:identifier}
+					).then(db.insert_new_episode));
 				});
-				data.final_url = image_url;
-				csn++;
+				data.final_image_url = image_url;
+
 			}
 		}
-		data.sequence = csn;
+		data.number = csn;
 		resolve(data);
 	});
 }

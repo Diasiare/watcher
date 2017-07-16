@@ -5,7 +5,8 @@
   "author": "Felix Plymouth <f.plymouth@gmail.com>",
   "main": "src/server.js",
   "scripts": {
-    "start": "nodejs --harmony src/server.js"
+    "start": "node src/server.js",
+    "test": "node src/tests.js"
   },
   "dependencies": {
     "express": "^4.13.3",
