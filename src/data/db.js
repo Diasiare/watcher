@@ -24,7 +24,7 @@ close = function () {
 	return db.close();
 }
 
-create_tables = function(unused) {
+create_tables = function() {
 	return Promise.each(["shows","episodes"],  (t_name)=>{
 			db.exec("CREATE TABLE IF NOT EXISTS " + t_name + " ( " + model[t_name] + " )");
 		}
@@ -58,12 +58,16 @@ update_show = function (data) {
 			$base_url:data.base_url});
 }
 
-resolve_config = function (shows) {
+/*
+Ensures that each show in the config file is in the databse and that the data objects
+are up to date
+*/
+resolve_shows = function (shows) {
 	return Promise.map(shows,(item)=>{
-		return db.get("SELECT * FROM shows WHERE identifier = ?",item).then((row)=>{
+		return db.get("SELECT * FROM shows WHERE identifier = ?;",item.identifier).then((row)=>{
 			if (row == undefined) return insert_new_show(item).then(()=>{
 				item.number = 0;
-			});
+			}).return(item);
 			else {
 				item.number = row.current_max;
 				item.base_url = row.current_base_url;
@@ -78,5 +82,6 @@ module.exports = {
 	close : close,
 	insert_new_episode:insert_new_episode,
 	update_show:update_show,
-	insert_new_show:insert_new_show
+	insert_new_show:insert_new_show,
+	resolve_shows : resolve_shows
 };

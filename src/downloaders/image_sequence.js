@@ -11,10 +11,9 @@ const dom = require('xmldom').DOMParser;
 const path = require('path');
 const url = require('url');
 const Promise = require('bluebird');
-const db = require('./../dblayer/db')
+const db = require('./../data/db')
 
 //Download a sequence of images
-//Due to some stupid stuff the xpaths have to be in the x namespace so /html should be /x:html
 var download_sequence =  function(data) {
 	return new Promise(function (resolve,reject) {
 		request(data.base_url, function (error,response,body){
@@ -36,10 +35,7 @@ var download_sequence =  function(data) {
 				return Promise.delay(50).then(()=>
 					download_sequence(data))
 			} else {
-				return new Promise(function (resolve) {
-					db.update_show(data);
-					resolve(data);
-				})
+				return db.update_show(data).then(()=>data);
 			}
 	});
 }
