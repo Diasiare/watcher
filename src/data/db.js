@@ -39,7 +39,7 @@ insert_new_episode = function (data) {
 	if ('name' in data) real_name = data.name;
 	var aditional_data = null;
 	if ('aditional_data' in data) aditional_data = data.aditional_data;
-	return db.run("INSERT INTO episodes VALUES(?,?,?,?,?)", identifier, number, url, real_name, aditional_data);
+	return db.run("INSERT INTO episodes VALUES(?,?,?,?,?)", identifier, number, url, real_name, aditional_data).return(data);
 }
 
 insert_new_show = function (data) {
@@ -48,14 +48,14 @@ insert_new_show = function (data) {
 	var current_base_url = data.base_url;
 	var aditional_data = null;
 	if ('aditional_data' in data) aditional_data = data.aditional_data;
-	return db.run("INSERT INTO shows VALUES(?,?,?,?)", identifier, current_max, current_base_url, aditional_data);
+	return db.run("INSERT INTO shows VALUES(?,?,?,?)", identifier, current_max, current_base_url, aditional_data).return(data);
 }
 
 update_show = function (data) {
 	return db.run("UPDATE shows SET current_max= $current_max ,current_base_url= $base_url WHERE identifier= $identifier",
 		{$identifier:data.identifier,
 			$current_max:data.number,
-			$base_url:data.base_url});
+			$base_url:data.base_url}).return(data);
 }
 
 /*

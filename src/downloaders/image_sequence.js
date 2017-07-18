@@ -76,8 +76,10 @@ var download_images = function(data) {
 						,identifier:data.identifier});
 				}).then(download_image)
 				.then(db.insert_new_episode);
-			}).then(()=>data.number = data.number + images.length)
-			.then(()=>resolve(data));
+			}).then((images)=>{
+				data.number = data.number + images.length;
+				data.final_image_url = images[images.length-1].url;
+			}).then(()=>resolve(data));
 		} else {
 			resolve(data);
 		}
