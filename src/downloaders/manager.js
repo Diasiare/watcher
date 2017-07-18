@@ -1,12 +1,12 @@
 
 
 const Promise = require('bluebird');
-const imdown = require('image_sequence');
+const imdown = require('./image_sequence');
 
 const current_watchers = {};
 
 watching_cycle = function (show) {
-	return imdown(show).delay(show.interval).then(watching_cycle);
+	return imdown.download_sequence(show).delay(show.interval).then(watching_cycle);
 }
 
 

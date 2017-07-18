@@ -1,6 +1,7 @@
 const fs = require('fs');
 const Promise = require('bluebird');
-
+const path = require('path');
+const mkdir = Promise.promisify(fs.mkdir);
 var config = null;
 
 const defaults = {
@@ -20,7 +21,9 @@ ensure_loaded = function () {
 load_defaults = function (show) {
 	return Promise.map(Object.keys(defaults),  (name)=>{
 		if (!(name in show)) show[name]=defaults[name];
-	});
+	}).then(get_storage_location)
+	.then((location)=>show.directory=path.join(location,show.identifier))
+	.then(mkdir).catch(console.error).return(show);
 }
 
 get_shows = function () {

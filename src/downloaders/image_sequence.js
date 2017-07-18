@@ -65,24 +65,22 @@ var download_images = function(data) {
 		var csn = data.number;
 		if (data.download_this) {
 			var images = xpath(xpath_replace(image_xpath + "/@src"),doc);
-			for (var i = 0;i<images.length;i++){
-				csn++;
-				var image_url = url.resolve(data.base_url,images[i].value);
-				var filename = path.join(identifier,csn+".jpg");
-	
-				fs.mkdir(identifier, function (err) {
-					Promise.join(download_image({url:image_url
+			Promise.map(images, function (rel_image_url,index,length) {
+				return new Promise ((resolve)=>{
+					var number = data.number+index+1;
+					var image_url = url.resolve(data.base_url,rel_image_url.value);
+					var filename = path.join(data.directory,number+".jpg");
+					resolve({url:image_url
 						,filename:filename
-						,number:csn
-						,identifier:identifier}
-					).then(db.insert_new_episode));
-				});
-				data.final_image_url = image_url;
-
-			}
+						,number:number
+						,identifier:data.identifier});
+				}).then(download_image)
+				.then(db.insert_new_episode);
+			}).then(()=>data.number = data.number + images.length)
+			.then(()=>resolve(data));
+		} else {
+			resolve(data);
 		}
-		data.number = csn;
-		resolve(data);
 	});
 }
 

@@ -67,10 +67,12 @@ resolve_shows = function (shows) {
 		return db.get("SELECT * FROM shows WHERE identifier = ?;",item.identifier).then((row)=>{
 			if (row == undefined) return insert_new_show(item).then(()=>{
 				item.number = 0;
+				item.download_this = true;
 			}).return(item);
 			else {
 				item.number = row.current_max;
 				item.base_url = row.current_base_url;
+				item.download_this=false;
 				return item;
 			}
 		})
