@@ -17,7 +17,10 @@ const db = require('./../data/db')
 var download_sequence =  function(data) {
 	return new Promise(function (resolve,reject) {
 		request(data.base_url, function (error,response,body){
-		    if (error) reject(error);
+		    if (error) {
+		    	reject(error);
+		    	return;
+		    }
 		    var document = parse5.parse(body);
 		    var xhtml = xmlser.serializeToString(document);
 		    var doc = new dom().parseFromString(xhtml);
@@ -35,7 +38,7 @@ var download_sequence =  function(data) {
 				return Promise.delay(50).then(()=>
 					download_sequence(data))
 			} else {
-				return db.update_show(data).then(()=>data);
+				return db.update_show(data).then((data)=>data.download_this=false).return(data);
 			}
 	});
 }

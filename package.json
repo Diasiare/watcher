@@ -9,15 +9,17 @@
     "test": "node src/tests.js"
   },
   "dependencies": {
+    "bluebird": "~3.5.0",
     "express": "^4.13.3",
-    "request": "^2.81.0",
     "gm": "^1.23.0",
-    "xpath": "^0.0.24",
-    "xmldom": "^0.1.27",
     "parse5": "^3.0.2",
-    "xmlserializer": "0.6.0",
-    "sqlite": "~2.8.0",
     "promise": "^8.0.1",
-    "bluebird": "~3.5.0"
+    "request": "^2.81.0",
+    "request-promise": "^4.2.1",
+    "shelljs": "^0.7.8",
+    "sqlite": "~2.8.0",
+    "xmldom": "^0.1.27",
+    "xmlserializer": "0.6.0",
+    "xpath": "^0.0.24"
   }
 }

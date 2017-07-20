@@ -1,5 +1,5 @@
 {
-    "storage_location" : "~/watcher_data",
+    "storage_location" : "/home/felix/watcher_data",
     "shows" :[
     	{
         "identifier":"ggar",

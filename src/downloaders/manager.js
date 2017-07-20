@@ -6,7 +6,8 @@ const imdown = require('./image_sequence');
 const current_watchers = {};
 
 watching_cycle = function (show) {
-	return imdown.download_sequence(show).delay(show.interval).then(watching_cycle);
+	return imdown.download_sequence(show).delay(show.interval).then((s)=>{console.log("checking show");return s;})
+		.then(watching_cycle);
 }
 
 
@@ -17,7 +18,7 @@ start_watcher = function (show) {
 		console.error(show);
 		console.error("Restarting\n\n");
 		 //For the moment just log failures and restart.
-		return watching_cycle(show).catch(ef);
+		return Promise.resolve(show).delay(show.interval).then(watching_cycle).catch(ef);
 	}
 	var watcher = watching_cycle(show).catch(ef);;
 	current_watchers[show.identifier] = watcher;

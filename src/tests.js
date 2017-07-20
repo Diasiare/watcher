@@ -7,14 +7,14 @@ const config = require('./data/config');
 const fs = require('fs');
 const Promise = require('bluebird');
 
-const test_db_name = "./test.sqlite";
+const test_db_name = "test.sqlite";
 //delete database afterwards
 
 test_db = function () {
 	db.init(test_db_name).then(()=>db.insert_new_show(
 	{identifier:"ggar",base_url:"ggar.com"})).then(()=>db.insert_new_episode(
 	{identifier:"ggar",url:"ggar.com/1.jpg",number:1,name:"A Name"})).then(()=>db.update_show(
-	{identifier:"ggar",number:1,base_url:"ggar.com/1"})).then(db.close).then(delete_test_db_name)
+	{identifier:"ggar",number:1,base_url:"ggar.com/1"})).then(db.close).then(delete_test_db)
 	.catch((e)=>console.error(e));
 }
 
@@ -25,20 +25,18 @@ test_download = function () {
 	image_xpath:"//div[@id='cc-comicbody']//img",
 	next_xpath:"//div[@id='cc-comicbody']/a",
 	identifier:"ggar", number:0 , download_this:true}))
-	.then(db.close).then(delete_test_db_name).done()
+	.then(db.close).then(delete_test_db).done()
 }
 
 /*
 This assumes a config file is actually present
 */
 test_config = function () {
-	db.init(test_db_name).then(config.get_shows).then(db.resolve_shows).then(console.log).then(
-	config.get_storage_location).then(console.log).then(db.close).then(delete_test_db_name).done();
+	db.init(test_db_name).then(config.get_shows).then(db.resolve_shows).then(console.log)
+	.then(db.close).then(delete_test_db).done();
 }
 
-delete_test_db_name = function () {
-	return Promise.promisify(fs.unlink)(test_db_name);
+delete_test_db = function () {
+	return config.resolve_path(test_db_name).then(Promise.promisify(fs.unlink));
 }
-
-test_config();
 

@@ -7,7 +7,7 @@ const config = require('./data/config');
 const manager = require('./downloaders/manager');
 // Constants
 const PORT = 8080;
-const db_name = "./database.sqlite"
+const db_name = "database.sqlite"
 // App
 
 /*

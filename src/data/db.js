@@ -1,5 +1,6 @@
 const db = require("sqlite");
 const Promise = require("bluebird");
+const config = require('./config');
 
 const model = {
 	shows:`identifier TEXT NOT NULL PRIMARY KEY,
@@ -16,7 +17,7 @@ const model = {
 }
 
 init = function (path) {
-	return db.open(path, {Promise}).then(create_tables);
+	return config.resolve_path(path).then((full_path)=>db.open(full_path, {Promise})).then(create_tables);
 }
 
 close = function () {
