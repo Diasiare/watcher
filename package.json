@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "description": "It watches the web",
   "author": "Felix Plymouth <f.plymouth@gmail.com>",
-  "main": "src/server.js",
+  "main": "server/main.js",
   "scripts": {
-    "start": "node src/server.js",
-    "test": "node src/tests.js"
+    "start": "node server/main.js",
+    "test": "node server/tests.js"
   },
   "dependencies": {
     "bluebird": "~3.5.0",
@@ -20,6 +20,7 @@
     "sqlite": "~2.8.0",
     "xmldom": "^0.1.27",
     "xmlserializer": "0.6.0",
-    "xpath": "^0.0.24"
+    "xpath": "^0.0.24",
+    "yarn": "^0.27.5"
   }
 }

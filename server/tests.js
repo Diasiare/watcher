@@ -4,6 +4,7 @@
 const image_sequence = require('./downloaders/image_sequence');
 const db = require('./data/db');
 const config = require('./data/config');
+const app = require('./webapp/app');
 const fs = require('fs');
 const Promise = require('bluebird');
 
@@ -11,32 +12,60 @@ const test_db_name = "test.sqlite";
 //delete database afterwards
 
 test_db = function () {
-	db.init(test_db_name).then(()=>db.insert_new_show(
+	db.init(test_db_name)
+	.then(()=>db.insert_new_show(
 	{identifier:"ggar",base_url:"ggar.com"})).then(()=>db.insert_new_episode(
-	{identifier:"ggar",url:"ggar.com/1.jpg",number:1,name:"A Name"})).then(()=>db.update_show(
-	{identifier:"ggar",number:1,base_url:"ggar.com/1"})).then(db.close).then(delete_test_db)
+	{identifier:"ggar",url:"ggar.com/1.jpg",number:1,name:"A Name"}))
+	.then(()=>db.update_show(
+	{identifier:"ggar",number:1,base_url:"ggar.com/1"}))
+	.then(db.close)
+	.then(delete_test_db)
 	.catch((e)=>console.error(e));
 }
 
 
 test_download = function () {
-	db.init(test_db_name).then(()=>db.insert_new_show({identifier:"ggar",base_url:"ggar.com"}))
+	db.init(test_db_name)
+	.then(()=>db.insert_new_show({identifier:"ggar",base_url:"ggar.com"}))
 	.then(()=>image_sequence.download_sequence({base_url:"http://www.gogetaroomie.com/comic/rolling-with-it",
 	image_xpath:"//div[@id='cc-comicbody']//img",
 	next_xpath:"//div[@id='cc-comicbody']/a",
 	identifier:"ggar", number:0 , download_this:true}))
-	.then(db.close).then(delete_test_db).done()
+	.then(db.close)
+	.then(delete_test_db)
+	.done();
 }
 
 /*
 This assumes a config file is actually present
 */
 test_config = function () {
-	db.init(test_db_name).then(config.get_shows).then(db.resolve_shows).then(console.log)
-	.then(db.close).then(delete_test_db).done();
+	db.init(test_db_name)
+	.then(config.get_shows)
+	.then(db.resolve_shows)
+	.then(console.log)
+	.then(db.close)
+	.then(delete_test_db)
+	.done();
+}
+
+test_serve_shows = function () {
+	db.init(test_db_name)
+	.then(config.get_shows)
+	.then(db.resolve_shows)
+	.then(app.serve_shows)
+	.then(db.close)
+	.then(delete_test_db);
+}
+
+test_serve_static = function () {
+	app.serve_static_resources();
 }
 
 delete_test_db = function () {
-	return config.resolve_path(test_db_name).then(Promise.promisify(fs.unlink));
+	return config.resolve_path(test_db_name)
+		.then(Promise.promisify(fs.unlink));
 }
 
+test_serve_shows();
+test_serve_static();
