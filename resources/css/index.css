@@ -1,0 +1,63 @@
+.menubar {
+	width : 500px;
+	height : 30px;
+	display: flex;
+	justify-content : center;
+	background-color: black;
+	flex-direction: row;
+	color: white;
+}
+
+.menuItem {
+	height: 100%;
+	flex:1;
+	margin: 0 ;
+	padding: 0px 10px 0px 10px;
+	flex-basis: auto;
+	border-color: white;
+	border-style: solid;
+	border-left-width: 2px;
+	border-right-width: 2px; 
+	text-align: center;
+}
+
+.vAlign {
+	display: inline-block;
+	vertical-align: bottom;
+}
+
+.imageDisplay {
+	display: flex;
+	flex-direction :column;
+}
+
+.imageNav {
+	display: flex;
+	flex-direction : row;
+	width :100%;
+	flex :1;
+	flex-basis:auto;
+}
+
+.imageContainer {
+	flex-basis:auto;
+	flex :1;
+}
+
+.navImage {
+	width :50px;
+	height: 50px;
+	border : 5px 5px 5px 5px;
+}
+
+.navButton {
+	flex-basis:auto;
+	flex :1;
+}
+.flipped {
+	-moz-transform: scale(-1, 1);
+	-webkit-transform: scale(-1, 1);
+	-o-transform: scale(-1, 1);
+	transform: scale(-1, 1);
+	filter: FlipH;
+}

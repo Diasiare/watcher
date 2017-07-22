@@ -19,7 +19,6 @@ test_db = function () {
 	.then(()=>db.update_show(
 	{identifier:"ggar",number:1,base_url:"ggar.com/1"}))
 	.then(db.close)
-	.then(delete_test_db)
 	.catch((e)=>console.error(e));
 }
 
@@ -32,7 +31,6 @@ test_download = function () {
 	next_xpath:"//div[@id='cc-comicbody']/a",
 	identifier:"ggar", number:0 , download_this:true}))
 	.then(db.close)
-	.then(delete_test_db)
 	.done();
 }
 
@@ -45,27 +43,35 @@ test_config = function () {
 	.then(db.resolve_shows)
 	.then(console.log)
 	.then(db.close)
-	.then(delete_test_db)
 	.done();
 }
 
-test_serve_shows = function () {
-	db.init(test_db_name)
+test_web_app = function () {
+	db.init("database.sqlite")
 	.then(config.get_shows)
 	.then(db.resolve_shows)
-	.then(app.serve_shows)
-	.then(db.close)
-	.then(delete_test_db);
+	.then(app.start_all);
 }
 
 test_serve_static = function () {
-	app.serve_static_resources();
+	app.serve_static_resources()
+	.then(app.serve_shows);
 }
+
 
 delete_test_db = function () {
 	return config.resolve_path(test_db_name)
 		.then(Promise.promisify(fs.unlink));
 }
 
-test_serve_shows();
-test_serve_static();
+test_new_db =  function() {
+	db.init("database.sqlite")
+	.then(config.get_shows)
+	.then(db.resolve_shows)
+	.then(()=>db.get_next("ggar",2)).then(console.log)
+	.then(()=>db.get_prev("ggar",1)).then(console.log)
+	.then(()=>db.get_last("ggar")).then(console.log)
+	.then(()=>db.get_first("ggar")).then(console.log);
+}
+
+test_web_app();

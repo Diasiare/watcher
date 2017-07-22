@@ -6,14 +6,16 @@ const shelljs = require('shelljs');
 var config = null;
 
 const defaults = {
-	interval : 1000 //15*60*1000 //15 Minutes
+	interval : 15*60*1000 //15 Minutes
 }
 
 ensure_loaded = function () {
 	return new Promise((r)=>{
 		if (!config) fs.readFile("config.json",(error,str)=>{
 			config = JSON.parse(str);
-			r(Promise.map(config.shows, load_defaults).return(config));
+			config.shows_alt = {};
+			r(Promise.map(config.shows, load_defaults)
+				.return(config));
 		}); 
 		else r(config);
 	});
@@ -22,13 +24,21 @@ ensure_loaded = function () {
 load_defaults = function (show) {
 	return Promise.map(Object.keys(defaults),  (name)=>{
 		if (!(name in show)) show[name]=defaults[name];
-	}).then(get_storage_location)
+	})
+	.then(()=>config.shows_alt[show.identifier] = show)
+	.then(get_storage_location)
 	.then((location)=>show.directory=path.resolve(location,show.identifier))
-	.then((dir)=>shelljs.mkdir('-p',dir)).catch(console.error).return(show);
+	.then((dir)=>shelljs.mkdir('-p',dir))
+	.catch(console.error)
+	.return(show);
 }
 
 get_shows = function () {
 	return ensure_loaded().then(()=>config.shows);
+}
+
+get_show = function (identifier) {
+	return ensure_loaded().then(()=>config.shows_alt[identifier]);
 }
 
 get_storage_location = function () {
@@ -41,5 +51,6 @@ resolve_path = function (filename) {
 
 module.exports = {
 	get_shows : get_shows,
-	resolve_path: resolve_path
+	resolve_path: resolve_path,
+	get_show : get_show
 };

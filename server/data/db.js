@@ -80,11 +80,48 @@ resolve_shows = function (shows) {
 	});
 }
 
+get_episode_data = function (show,episode) {
+	return db.get("SELECT * FROM episodes WHERE show=? AND number=?", show , episode)
+		.then((resp)=>{return new Promise((r,e) => {
+				if (!resp) {
+					e("episode not found");
+					return;
+				}
+				r({number:resp.number,
+					identifier:resp.show,
+					real_name:resp.real_name,
+					data:resp.data});
+			});
+		});
+}
+
+get_first = function (identifier) {
+	return get_episode_data(identifier,1);
+}
+
+get_last = function (identifier) {
+	return config.get_show(identifier).then((show)=>get_episode_data(identifier,show.number));
+}
+
+get_next = function (identifier,episode) {
+	return get_episode_data(identifier,episode+1).catch((e)=>get_episode_data(identifier,episode)).catch(()=>undefined);
+}
+
+
+get_prev = function (identifier,episode) {
+	return get_episode_data(identifier,episode-1).catch(()=>get_episode_data(identifier,episode)).catch(()=>undefined);
+}
+
 module.exports = {
 	init : init,
 	close : close,
 	insert_new_episode:insert_new_episode,
 	update_show:update_show,
 	insert_new_show:insert_new_show,
-	resolve_shows : resolve_shows
+	resolve_shows : resolve_shows,
+	get_next : get_next,
+	get_prev :get_prev,
+	get_last : get_last,
+	get_first : get_first,
+	get_episode_data : get_episode_data
 };
