@@ -1,5 +1,11 @@
+.contents {
+	width: 95%;
+	margin:auto;
+}
+
 .menubar {
-	width : 500px;
+	width : 80%;
+	margin :auto;
 	height : 30px;
 	display: flex;
 	justify-content : center;
@@ -22,25 +28,27 @@
 }
 
 .vAlign {
-	display: inline-block;
-	vertical-align: bottom;
+	margin : auto;
 }
 
 .imageDisplay {
 	display: flex;
+	margin : auto;
 	flex-direction :column;
 }
 
 .imageNav {
 	display: flex;
 	flex-direction : row;
-	width :100%;
+	margin : auto;
+	width :80%;
 	flex :1;
 	flex-basis:auto;
 }
 
 .imageContainer {
 	flex-basis:auto;
+	margin :auto;
 	flex :1;
 }
 
@@ -51,8 +59,9 @@
 }
 
 .navButton {
+	margin : auto;
 	flex-basis:auto;
-	flex :1;
+	flex : 0;
 }
 .flipped {
 	-moz-transform: scale(-1, 1);

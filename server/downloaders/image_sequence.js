@@ -21,16 +21,16 @@ var download_sequence =  function(data) {
 		    	reject(error);
 		    	return;
 		    }
-		    var document = parse5.parse(body);
-		    var xhtml = xmlser.serializeToString(document);
-		    var doc = new dom().parseFromString(xhtml);
-			data.doc=doc
-			resolve(data);
+			resolve(body);
 		})
-	}).then(download_images).then(
-		function (data){
-			console.log("HANDLING " + data.number);
+	})
+	.then(extract_body)
+	.then((doc)=>data.doc=doc)
+	.return(data)
+	.then(download_images)
+	.then((data)=>{
 			if (!is_last(data.doc,data.base_url,data.next_xpath)) {
+				console.log("CONTINUING " + data.number + " FOR " + data.identifier);
 				var link = xpath(xpath_replace(data.next_xpath + "/@href"),data.doc);
 				link = link[0].value;
 				data.base_url = url.resolve(data.base_url,link);
@@ -38,9 +38,18 @@ var download_sequence =  function(data) {
 				return Promise.delay(50).then(()=>
 					download_sequence(data))
 			} else {
+				console.log(xpath(xpath_replace(data.next_xpath),data.doc));
+				console.log("STOPPING " + data.number + " FOR " + data.identifier);
 				return db.update_show(data).then((data)=>data.download_this=false).return(data);
 			}
 	});
+}
+
+extract_body = function(body) {
+	var document = parse5.parse(body);
+	var xhtml = xmlser.serializeToString(document);
+	var doc = new dom().parseFromString(xhtml);
+	return doc;
 }
 
 var	is_last = function(doc,base_url,next_xpath){
@@ -57,7 +66,7 @@ var download_image = function(data) {
 }
 
 var xpath_replace = function(s) {
-	return s.replace(/\/(?=[a-zA-Z])/g,"/x:")
+	return s//.replace(/\/(?=[a-zA-Z])/g,"/x:")
 }
 
 var download_images = function(data) {
@@ -90,5 +99,7 @@ var download_images = function(data) {
 }
 
 module.exports = {
-	download_sequence : download_sequence
+	download_sequence : download_sequence,
+	extract_body : extract_body,
+	xpath_replace : xpath_replace
 };

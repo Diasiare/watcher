@@ -6,7 +6,7 @@ const imdown = require('./image_sequence');
 const current_watchers = {};
 
 watching_cycle = function (show) {
-	return imdown.download_sequence(show).delay(show.interval).then((s)=>{console.log("checking show");return s;})
+	return imdown.download_sequence(show).delay(show.interval)
 		.then(watching_cycle);
 }
 
@@ -27,7 +27,7 @@ start_watcher = function (show) {
 
 
 start_watchers = function(shows) {
-	return Promise.map(shows,start_watcher);
+	return Promise.map(shows,start_watcher).return(shows);
 }
 
 module.exports = {

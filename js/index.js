@@ -1,5 +1,14 @@
 'use strict';
 
+const Router = ReactRouterDOM.HashRouter;
+const Route = ReactRouterDOM.Route;
+
+var current_read_type = "reread";
+
+function updateLastRead(show,number) {
+	$.post("/data/shows/" + show + "/" + number + "/" + current_read_type);
+}
+
 function MenuBar (props) {
 	var categories = ["new","webcomics","anime"];
 	return <div className="menubar">{categories.map((name)=>
@@ -32,14 +41,26 @@ class ImageDisplay extends React.Component {
 		this.state.current.img.src=this.state.current.src;
 		this.on_request = this.on_request.bind(this);
 		this.update = this.update.bind(this);
+		this.on_key = this.on_key.bind(this);
 	}
 
 	on_request(type) {
 		console.log(this.state[type]);
 		this.setState({current:this.state[type]},()=>{
+			updateLastRead(this.state.current.identifier,this.state.current.number);
 			this.update("next",this.state.current);
 			this.update("prev",this.state.current);
 		});
+	}
+
+	on_key(e) {
+		console.log("press");
+		if (e.keyCode === 39) {
+			this.on_request("next");
+		} else if (e.keyCode == 37) {
+			this.on_request("prev");
+		}
+
 	}
 
 	componentDidMount() {
@@ -48,6 +69,11 @@ class ImageDisplay extends React.Component {
 		this.update("prev",{identifier:"ggar",number:3});
 		this.update("last",{identifier:"ggar",number:3});
 		this.update("first",{identifier:"ggar",number:3});
+		$(document).on("keydown",this.on_key);
+	}
+
+	componentWillUnmount() {
+		$(document).off("keydown",this.on_key);	
 	}
 
 	update(type,episode) {
@@ -110,6 +136,7 @@ function ImageContainer(props) {
 
 
 ReactDOM.render(
-  <div><MenuBar/><ImageDisplay/></div>,
+
+  <Router><div className="contents"><MenuBar/><ImageDisplay/></div></Router>,
   document.getElementById('root')
 );

@@ -25,11 +25,17 @@ test_db = function () {
 
 test_download = function () {
 	db.init(test_db_name)
-	.then(()=>db.insert_new_show({identifier:"ggar",base_url:"ggar.com"}))
-	.then(()=>image_sequence.download_sequence({base_url:"http://www.gogetaroomie.com/comic/rolling-with-it",
-	image_xpath:"//div[@id='cc-comicbody']//img",
-	next_xpath:"//div[@id='cc-comicbody']/a",
-	identifier:"ggar", number:0 , download_this:true}))
+	.then(()=>db.insert_new_show({identifier:"gunn",base_url:"ggar.com"}))
+	.then(()=>image_sequence.download_sequence(        {
+            "identifier":"gunn",
+            "name" : "Gunnerkrigg Court",
+            "image_xpath" : "//img[@class='comic_image']",
+            "next_xpath" : "//a[./img[@src='http://www.gunnerkrigg.com/images/next_a.jpg']]",
+            "base_url" : "http://www.gunnerkrigg.com/?p=1856",
+            number : 0,
+            download_this : true
+        }
+	))
 	.then(db.close)
 	.done();
 }
@@ -74,4 +80,5 @@ test_new_db =  function() {
 	.then(()=>db.get_first("ggar")).then(console.log);
 }
 
-test_web_app();
+
+console.log(image_sequence.extract_body("<div></div>"));

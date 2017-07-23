@@ -2,7 +2,8 @@
 
 const Promise = require('bluebird');
 const express = require('express');
-const db = require('../data/db')
+const db = require('../data/db');
+const config = require('../data/config');
 
 var app = null;
 const PORT = 8080;
@@ -24,7 +25,7 @@ ensure_started = function () {
 serve_shows = function (shows) {
 	return Promise.map(shows, (show)=>{
 		ensure_started()
-		.then((app)=>app.use("/shows/" + show.identifier,express.static(show.directory)))
+		.then((app)=>app.use(build_resource_url(show.identifier),express.static(show.directory)))
 		.return(show);
 	});
 }
@@ -34,12 +35,13 @@ serve_static_resources = function () {
 		.then((app)=>app.use(express.static("resources")));
 }
 
+
 setup_data_calls = function () {
 	return ensure_started()
 		.then((app)=>{
 			app.get('/data/shows/:show/:episode/:direction',(req,res)=>{
 				let respond = (data)=>{
-					data.src = "/shows/" + req.params.show + "/" + data.number + ".jpg";
+					data.src = build_resource_url(data.identifier,data.number + ".jpg");
 					res.json(data);
 				}
 				let episode = parseInt(req.params.episode);
@@ -53,6 +55,26 @@ setup_data_calls = function () {
 					.then(respond);
 			});
 			return app;
+		})
+		.then((app)=>{
+			app.get('/data/shows/',(req,res)=>{
+				config.get_shows().map((show)=>{
+					return db.get_show_data(show.identifier).then((data)=>{
+						data.name = show.name;
+						return data;
+					})
+				}).then((data)=>{
+					res.json(data);
+				}).done();
+			});
+			return app;
+		})
+		.then((app)=>{
+			app.post('/data/shows/:show/:episode/:type',(req,res)=>{
+				db.update_last_read(req.params.show,req.params.episode,req.params.type).done();
+				res.end();
+			});
+			return app;
 		});
 }
 
@@ -60,6 +82,14 @@ start_all = function (shows) {
 	return serve_shows(shows)
 		.then(serve_static_resources)
 		.then(setup_data_calls);
+}
+
+build_resource_url = function() {
+	let adress = ""
+	if (arguments.length >= 1) adress = adress +"/shows/" + arguments[0];
+	if (arguments.length >= 2) adress = adress + "/" + arguments[1];
+	return adress;
+
 }
 
 module.exports = {

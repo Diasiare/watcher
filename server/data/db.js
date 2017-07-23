@@ -13,7 +13,15 @@ const model = {
 	url TEXT NOT NULL,
 	real_name TEXT,
 	aditional_data TEXT,
-	CONSTRAINT episodes_pkey PRIMARY KEY (show,number)`
+	CONSTRAINT episodes_pkey PRIMARY KEY (show,number) ON CONFLICT REPLACE
+	`,
+	last_read: `show TEXT NOT NULL REFERENCES shows(identifier) ON DELETE CASCADE,
+	type TEXT NOT NULL,
+	number INT NOT NULL,
+	CONSTRAINT unread_pkey PRIMARY KEY(show,type) ON CONFLICT REPLACE
+	`
+
+
 }
 
 init = function (path) {
@@ -26,7 +34,7 @@ close = function () {
 }
 
 create_tables = function() {
-	return Promise.each(["shows","episodes"],  (t_name)=>{
+	return Promise.each(Object.keys(model),  (t_name)=>{
 			db.exec("CREATE TABLE IF NOT EXISTS " + t_name + " ( " + model[t_name] + " )");
 		}
 	);
@@ -49,15 +57,32 @@ insert_new_show = function (data) {
 	var current_base_url = data.base_url;
 	var aditional_data = null;
 	if ('aditional_data' in data) aditional_data = data.aditional_data;
-	return db.run("INSERT INTO shows VALUES(?,?,?,?)", identifier, current_max, current_base_url, aditional_data).return(data);
+	return db.run("INSERT INTO shows VALUES(?,?,?,?)", identifier, current_max, current_base_url, aditional_data)
+	.then(()=>db.run("INSERT INTO last_read VALUES(?,?,?)",identifier,"reread",1))
+	.then(()=>db.run("INSERT INTO last_read VALUES(?,?,?)",identifier,"new",1))
+	.return(data);
 }
 
 update_show = function (data) {
 	return db.run("UPDATE shows SET current_max= $current_max ,current_base_url= $base_url WHERE identifier= $identifier",
 		{$identifier:data.identifier,
 			$current_max:data.number,
-			$base_url:data.base_url}).return(data);
+			$base_url:data.base_url})
+	.then(()=>{
+		if (data.intital_run) return update_last_read(data.identifier,data.number,"new");
+		return undefined;
+	})
+	.return(data);
 }
+
+update_last_read = function(show,number,type) {
+	return db.run("UPDATE last_read SET number=$number WHERE show=$show AND type=$type",
+		{$number:number,
+			$show:show,
+			$type:type});
+
+}
+
 
 /*
 Ensures that each show in the config file is in the databse and that the data objects
@@ -69,11 +94,13 @@ resolve_shows = function (shows) {
 			if (row == undefined) return insert_new_show(item).then(()=>{
 				item.number = 0;
 				item.download_this = true;
+				item.intital_run = true;
 			}).return(item);
 			else {
 				item.number = row.current_max;
 				item.base_url = row.current_base_url;
 				item.download_this=false;
+				item.intital_run = false;
 				return item;
 			}
 		})
@@ -112,16 +139,32 @@ get_prev = function (identifier,episode) {
 	return get_episode_data(identifier,episode-1).catch(()=>get_episode_data(identifier,episode)).catch(()=>undefined);
 }
 
+get_last_unread = function(identifier,type) {
+	return db.get("SELECT show , number FROM last_read WHERE type = ? AND show = ?",
+		type,identifier).then((data)=>get_next(data.show,data.number));
+}
+
+get_show_data = function(identifier) {
+	let data = {identifier:identifier};
+	return db.all("SELECT number , type FROM last_read WHERE show = ?",identifier)
+	.map((row)=>{
+		data[row.type]=row.number;
+	})
+	.return(data);
+}
+
 module.exports = {
 	init : init,
 	close : close,
 	insert_new_episode:insert_new_episode,
 	update_show:update_show,
+	update_last_read : update_last_read,
 	insert_new_show:insert_new_show,
 	resolve_shows : resolve_shows,
 	get_next : get_next,
 	get_prev :get_prev,
 	get_last : get_last,
 	get_first : get_first,
-	get_episode_data : get_episode_data
+	get_episode_data : get_episode_data,
+	get_show_data:get_show_data
 };
