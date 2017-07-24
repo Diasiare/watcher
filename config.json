@@ -2,17 +2,17 @@
     "storage_location" : "/home/felix/watcher_data",
     "shows" :[
     	{
-        "identifier":"ggar",
-        "name" : "Go Get A Roomie",
-        "image_xpath":"//x:div[@id='cc-comicbody']//x:img",
-       	"next_xpath":"//x:div[@id='cc-comicbody']/x:a",
-        "base_url" : "http://www.gogetaroomie.com/comic/catching-the-flusters"
+            "identifier":"ggar",
+            "name" : "Go Get A Roomie",
+            "image_xpath":"//div[@id='cc-comicbody']//img",
+       	    "next_xpath":"//div[@id='cc-comicbody']/a",
+            "base_url" : "http://www.gogetaroomie.com/comic/catching-the-flusters"
     	},
         {
             "identifier":"gunn",
             "name" : "Gunnerkrigg Court",
-            "image_xpath" : "//x:img[@class='comic_image']",
-            "next_xpath" : "//x:a[./x:img[@src='http://www.gunnerkrigg.com/images/next_a.jpg']]",
+            "image_xpath" : "//img[@class='comic_image']",
+            "next_xpath" : "//a[./img[@src='http://www.gunnerkrigg.com/images/next_a.jpg']]",
             "base_url" : "http://www.gunnerkrigg.com/?p=1856"
         }
     ]

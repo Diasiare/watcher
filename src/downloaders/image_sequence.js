@@ -45,11 +45,29 @@ var download_sequence =  function(data) {
 	});
 }
 
+strip_uri = function(doc) {
+	let v = new Set();
+	let f = (e)=>{
+		v.add(e);
+		if ('namespaceURI' in e) e.namespaceURI = null;
+		for (var p in e) {
+			if (!v.has(e[p]) &&
+				 e[p] !==null && 
+				 typeof(e[p])=="object") {
+				f(e[p]);
+			}
+		}
+	} 
+	f(doc);
+	return doc;
+}
+
+
 extract_body = function(body) {
 	var document = parse5.parse(body);
 	var xhtml = xmlser.serializeToString(document);
 	var doc = new dom().parseFromString(xhtml);
-	return doc;
+	return strip_uri(doc);
 }
 
 var	is_last = function(doc,base_url,next_xpath){
@@ -89,8 +107,10 @@ var download_images = function(data) {
 				}).then(download_image)
 				.then(db.insert_new_episode);
 			}).then((images)=>{
-				data.number = data.number + images.length;
-				data.final_image_url = images[images.length-1].url;
+				if (images.length > 0) {
+					data.number = data.number + images.length;
+					data.final_image_url = images[images.length-1].url;
+				}
 			}).then(()=>resolve(data));
 		} else {
 			resolve(data);

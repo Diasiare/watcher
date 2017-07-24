@@ -80,5 +80,6 @@ test_new_db =  function() {
 	.then(()=>db.get_first("ggar")).then(console.log);
 }
 
+const xpath = require('xpath').useNamespaces({"x": "http://www.w3.org/1999/xhtml"});
 
-console.log(image_sequence.extract_body("<div></div>"));
+console.log(xpath("//div",image_sequence.extract_body("<div></div>")));
