@@ -1,7 +1,10 @@
-'use strict';
+const $ = require('jquery');
+const React = require('react');
+import ReactDOM = require('react-dom');
+const ReactRouter = require('react-router');
+const {HashRouter:Router,Route} = require('react-router-dom');
+require("./css/index.css");
 
-const Router = ReactRouterDOM.HashRouter;
-const Route = ReactRouterDOM.Route;
 
 var current_read_type = "reread";
 

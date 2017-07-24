@@ -3,29 +3,39 @@
   "version": "0.0.1",
   "description": "It watches the web",
   "author": "Felix Plymouth <f.plymouth@gmail.com>",
-  "main": "server/main.js",
+  "main": "src/server.js",
   "scripts": {
-    "start": "node server/main.js",
-    "test": "node server/tests.js",
-    "build": "babel js -d resources/js"
+    "start": "node src/server.js",
+    "test": "node src/tests.js",
+    "build": "webpack"
   },
   "dependencies": {
     "bluebird": "~3.5.0",
+    "css-loader": "^0.28.4",
     "express": "^4.13.3",
     "gm": "^1.23.0",
+    "jquery": "^3.2.1",
     "parse5": "^3.0.2",
     "promise": "^8.0.1",
+    "react": "^15.6.1",
+    "react-dom": "^15.6.1",
+    "react-router": "^4.1.2",
+    "react-router-dom": "^4.1.2",
     "request": "^2.81.0",
     "request-promise": "^4.2.1",
     "shelljs": "^0.7.8",
     "sqlite": "~2.8.0",
+    "style-loader": "^0.18.2",
     "xmldom": "^0.1.27",
     "xmlserializer": "0.6.0",
     "xpath": "^0.0.24"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
+    "babel-core": "^6.25.0",
+    "babel-loader": "^7.1.1",
     "babel-preset-env": "^1.6.0",
-    "babel-preset-react": "^6.24.1"
+    "babel-preset-react": "^6.24.1",
+    "webpack": "^3.3.0"
   }
 }
