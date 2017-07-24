@@ -1,16 +1,9 @@
 const $ = require('jquery');
 const React = require('react');
-import ReactDOM = require('react-dom');
+const ReactDOM = require('react-dom');
 const ReactRouter = require('react-router');
-const {HashRouter:Router,Route} = require('react-router-dom');
+const {BrowserRouter:Router,Route,Switch} = require('react-router-dom');
 require("./css/index.css");
-
-
-var current_read_type = "reread";
-
-function updateLastRead(show,number) {
-	$.post("/data/shows/" + show + "/" + number + "/" + current_read_type);
-}
 
 function MenuBar (props) {
 	var categories = ["new","webcomics","anime"];
@@ -46,11 +39,15 @@ class ImageDisplay extends React.Component {
 		this.update = this.update.bind(this);
 		this.on_key = this.on_key.bind(this);
 	}
+	
+	updateLastRead(show,number,type) {
+		$.post("/data/shows/" + show + "/" + number + "/" + type);
+	}
 
 	on_request(type) {
 		console.log(this.state[type]);
 		this.setState({current:this.state[type]},()=>{
-			updateLastRead(this.state.current.identifier,this.state.current.number);
+			this.updateLastRead(this.state.current.identifier,this.state.current.number,this.props.type);
 			this.update("next",this.state.current);
 			this.update("prev",this.state.current);
 		});
@@ -67,11 +64,13 @@ class ImageDisplay extends React.Component {
 	}
 
 	componentDidMount() {
-		this.update("current",{identifier:"ggar",number:3});
-		this.update("next",{identifier:"ggar",number:3});
-		this.update("prev",{identifier:"ggar",number:3});
-		this.update("last",{identifier:"ggar",number:3});
-		this.update("first",{identifier:"ggar",number:3});
+		let page = {identifier: this.props.show,
+					number: this.props.episode}
+		this.update("current",page);
+		this.update("next",page);
+		this.update("prev",page);
+		this.update("last",page);
+		this.update("first",page);
 		$(document).on("keydown",this.on_key);
 	}
 
@@ -140,6 +139,15 @@ function ImageContainer(props) {
 
 ReactDOM.render(
 
-  <Router><div className="contents"><MenuBar/><ImageDisplay/></div></Router>,
+  <Router><div className="contents">
+  	<MenuBar/>
+  	<Switch>
+  	<Route path="/read/:show/:episode/:type" render={({match})=>{
+  	console.log("called")
+  	return <ImageDisplay show={match.params.show} episode={match.params.episode} type={match.params.type}/>
+  	}
+  }></Route>
+  </Switch>
+  </div></Router>,
   document.getElementById('root')
 );

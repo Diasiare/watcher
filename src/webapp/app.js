@@ -4,6 +4,7 @@ const Promise = require('bluebird');
 const express = require('express');
 const db = require('../data/db');
 const config = require('../data/config');
+const path = require('path');
 
 var app = null;
 const PORT = 8080;
@@ -78,10 +79,17 @@ setup_data_calls = function () {
 		});
 }
 
+setup_default = function () {
+	app.use(function (req, res, next) {
+  		res.sendFile(path.join(__dirname,"../../resources/index.html"));
+	})
+}
+
 start_all = function (shows) {
 	return serve_shows(shows)
 		.then(serve_static_resources)
-		.then(setup_data_calls);
+		.then(setup_data_calls)
+		.then(setup_default);
 }
 
 build_resource_url = function() {
