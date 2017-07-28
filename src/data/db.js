@@ -76,10 +76,16 @@ update_show = function (data) {
 }
 
 update_last_read = function(show,number,type) {
-	return db.run("UPDATE last_read SET number=$number WHERE show=$show AND type=$type",
-		{$number:number,
-			$show:show,
-			$type:type});
+	if (type !== "new" )
+		return db.run("UPDATE last_read SET number=$number WHERE show=$show AND type=$type",
+			{$number:number,
+				$show:show,
+				$type:type});
+	else 
+		return db.run("UPDATE last_read SET number=MAX(number,$number) WHERE show=$show AND type=$type",
+			{$number:number,
+				$show:show,
+				$type:type});
 
 }
 
