@@ -76,16 +76,17 @@ update_show = function (data) {
 }
 
 update_last_read = function(show,number,type) {
-	if (type !== "new" )
+	if (type != "new" )
 		return db.run("UPDATE last_read SET number=$number WHERE show=$show AND type=$type",
 			{$number:number,
 				$show:show,
 				$type:type});
 	else 
-		return db.run("UPDATE last_read SET number=MAX(number,$number) WHERE show=$show AND type=$type",
-			{$number:number,
+		return get_show_data(show,type)
+		.then((data)=>db.run("UPDATE last_read SET number=MAX(number,$number) WHERE show=$show AND type=$type",
+			{$number:Math.max(number,data[type]),
 				$show:show,
-				$type:type});
+				$type:type}));
 
 }
 
@@ -155,6 +156,8 @@ get_show_data = function(identifier) {
 	return db.all("SELECT number , type FROM last_read WHERE show = ?",identifier)
 	.map((row)=>{
 		data[row.type]=row.number;
+	}).then(()=>config.get_show(identifier)).then((show)=>{
+		data.type = show.type;
 	})
 	.return(data);
 }

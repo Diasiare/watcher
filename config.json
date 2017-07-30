@@ -3,6 +3,7 @@
     "shows" :[
     	{
             "identifier":"ggar",
+            "type" : "webcomic",
             "name" : "Go Get A Roomie",
             "image_xpath":"//div[@id='cc-comicbody']//img",
        	    "next_xpath":"//div[@id='cc-comicbody']/a",
@@ -10,6 +11,7 @@
     	},
         {
             "identifier":"gunn",
+            "type" : "webcomic",
             "name" : "Gunnerkrigg Court",
             "image_xpath" : "//img[@class='comic_image']",
             "next_xpath" : "//a[./img[@src='http://www.gunnerkrigg.com/images/next_a.jpg']]",

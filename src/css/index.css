@@ -47,9 +47,10 @@
 }
 
 .imageContainer {
+	padding: 10px 0px;
 	flex-basis:auto;
 	margin :auto;
-	flex :1;
+	flex :0;
 }
 
 .navImage {
@@ -69,4 +70,10 @@
 	-o-transform: scale(-1, 1);
 	transform: scale(-1, 1);
 	filter: FlipH;
+}
+
+.menuOpenButton {
+    position: fixed;
+    top: 0px;
+    left: 0px;
 }
