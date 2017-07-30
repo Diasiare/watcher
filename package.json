@@ -1,6 +1,6 @@
 {
   "name": "watcher",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "It watches the web",
   "author": "Felix Plymouth <f.plymouth@gmail.com>",
   "main": "src/server.js",

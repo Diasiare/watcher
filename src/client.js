@@ -9,6 +9,7 @@ require("./css/index.css");
 const ImageDisplay = require("./front-end/ImageDisplay");
 const ShowList = require("./front-end/ShowList");
 const Menu = require("./front-end/Menu");
+const loader = require("./front-end/image-preloader");
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import {
@@ -19,7 +20,7 @@ import {
 } from 'material-ui/styles/colors';
 import {fade} from 'material-ui/utils/colorManipulator';
 import spacing from 'material-ui/styles/spacing';
-
+import { withRouter } from 'react-router-dom';
 
 //Just saving this here so that we can override things later
 const theme = getMuiTheme({spacing: spacing,
@@ -42,17 +43,51 @@ const theme = getMuiTheme({spacing: spacing,
   },
 });
 
-ReactDOM.render(
-  <MuiThemeProvider muiTheme={theme}>
-  	<Router><div className="contents">
-  	  <Menu/>
+class Main extends React.Component {
+	constructor(props){
+		super(props);
+		this.path_change = this.path_change.bind(this);
+	}
+
+	componentWillMount() {
+		this.props.history.listen(this.path_change)
+		this.path_change(this.props.location);
+
+	}
+
+	path_change(location) {
+		let parts = location.pathname.split("/");
+		parts.splice(0,1);
+
+		console.log(parts,parts.length);
+		if (parts.length == 4 && parts[0] == "read") {
+			loader.change_episode(parts[1],parts[2]);	
+		}
+
+	}
+
+
+	render() {
+		return <div className="contents">
+  	  <Menu navigate={this.props.history.push}/>
   		<Switch>
   		  <Route path="/read/:show/:episode/:type" render={({match,history})=>{
   			return <ImageDisplay show={match.params.show} episode={match.params.episode} type={match.params.type} history={history}/>
   			}}/>
   		  <Route path="/list/:type" render={({match})=> <ShowList list={match.params.type}/>}/>
   		</Switch>
-  	</div></Router>
+  	</div>
+
+	}
+}
+
+const RouterMain = withRouter(Main);
+
+ReactDOM.render(
+  <MuiThemeProvider muiTheme={theme}>
+  	<Router>
+  	  <RouterMain/>
+  	</Router>
   </MuiThemeProvider>,
   document.getElementById('root')
 );

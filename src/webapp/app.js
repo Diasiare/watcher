@@ -69,8 +69,14 @@ setup_data_calls = function () {
 				}).done();
 			});
 			return app;
-		})
-		.then((app)=>{
+		}).then((app)=>{
+			app.get('/data/shows/:show',(req,res)=>{
+				db.get_show_data(req.params.show).then((data)=>{
+					res.json(data);
+				});
+			});
+			return app;
+		}).then((app)=>{
 			app.post('/data/shows/:show/:episode/:type',(req,res)=>{
 				db.update_last_read(req.params.show,req.params.episode,req.params.type).done();
 				res.end();

@@ -40,7 +40,6 @@ class ImageDisplay extends React.Component {
 		if (this.state[type]) {
 			let episode = this.state[type];
 			updateLastRead(episode.identifier,episode.number,this.props.type);
-			loader.change_episode(episode.identifier,episode.number);
 			this.props.history.push(get_url_for(episode.identifier,episode.number,this.props.type));	
 		}
 	}

@@ -1,3 +1,4 @@
+const $ = require('jquery');
 const React = require('react');
 const ReactDOM = require('react-dom');
 const data_loader = require("./show-data-loader");
@@ -6,11 +7,15 @@ import MenuItem from 'material-ui/MenuItem';
 import Hamburger from 'material-ui/svg-icons/navigation/menu';
 import DownArrow from 'material-ui/svg-icons/navigation/expand-more';
 import UpArrow from 'material-ui/svg-icons/navigation/expand-less';
+import LastPage from 'material-ui/svg-icons/navigation/last-page';
+import Replay from 'material-ui/svg-icons/av/replay';
 import {List, ListItem, makeSelectable} from 'material-ui/List';
 import Drawer from 'material-ui/Drawer';
 
 
 const SelectableList = makeSelectable(List);
+
+var navigate = null;
 
 class Menu extends React.Component {
 	constructor(props) {
@@ -21,6 +26,10 @@ class Menu extends React.Component {
 	}
 
 	componentWillMount() {
+		navigate = ((location)=>{
+			this.setState({open:false});
+			this.props.navigate(location);
+		}).bind(this);
 		data_loader.preload_data();
 	}
 
@@ -65,6 +74,36 @@ function MenuDrawer(props) {
         </Drawer>
 }
 
+class ShowListing extends React.Component {
+
+
+	render () {
+		return <ListItem primaryText={this.props.show.name} open={true} nestedItems={[
+				<div className="listItemList" key="dontcomplain">
+					<NavButton type="reread" id={this.props.show.identifier} />
+					<NavButton type="new" id={this.props.show.identifier} />
+				</div>
+			]}>
+
+			</ListItem>
+	}
+}
+
+
+
+function NavButton(props) {
+	let elem = <LastPage/>;
+	if (props.type == "reread") elem = <Replay/>;
+
+	return 	<IconButton onTouchTap={(e)=>{
+		$.get("/data/shows/" + props.id,(data)=>{
+			navigate("/read/" + props.id + "/" + data[props.type] + "/" + props.type);
+		});
+	}} >
+		{elem}
+	</IconButton>
+}
+
 class SubMenu extends React.Component {
 	constructor(props) {
 		super(props);
@@ -97,7 +136,7 @@ class SubMenu extends React.Component {
 				</ListItem>;
 		}
 
-		let sub_items = this.state.shows.map((show)=><div key={show.name} >{show.name}</div>);
+		let sub_items = this.state.shows.map((show)=><ShowListing key={show.identifier} show={show}/>);
 
 		return 	<ListItem rightIcon={<UpArrow/>} onTouchTap={this.change} open={this.state.open} primaryText={name} 
 			nestedItems={sub_items}>
