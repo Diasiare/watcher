@@ -58,8 +58,6 @@ class Main extends React.Component {
 	path_change(location) {
 		let parts = location.pathname.split("/");
 		parts.splice(0,1);
-
-		console.log(parts,parts.length);
 		if (parts.length == 4 && parts[0] == "read") {
 			loader.change_episode(parts[1],parts[2]);	
 		}
