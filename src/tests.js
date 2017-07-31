@@ -7,6 +7,7 @@ const config = require('./data/config');
 const app = require('./webapp/app');
 const fs = require('fs');
 const Promise = require('bluebird');
+const dom = require('xmldom').DOMParser;
 
 const test_db_name = "test.sqlite";
 //delete database afterwards
@@ -100,6 +101,7 @@ get_test_file("ggar.html").then(image_sequence.extract_body).then((body)=>{
 	let show = {};
 	show.doc = body;
 	show.image_xpath = "//div[@id='cc-comicbody']//img";
+	show.text_xpath = "//div[@class='cc-newsbody']";
 
 	let episode={};
 	return image_sequence.extract_aditional(episode,show,0);

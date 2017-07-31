@@ -7,6 +7,7 @@
             "name" : "Go Get A Roomie",
             "image_xpath":"//div[@id='cc-comicbody']//img",
        	    "next_xpath":"//div[@id='cc-comicbody']/a",
+            "text_xpath" : "//div[@class='cc-newsbody']",
             "base_url" : "http://www.gogetaroomie.com/comic/catching-the-flusters"
     	},
         {

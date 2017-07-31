@@ -60,11 +60,29 @@ class ImageDisplay extends React.Component {
 
 
 	render () {
+		let elems = []
+
+		if ("title" in this.state.current.data) {
+			elems.push(<p>{this.state.current.data.title}</p>)
+		}
+
+		elems.push(<ImageContainer episode={this.state.current} navigate={this.navigate} key="contaner"/>);
+		if ("alt_text" in this.state.current.data) {
+			elems.push(<p>{this.state.current.data.alt_text}</p>)
+		}
+		elems.push(<NavElements navigate={this.navigate} key="nav"/>);
+
+		if ("text" in this.state.current.data) {
+			elems.push(
+				<div id="text_area">
+					TEXT GOES HERE!!!!!!!!
+				</div>
+			)
+		}
 
 		let stuff = (
 			<div className="imageDisplay">
-				<ImageContainer episode={this.state.current} navigate={this.navigate}/>
-				<NavElements navigate={this.navigate}/>
+				{elems}
 			</div>);
 		return stuff;
 	}

@@ -93,7 +93,10 @@ var extract_aditional =  function(episode,show,image_index) {
 	let alt_text = xpath(show.image_xpath + "/@title" , show.doc);
 	if (alt_text.length > image_index) episode.data.alt_text = alt_text[0].value;
 	if (show.text_xpath) {
-		
+		let texts = xpath(show.text_xpath,show.doc);
+		episode.data.text = texts.map((text)=>{
+			return xmlser.serializeToString(text,true);
+		});
 	}
 
 	return episode;
