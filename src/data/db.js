@@ -10,7 +10,6 @@ const model = {
 	number INT NOT NULL,
 	image_url TEXT NOT NULL,
 	page_url TEXT NOT NULL,
-	real_name TEXT,
 	aditional_data TEXT,
 	CONSTRAINT episodes_pkey PRIMARY KEY (show,number) ON CONFLICT REPLACE
 	`,
@@ -44,12 +43,11 @@ insert_new_episode = function (data) {
 	var number = data.number;
 	var image_url = data.url;
 	var page_url = data.base_url;
-	var real_name = null;
-	if ('name' in data) real_name = data.name;
-	var aditional_data = null;
-	if ('aditional_data' in data) aditional_data = data.aditional_data;
-	return db.run("INSERT INTO episodes VALUES(?,?,?,?,?,?)", identifier, number, image_url , page_url
-		, real_name, aditional_data).return(data);
+	var aditional_data = {};
+	if ('data' in data) aditional_data = data.data;
+	aditional_data = JSON.stringify(aditional_data);
+	return db.run("INSERT INTO episodes VALUES(?,?,?,?,?)", identifier, number, image_url , page_url
+		, aditional_data).return(data);
 }
 
 insert_new_show = function (data) {
@@ -112,8 +110,7 @@ get_episode_data = function (show,episode) {
 				}
 				r({number:resp.number,
 					identifier:resp.show,
-					real_name:resp.real_name,
-					data:resp.data});
+					data:JSON.parse(resp.aditional_data)});
 			});
 		});
 }

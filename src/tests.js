@@ -80,6 +80,28 @@ test_new_db =  function() {
 	.then(()=>db.get_first("ggar")).then(console.log);
 }
 
-const xpath = require('xpath').useNamespaces({"x": "http://www.w3.org/1999/xhtml"});
+get_test_file= function(name) {
+	return new Promise((r,e)=>{
+		let filename ="testpages/" + name ;
+		console.log(filename);
+		fs.readFile(filename, "utf8" ,(error,str)=>{
+			if(error) e(error);
+			r(str);
+	})
+	})
+}
 
-console.log(xpath("//div",image_sequence.extract_body("<div></div>")));
+log_pass = function(data) {
+	console.log(data);
+	return data;
+}
+
+get_test_file("ggar.html").then(image_sequence.extract_body).then((body)=>{
+	let show = {};
+	show.doc = body;
+	show.image_xpath = "//div[@id='cc-comicbody']//img";
+
+	let episode={};
+	return image_sequence.extract_aditional(episode,show,0);
+
+}).then(console.log);

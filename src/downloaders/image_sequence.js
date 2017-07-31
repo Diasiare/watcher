@@ -85,6 +85,20 @@ var download_image = function(data) {
 	});
 }
 
+var extract_aditional =  function(episode,show,image_index) {
+	let title = xpath("//title/text()",show.doc);
+	episode.data = {};
+	console.log(title);
+	if (title.length > 0) episode.data.title = title[0].data;
+	let alt_text = xpath(show.image_xpath + "/@title" , show.doc);
+	if (alt_text.length > image_index) episode.data.alt_text = alt_text[0].value;
+	if (show.text_xpath) {
+		
+	}
+
+	return episode;
+
+}
 
 var download_images = function(data) {
 	return new Promise(function (resolve,reject){
@@ -104,7 +118,8 @@ var download_images = function(data) {
 						,number:number
 						,identifier:data.identifier
 						,base_url:data.base_url});
-				}).then(download_image)
+				}).then((episode)=>extract_aditional(episode,data,index))
+				.then(download_image)
 				.then(db.insert_new_episode);
 			}).then((images)=>{
 				if (images.length > 0) {
@@ -120,5 +135,6 @@ var download_images = function(data) {
 
 module.exports = {
 	download_sequence : download_sequence,
-	extract_body : extract_body
+	extract_body : extract_body,
+	extract_aditional : extract_aditional
 };

@@ -11,7 +11,7 @@ const defaults = {
 
 ensure_loaded = function () {
 	return new Promise((r)=>{
-		if (!config) fs.readFile("config.json",(error,str)=>{
+		if (!config) fs.readFile("config.json", "utf8",(error,str)=>{
 			config = JSON.parse(str);
 			config.shows_alt = {};
 			r(Promise.map(config.shows, load_defaults)
