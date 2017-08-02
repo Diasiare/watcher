@@ -88,7 +88,6 @@ var download_image = function(data) {
 var extract_aditional =  function(episode,show,image_index) {
 	let title = xpath("//title/text()",show.doc);
 	episode.data = {};
-	console.log(title);
 	if (title.length > 0) episode.data.title = title[0].data;
 	let alt_text = xpath(show.image_xpath + "/@title" , show.doc);
 	if (alt_text.length > image_index) episode.data.alt_text = alt_text[0].value;

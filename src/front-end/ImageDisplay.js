@@ -62,19 +62,21 @@ class ImageDisplay extends React.Component {
 	render () {
 		let elems = []
 
-		if ("title" in this.state.current.data) {
-			elems.push(<p>{this.state.current.data.title}</p>)
+		let info = this.state.current.data;
+
+		if (info && "title" in info) {
+			elems.push(<p key="title">{info.title}</p>)
 		}
 
 		elems.push(<ImageContainer episode={this.state.current} navigate={this.navigate} key="contaner"/>);
-		if ("alt_text" in this.state.current.data) {
-			elems.push(<p>{this.state.current.data.alt_text}</p>)
+		if (info &&  "alt_text" in info) {
+			elems.push(<p key="alt-text">{info.alt_text}</p>)
 		}
 		elems.push(<NavElements navigate={this.navigate} key="nav"/>);
 
-		if ("text" in this.state.current.data) {
+		if (info && "text" in info) {
 			elems.push(
-				<div id="text_area">
+				<div id="text_area" key="text">
 					TEXT GOES HERE!!!!!!!!
 				</div>
 			)

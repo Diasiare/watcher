@@ -3,11 +3,15 @@ const Promise = require('bluebird');
 const path = require('path');
 const mkdir = Promise.promisify(fs.mkdir);
 const shelljs = require('shelljs');
+
 var config = null;
+const location = process.env.WATCHER_LOCATION;
 
 const defaults = {
 	interval : 15*60*1000 //15 Minutes
 }
+
+
 
 ensure_loaded = function () {
 	return new Promise((r)=>{
@@ -42,7 +46,7 @@ get_show = function (identifier) {
 }
 
 get_storage_location = function () {
-	return ensure_loaded().then(()=>config.storage_location);
+	return ensure_loaded().then(()=>location);
 }
 
 resolve_path = function (filename) {

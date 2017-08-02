@@ -1,0 +1,4 @@
+
+External dependencies: Sqlite3, imagemagick
+
+Uses the WATCHER_LOCATION enviroment variable to decide where to store files
