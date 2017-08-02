@@ -76,8 +76,8 @@ class ImageDisplay extends React.Component {
 
 		if (info && "text" in info) {
 			elems.push(
-				<div id="text_area" key="text">
-					TEXT GOES HERE!!!!!!!!
+				//This should be fine since the data in here is parsed directly from the source webpage (links may not resolve)
+				<div id="text_area" key="text" dangerouslySetInnerHTML={{__html:info.text}}>
 				</div>
 			)
 		}
