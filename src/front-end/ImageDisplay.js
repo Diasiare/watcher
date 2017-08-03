@@ -3,6 +3,7 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 const {Redirect,Link,Route} = require('react-router-dom');
 const loader = require("./image-preloader");
+import Paper from 'material-ui/Paper';
 
 
 function updateLastRead(show,number,type) {
@@ -64,17 +65,10 @@ class ImageDisplay extends React.Component {
 
         let info = this.state.current.data;
         elems.push(<ImageContainer episode={this.state.current} navigate={this.navigate} key="contaner"/>);
-        if (info &&  "alt_text" in info) {
-            elems.push(<p key="alt-text">{info.alt_text}</p>)
-        }
         elems.push(<NavElements navigate={this.navigate} key="nav"/>);
 
         if (info && "text" in info) {
-            elems.push(
-                //This should be fine since the data in here is parsed directly from the source webpage (links may not resolve)
-                <div id="text_area" key="text" dangerouslySetInnerHTML={{__html:info.text}}>
-                </div>
-            )
+            elems.push(<Description text={info.text} key="text"/>);
         }
 
         let stuff = (
@@ -89,10 +83,10 @@ class ImageDisplay extends React.Component {
 
 function NavElements(props) {
     return <div className="imageNav flex_center">
-            <NavButton direction="back" image_src="/images/double_arrow.jpg" type="first" navigate={props.navigate}/>
-            <NavButton direction="back" image_src="/images/single_arrow.jpg" type="prev" navigate={props.navigate}/>
-            <NavButton direction="forward" image_src="/images/single_arrow.jpg" type="next" navigate={props.navigate}/>
-            <NavButton direction="forward" image_src="/images/double_arrow.jpg" type="last" navigate={props.navigate}/>
+            <NavButton type="first" navigate={props.navigate}/>
+            <NavButton type="prev" navigate={props.navigate}/>
+            <NavButton type="next" navigate={props.navigate}/>
+            <NavButton type="last" navigate={props.navigate}/>
         </div>
 }
 
@@ -103,12 +97,20 @@ class NavButton extends React.Component {
 
 
     render() {
-        var image_class = "navImage";
-        if (this.props.direction ==="back") {
+    	let p = {
+    		first:{a:"left",d:"back",i:"/images/double_arrow.jpg"},
+    		prev: {a:"center",d:"back",i:"/images/single_arrow.jpg"},
+    		next: {a:"center",d:"forward",i:"/images/single_arrow.jpg"},
+    		last: {a:"right",d:"forward",i:"/images/double_arrow.jpg"}
+    	}[this.props.type];
+
+
+        let image_class = "navImage";
+        if (p.d ==="back") {
             image_class += " flipped"
         }
-        return <div className="navButton flex_center" onClick={()=>this.props.navigate(this.props.type)}>
-            <img className={image_class} src={this.props.image_src}/>
+        return <div className="navButton flex_center" style={{textAlign:p.a}} onClick={()=>this.props.navigate(this.props.type)}>
+            <img className={image_class} src={p.i}/>
         </div>  
     }
 }
@@ -125,6 +127,7 @@ class ImageContainer extends React.Component {
             return (<div className="imageContainer" onClick={()=>this.props.navigate("next")}>
                         <Title title={this.props.episode.data.title}/>
                         <img src={this.props.episode.src}/>
+                        <AltText alt_text={this.props.episode.data.alt_text}/>
                     </div>          
             )
         }
@@ -136,16 +139,37 @@ class ImageContainer extends React.Component {
     }
 }
 
-module.exports = ImageDisplay
-
-
 function Title(props) {
     if (!props.title){
         return null;
     }
 
     return <div className="title">
-                <p>{props.title}</p>
+                {props.title}
             </div>
-
 }
+
+
+function AltText(props) {
+    if (!props.alt_text){
+        return null;
+    }
+
+    return <div className="alt_text">
+                {props.alt_text}
+            </div>
+}
+
+function Description(props) {
+	if (!props.text) {
+		return null;
+	}
+
+    //This should be fine since the data in here is parsed directly from the source webpage (links may not resolve)
+	return <Paper className="text_area" dangerouslySetInnerHTML={{__html:props.text}}>
+           </Paper>
+}
+
+
+
+module.exports = ImageDisplay

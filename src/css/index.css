@@ -17,7 +17,7 @@
 }
 
 .menubar {
-	width : 80%;
+	max-width: 600px;
 	margin :auto;
 	height : 30px;
 	display: flex;
@@ -58,7 +58,7 @@
 	flex-direction : row;
 	flex :1;
 	flex-basis:auto;
-	width : 60vw;
+	width: 850px;
 }
 
 .imageContainer {
@@ -68,8 +68,8 @@
 }
 
 .navImage {
-	width :50px;
-	height: 50px;
+	width :30px;
+	height: 30px;
 	padding : 5px;
 }
 
@@ -104,4 +104,20 @@
 	text-align: left;
 	font-size: 16px;
 	font-weight: bold;
+	padding-left: 20px;
+}
+
+.alt_text{
+	width:100%;
+	text-align: center;
+	font-size: 16px;
+	font-weight: medium;
+}
+
+.text_area{
+	width: 900px;
+	text-align: left;
+	font-weight: medium;
+	padding : 0px 10px;
+	margin-top: 10px;
 }
