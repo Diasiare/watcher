@@ -1,5 +1,18 @@
+.center{
+	margin:auto;
+}
+
+.flex_center {
+	-webkit-align-items: center;
+    align-items: center;
+    -webkit-justify-content: center;
+    justify-content: center;
+}
+
+
 .contents {
 	width: 95%;
+	font-family: Roboto;
 	margin:auto;
 }
 
@@ -32,37 +45,37 @@
 }
 
 .imageDisplay {
-	display: flex;
-	margin : auto;
-	flex-direction :column;
+    display: flex;
+	display: -webkit-flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;		
 }
+
+
 
 .imageNav {
 	display: flex;
 	flex-direction : row;
-	margin : auto;
-	width :80%;
 	flex :1;
 	flex-basis:auto;
+	width : 60vw;
 }
 
 .imageContainer {
 	padding: 10px 0px;
 	flex-basis:auto;
-	margin :auto;
 	flex :0;
 }
 
 .navImage {
 	width :50px;
 	height: 50px;
-	border : 5px 5px 5px 5px;
+	padding : 5px;
 }
 
 .navButton {
-	margin : auto;
-	flex-basis:auto;
-	flex : 0;
+	text-align: center;
+	flex : 1;
 }
 .flipped {
 	-moz-transform: scale(-1, 1);
@@ -84,4 +97,11 @@
 	height : 100%;
 	display: flex;
 	flex-direction: row;
+}
+
+.title{
+	width:100%;
+	text-align: left;
+	font-size: 16px;
+	font-weight: bold;
 }
