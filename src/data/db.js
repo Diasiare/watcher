@@ -1,10 +1,9 @@
 const db = require("sqlite");
 const Promise = require("bluebird");
-const config = require('./config');
 
 const model = {
-	shows:`identifier TEXT NOT NULL PRIMARY KEY,
-	aditional_data TEXT
+	shows:`identifier TEXT NOT NULL PRIMARY KEY ON CONFLICT REPLACE,
+	data TEXT
 	`,
 	episodes:`show TEXT NOT NULL REFERENCES shows(identifier) ON DELETE CASCADE,
 	number INT NOT NULL,
@@ -50,11 +49,13 @@ insert_new_episode = function (data) {
 		, aditional_data).return(data);
 }
 
+//We store the data as a json object because that is much easier as the format needs to be
+//wastly different for differnt types of shows (image_sequence, torrent, tv, etc), the overhead should be minimal
+//As this table should only rarely be written to
 insert_new_show = function (data) {
 	var identifier = data.identifier;
-	var aditional_data = null;
-	if ('aditional_data' in data) aditional_data = data.aditional_data;
-	return db.run("INSERT INTO shows VALUES(?,?)", identifier, aditional_data)
+	var aditional_data = JSON.stringify(data);
+	return Promise.resolve("").then(()=>db.run("INSERT INTO shows VALUES(?,?)", identifier, aditional_data))
 	.then(()=>db.run("INSERT INTO last_read VALUES(?,?,?)",identifier,"reread",1))
 	.then(()=>db.run("INSERT INTO last_read VALUES(?,?,?)",identifier,"new",1))
 	.return(data);
@@ -77,26 +78,25 @@ update_last_read = function(show,number,type) {
 }
 
 
-/*
-Ensures that each show in the config file is in the databse and that the data objects
-are up to date
-*/
+get_shows = function() {
+	return db.all("SELECT data FROM shows").map((show)=>JSON.parse(show.data)).then(resolve_shows);
+}
+
 resolve_shows = function (shows) {
 	return Promise.map(shows,(item)=>{
 		return db.get("SELECT number , page_url FROM episodes WHERE show = ? ORDER BY number DESC;"
 			,item.identifier).then((row)=>{
-			if (row == undefined) return insert_new_show(item).then(()=>{
+			if (row == undefined) {
 				item.number = 0;
 				item.download_this = true;
 				item.intital_run = true;
-			}).return(item);
-			else {
+			} else {
 				item.number = row.number;
 				item.base_url = row.page_url;
 				item.download_this=false;
 				item.intital_run = false;
-				return item;
 			}
+			return item;
 		})
 	});
 }
@@ -153,12 +153,14 @@ module.exports = {
 	close : close,
 	insert_new_episode:insert_new_episode,
 	update_last_read : update_last_read,
-	insert_new_show:insert_new_show,
+	insert_new_show: insert_new_show,
 	resolve_shows : resolve_shows,
 	get_next : get_next,
 	get_prev :get_prev,
 	get_last : get_last,
 	get_first : get_first,
 	get_episode_data : get_episode_data,
-	get_show_data:get_show_data
+	get_show_data:get_show_data,
+	get_shows : get_shows
 };
+const config = require('./config');

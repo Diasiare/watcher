@@ -38,7 +38,6 @@ var download_sequence =  function(data) {
 				return Promise.delay(50).then(()=>
 					download_sequence(data))
 			} else {
-				console.log(xpath(data.next_xpath,data.doc));
 				console.log("STOPPING " + data.number + " FOR " + data.identifier);
 				data.download_this = false;
 				data.initial = false;

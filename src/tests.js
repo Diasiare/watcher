@@ -14,11 +14,15 @@ const test_db_name = "test.sqlite";
 
 test_db = function () {
     db.init(test_db_name)
-    .then(()=>db.insert_new_show(
-    {identifier:"ggar",base_url:"ggar.com"})).then(()=>db.insert_new_episode(
-    {identifier:"ggar",url:"ggar.com/1.jpg",number:1,name:"A Name"}))
-    .then(()=>db.update_show(
-    {identifier:"ggar",number:1,base_url:"ggar.com/1"}))
+    .then(()=>db.insert_new_show(       {
+            identifier:"ggar",
+            type : "webcomic",
+            name : "Go Get A Roomie",
+            image_xpath:"//div[@id='cc-comicbody']//img",
+            next_xpath:"//div[@id='cc-comicbody']/a",
+            text_xpath : "//div[@class='cc-newsbody']",
+            base_url : "http://www.gogetaroomie.com/comic/catching-the-flusters"
+        }))
     .then(db.close)
     .catch((e)=>console.error(e));
 }
@@ -111,4 +115,5 @@ test_extract_aditional = function () {
     }).then(console.log);
 }
 
-config.resolve_path("stuff").then(log_pass);
+test_db();
+
