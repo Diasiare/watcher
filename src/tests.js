@@ -8,6 +8,7 @@ const app = require('./webapp/app');
 const fs = require('fs');
 const Promise = require('bluebird');
 const dom = require('xmldom').DOMParser;
+const xpath = require('xpath').useNamespaces({"x": "http://www.w3.org/1999/xhtml"});
 
 const test_db_name = "test.sqlite";
 //delete database afterwards
@@ -115,5 +116,10 @@ test_extract_aditional = function () {
     }).then(console.log);
 }
 
-test_db();
+get_test_file("ggar.html").then(image_sequence.extract_body).then((body)=>{
+
+        return xpath("//div[@id='cc-comicbody']//img",body)[0].attributes[0];
+
+    }).then(console.log);
+
 

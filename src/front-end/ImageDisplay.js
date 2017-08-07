@@ -73,7 +73,7 @@ class ImageDisplay extends React.Component {
 
         let stuff = (
             <div className="center">
-              <div className="imageDisplay flex_center">
+              <div className="columnFlex flex_center">
                 {elems}
               </div>
             </div>);
@@ -166,7 +166,7 @@ function Description(props) {
 	}
 
     //This should be fine since the data in here is parsed directly from the source webpage (links may not resolve)
-	return <Paper className="text_area" dangerouslySetInnerHTML={{__html:props.text}}>
+	return <Paper className="text_area standardWidth" dangerouslySetInnerHTML={{__html:props.text}}>
            </Paper>
 }
 

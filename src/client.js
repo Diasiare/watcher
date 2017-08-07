@@ -9,6 +9,7 @@ require("./css/index.css");
 const ImageDisplay = require("./front-end/ImageDisplay");
 const ShowList = require("./front-end/ShowList");
 const Menu = require("./front-end/Menu");
+const ShowAdder = require("./front-end/ShowAdder");
 const loader = require("./front-end/image-preloader");
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
@@ -72,7 +73,7 @@ class Main extends React.Component {
   		  <Route path="/read/:show/:episode/:type" render={({match,history})=>{
   			return <ImageDisplay show={match.params.show} episode={match.params.episode} type={match.params.type} history={history}/>
   			}}/>
-  		  <Route path="/list/:type" render={({match})=> <ShowList list={match.params.type}/>}/>
+        <Route path="/new" render={({history})=> <ShowAdder history={history}/>}/>
   		</Switch>
   	</div>
 

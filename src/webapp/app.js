@@ -1,5 +1,5 @@
 
-
+const request = require('request')
 const Promise = require('bluebird');
 const express = require('express');
 const db = require('../data/db');
@@ -80,6 +80,17 @@ setup_data_calls = function () {
 			app.post('/data/shows/:show/:episode/:type',(req,res)=>{
 				db.update_last_read(req.params.show,req.params.episode,req.params.type).done();
 				res.end();
+			});
+			return app;
+		}).then((app)=>{
+			app.get('/function/get',(req,res)=>{
+				request(req.query.url, function (error,response,body){
+		   	 		if (error) {
+		    			res.send("");
+		    		return;
+		    		}
+				res.send(body);
+				})
 			});
 			return app;
 		});
