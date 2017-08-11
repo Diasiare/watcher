@@ -8,5 +8,7 @@ Backend add ability to delete show - DONE
 Front end add show management page(s)
 Refresh Menu on backend changes
 Page with shows with new episodes (filerable)
+Download logo for shows
 Add ability to download torrents to backend
 Serve video based shows
+Auto generate human readable identifiers
