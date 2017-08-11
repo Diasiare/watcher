@@ -2,9 +2,8 @@
 const request = require('request')
 const Promise = require('bluebird');
 const express = require('express');
-const db = require('../data/db');
-const config = require('../data/config');
 const path = require('path');
+const bodyParser = require('body-parser')
 
 var app = null;
 const PORT = 8080;
@@ -17,6 +16,10 @@ ensure_started = function () {
   				res.redirect('/index.html');
 			});
 			app.listen(PORT);
+			app.use( bodyParser.json() );       
+			app.use(bodyParser.urlencoded({ 
+  				extended: true
+			})); 
 			console.log('Running on http://localhost:' + PORT);
 		}
 		r(app);
@@ -83,6 +86,17 @@ setup_data_calls = function () {
 			});
 			return app;
 		}).then((app)=>{
+			app.post('/data/shows',(req,res)=>{
+				let data = req.body;
+				Promise.resolve(data).then(config.add_new_show).then(()=>res.json({
+					identifier:data.identifier,
+					failed:false
+				})).catch(()=>res.json({
+					failed:true
+				}));
+			});
+			return app;
+		}).then((app)=>{
 			app.get('/function/get',(req,res)=>{
 				request(req.query.url, function (error,response,body){
 		   	 		if (error) {
@@ -122,3 +136,6 @@ module.exports = {
 	serve_static_resources : serve_static_resources,
 	start_all : start_all
 }	
+
+const db = require('../data/db');
+const config = require('../data/config');

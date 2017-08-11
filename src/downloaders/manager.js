@@ -1,7 +1,11 @@
 
 
 const Promise = require('bluebird');
-const imdown = require('./image_sequence');
+Promise.config({
+    cancellation: true
+});
+
+
 
 const current_watchers = {};
 
@@ -22,9 +26,22 @@ start_watcher = function (show) {
 	}
 	var watcher = watching_cycle(show).catch(ef);;
 	current_watchers[show.identifier] = watcher;
-	return watcher;
+	return show;
 }
 
+add_watcher = function(show) {
+	return Promise.resolve(show)
+		.then(stop_watcher)
+		.then(start_watcher);
+	
+}
+
+stop_watcher = function(show) {
+	if (show.identifier in current_watchers) {
+		current_watchers[show.identifier].cancel();
+	}
+	return show;
+}
 
 start_watchers = function(shows) {
 	return Promise.map(shows,start_watcher).return(shows);
@@ -32,4 +49,7 @@ start_watchers = function(shows) {
 
 module.exports = {
 	start_watchers : start_watchers,
+	add_watcher : add_watcher,
+	stop_watcher: stop_watcher
 };
+const imdown = require('./image_sequence');

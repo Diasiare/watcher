@@ -118,7 +118,7 @@
 	text-align: left;
 	font-size: 20px;
 	font-weight: bold;
-	vertical-align: middle;
+	vertical-align: bottom;
 	display: inline-block;
 	flex : 0 0 auto;
 }

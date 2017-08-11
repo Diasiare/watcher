@@ -13,6 +13,7 @@
     "ajv": "^5.2.2",
     "babel-polyfill": "^6.23.0",
     "bluebird": "~3.5.0",
+    "body-parser": "^1.17.2",
     "css-loader": "^0.28.4",
     "express": "^4.13.3",
     "gm": "^1.23.0",

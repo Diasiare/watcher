@@ -2,7 +2,7 @@ const db = require("sqlite");
 const Promise = require("bluebird");
 
 const model = {
-	shows:`identifier TEXT NOT NULL PRIMARY KEY ON CONFLICT REPLACE,
+	shows:`identifier TEXT NOT NULL PRIMARY KEY,
 	data TEXT
 	`,
 	episodes:`show TEXT NOT NULL REFERENCES shows(identifier) ON DELETE CASCADE,
@@ -79,11 +79,18 @@ update_last_read = function(show,number,type) {
 
 
 get_shows = function() {
-	return db.all("SELECT data FROM shows").map((show)=>JSON.parse(show.data)).then(resolve_shows);
+	return db.all("SELECT data FROM shows")
+		.map((show)=>Promise.resolve(JSON.parse(show.data))
+		.then(resolve_show));
 }
 
-resolve_shows = function (shows) {
-	return Promise.map(shows,(item)=>{
+get_show = function(identifier) {
+	return db.get("SELECT data FROM shows WHERE identifier=?",identifier)
+		.then((show)=>JSON.parse(show.data))
+		.then(resolve_show);
+}
+
+resolve_show = function (item) {
 		return db.get("SELECT number , page_url FROM episodes WHERE show = ? ORDER BY number DESC;"
 			,item.identifier).then((row)=>{
 			if (row == undefined) {
@@ -97,8 +104,7 @@ resolve_shows = function (shows) {
 				item.intital_run = false;
 			}
 			return item;
-		})
-	});
+		});
 }
 
 get_episode_data = function (show,episode) {
@@ -148,19 +154,25 @@ get_show_data = function(identifier) {
 	.return(data);
 }
 
+delete_show = function(identifier) {
+	return db.run("DELETE FROM shows WHERE identifier=?",identifier);
+}
+
 module.exports = {
 	init : init,
 	close : close,
 	insert_new_episode:insert_new_episode,
 	update_last_read : update_last_read,
 	insert_new_show: insert_new_show,
-	resolve_shows : resolve_shows,
+	resolve_show : resolve_show,
 	get_next : get_next,
 	get_prev :get_prev,
 	get_last : get_last,
 	get_first : get_first,
 	get_episode_data : get_episode_data,
 	get_show_data:get_show_data,
-	get_shows : get_shows
+	get_shows : get_shows,
+	get_show : get_show,
+	delete_show : delete_show
 };
 const config = require('./config');

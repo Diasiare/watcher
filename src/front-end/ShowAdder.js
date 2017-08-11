@@ -117,6 +117,64 @@ class InteractiveXpath extends React.Component {
 	}
 }
 
+class InteractiveImage extends React.Component {
+	constructor(props) {
+		super(props);		
+		this.state = {
+			show:true
+		}
+		this.openClose = this.openClose.bind(this);
+	}
+
+	openClose() {
+		this.setState({show:!this.state.show});
+	}
+
+	render() {
+		if ((!this.props.val)) {
+			return (<div className="columnFelx">
+						<div style={{width:"100%"}} className="rowFlex">
+							<TextField 
+							value={this.props.val} 
+							style={{width:"100%"}}
+							onChange={(e)=>this.props.change(this.props.valName,e.target.value)}
+							hintText={this.props.text}/>
+						</div>
+					</div>)
+		} else if (!this.state.show) {
+			return <div className="columnFelx">
+					<div style={{width:"100%"}} className="rowFlex">
+						<TextField 
+							value={this.props.val} 
+							style={{width:"100%"}}
+							onChange={(e)=>this.props.change(this.props.valName,e.target.value)}
+							hintText={this.props.text}/>
+						<IconButton onTouchTap={this.openClose}>
+							<DownArrow/>
+						</IconButton>
+					</div>
+				</div>
+		}
+
+		return <div className="columnFelx">
+				<div style={{width:"100%"}} className="rowFlex">
+					<TextField 
+						value={this.props.val} 
+						style={{width:"100%"}}
+						onChange={(e)=>this.props.change(this.props.valName,e.target.value)}
+						hintText={this.props.text}/>
+					<IconButton onTouchTap={this.openClose}>
+						<UpArrow/>
+					</IconButton>
+				</div>
+				<div style={{width:"100%",textAlign:"center"}}>
+					<img src={this.props.val} alt="Not loaded yet"/>
+				</div>
+			</div>
+
+	}
+}
+
 
 
 
@@ -134,10 +192,12 @@ class ShowAdder extends React.Component {
 			imxpath:"",
 			nextxpath:"",
 			textxpath:"",
+			logo:"",
 			doc:null
 		}
 		this.showTypeDropdownChange = this.showTypeDropdownChange.bind(this);
 		this.change = this.change.bind(this);
+		this.create_show = this.create_show.bind(this);
 	}
 
 	showTypeDropdownChange(event,index,value){
@@ -146,7 +206,7 @@ class ShowAdder extends React.Component {
 
 	change(s,v){
 		if (s=="baseUrl"){
-			$.get("/function/get?url=" + v,null,(data)=>{
+			$.get("/function/get",{url:v},(data)=>{
 				if (data){
 					this.setState({doc:extract_body(data,v)});
 				}
@@ -154,7 +214,60 @@ class ShowAdder extends React.Component {
 		}
 		let tmp = {};
 		tmp[s]=v;
-		this.setState(tmp);
+		this.setState(tmp,this.validate);
+	}
+
+	validate() {
+		let valid = false;
+		let s = this.state;
+		valid = valid 
+					|| (s.showType==2
+						&& s.identifier
+						&& s.name
+						&& s.nextxpath
+						&& s.imxpath
+						&& s.baseUrl)
+					|| (s.showType==3
+						&& s.identifier
+						&& s.name
+						&& s.baseUrl
+						);
+
+		//Force valid to be a boolan, otherwise it might be a string or smth
+		if (valid) valid = true;
+		else valid = false;
+
+		if (valid != s.contentsValid) {
+			this.setState({contentsValid:!s.contentsValid})
+		}
+	}
+
+	create_show() {
+		if (this.state.contentsValid) {
+			let data = {}
+			let s = this.state;
+			data.identifier = s.identifier;
+			data.name = s.name;
+			data.base_url = s.baseUrl;
+			if(s.logo) data.logo = s.logo;
+			if (s.showType == 2) {
+				data.next_xpath = s.nextxpath;
+				data.image_xpath = s.imxpath;
+				data.type = "webcomic"
+				if (s.textxpath) {
+					data.text_xpath = s.textxpath;
+				}
+			} else if (s.showType == 3) {
+				data.type = "manga" ;
+				data.next_xpath = "//div[@id='imgholder']//img" ;
+				data.image_xpath = "//div[@id='imgholder']/a" ;
+			}
+
+			$.post("/data/shows",data,(data)=>{
+
+			});
+
+		}
 	}
 
 	render() {
@@ -211,17 +324,23 @@ class ShowAdder extends React.Component {
 						<h1 className="pageTitle">
 							Add new show
 						</h1>
-						<div style={{margin:"auto 0"}}>
         				<DropDownMenu value={this.state.showType} 
         					onChange={this.showTypeDropdownChange}>
           					<MenuItem value={1} primaryText="Select Type" />
           					<MenuItem value={2} primaryText="Webcomic" />
           					<MenuItem value={3} primaryText="Mangareader" />
         				</DropDownMenu>	
+        				<div style={{width:"100%",paddingRight:"10px"}}>
+        				 <InteractiveImage
+        				 	text="Logo Url"
+        				 	valName="logo" 
+        				 	change={this.change}
+        				 	val={this.state.logo}/>
         				</div>
-        				<div style={{margin:"auto 0"}}>
+        				<div >
         				<RaisedButton 
         					label="Submit" 
+        					onTouchTap={this.create_show}
         					disabled={!this.state.contentsValid}/>
         				</div>
         			</div>

@@ -11,8 +11,6 @@ const dom = require('xmldom').DOMParser;
 const path = require('path');
 const url = require('url');
 const Promise = require('bluebird');
-const db = require('./../data/db')
-
 //Download a sequence of images
 var download_sequence =  function(data) {
 	return new Promise(function (resolve,reject) {
@@ -139,3 +137,4 @@ module.exports = {
 	extract_body : extract_body,
 	extract_aditional : extract_aditional
 };
+const db = require('./../data/db');
