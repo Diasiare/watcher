@@ -41,7 +41,7 @@ perfrom_setup = function (show) {
 }
 
 add_new_show = function(show) {
-	return db.delete_show(show.identifier)
+	return delete_show(show.identifier)
 	.then(()=>db.insert_new_show(show))
 	.then(()=>db.get_show(show.identifier))
 	.then(perfrom_setup)
