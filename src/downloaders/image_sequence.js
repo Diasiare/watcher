@@ -74,12 +74,24 @@ var	is_last = function(doc,base_url,next_xpath){
 		return link.length == 0 || url.resolve(base_url,link[0].value) == base_url;
 }
 
+create_thumbnail = function(data) {
+	if (data.thumbnail_name) {
+
+		return new Promise((r,e)=>{
+				gm(data.filename)
+					.resize(100,150)
+					.write(data.thumbnail_name,e);
+				r(data)
+			})
+	}
+	return data;
+}
 
 //Download an image
 var download_image = function(data) {
 	return new Promise((r,e)=>{gm(request(data.url)).write(data.filename,e);
 		r(data)
-	});
+	}).then(create_thumbnail);
 }
 
 var extract_aditional =  function(episode,show,image_index) {
@@ -112,8 +124,10 @@ var download_images = function(data) {
 					var number = data.number+index+1;
 					var image_url = url.resolve(data.base_url,rel_image_url.value);
 					var filename = path.join(data.directory,number+".jpg");
+					var thumbnail_name = path.join(data.thumbnail_dir,number+".jpg");
 					resolve({url:image_url
 						,filename:filename
+						,thumbnail:thumbnail_name
 						,number:number
 						,identifier:data.identifier
 						,base_url:data.base_url});
@@ -134,7 +148,9 @@ var download_images = function(data) {
 
 module.exports = {
 	download_sequence : download_sequence,
+	download_image : download_image,
 	extract_body : extract_body,
-	extract_aditional : extract_aditional
+	extract_aditional : extract_aditional,
+	create_thumbnail : create_thumbnail
 };
 const db = require('./../data/db');

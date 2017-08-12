@@ -5,10 +5,11 @@ Add aditional data to webpage - DONE
 Move show configration data from JSON file to db - DONE
 Add ability to import show from webpage - DONE
 Backend add ability to delete show - DONE
+Download logo for shows - DONE
+Create thumbnails for episodes - DONE
 Front end add show management page(s)
 Refresh Menu on backend changes
 Page with shows with new episodes (filerable)
-Download logo for shows
 Add ability to download torrents to backend
 Serve video based shows
 Auto generate human readable identifiers

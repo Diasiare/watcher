@@ -33,7 +33,20 @@ perfrom_setup = function (show) {
 	.then(()=>resolve_path(show.identifier))
 	.then((d)=>{show.directory=d;return d})
 	.then((dir)=>shelljs.mkdir('-p',dir))
-	.catch(console.error)	
+	.catch(console.error)
+	.then(()=>resolve_path(path.join(show.identifier,"thumbnails")))
+	.then((d)=>{show.thumbnail_dir=d;return d})
+	.then((dir)=>shelljs.mkdir('-p',dir))
+	.catch(console.error)
+	.then(()=>{
+		if (show.logo && !fs.existsSync(path.join(show.directory,"logo.jpg"))) {
+			return imdown.download_image({url:show.logo,
+				filename:path.join(show.directory,"logo.jpg")})
+			.catch(console.error).then(()=>console.log("ICON DOWNLOADED"))
+			.return(show);
+		}
+		return show
+	})
 	.then(()=>{config.shows[show.identifier] = show;
 				return show;
 	})
@@ -41,11 +54,12 @@ perfrom_setup = function (show) {
 }
 
 add_new_show = function(show) {
-	return delete_show(show.identifier)
-	.then(()=>db.insert_new_show(show))
+	console.log("0");
+	return delete_show(show.identifier).then(()=>console.log("1"))
+	.then(()=>db.insert_new_show(show)).then(()=>console.log("2"))
 	.then(()=>db.get_show(show.identifier))
 	.then(perfrom_setup)
-	.then(manager.add_watcher);
+	.then(manager.add_watcher).then(()=>console.log("5"));
 }
 
 get_shows = function () {
@@ -70,7 +84,7 @@ resolve_path = function (filename) {
 }
 
 delete_show = function(identifier) {
-	get_show(identifier).then((show)=>{
+	return get_show(identifier).then((show)=>{
 		if (!show) {
 			return identifier;
 		}
@@ -78,7 +92,8 @@ delete_show = function(identifier) {
 			.then(manager.stop_watcher)
 			.then(()=>db.delete_show(identifier))
 			.then(()=>shelljs.rm("-rf",show.directory))
-			.catch(console.error);
+			.catch(console.error)
+			.return(identifier);
 	})
 }
 
@@ -91,3 +106,4 @@ module.exports = {
 };
 const db = require('./db');
 const manager = require('./../downloaders/manager');
+const imdown = require('./../downloaders/image_sequence');

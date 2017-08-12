@@ -91,8 +91,9 @@ setup_data_calls = function () {
 				Promise.resolve(data).then(config.add_new_show).then(()=>res.json({
 					identifier:data.identifier,
 					failed:false
-				})).catch(()=>res.json({
-					failed:true
+				})).catch((e)=>res.json({
+					failed:true,
+					error:e
 				}));
 			});
 			return app;

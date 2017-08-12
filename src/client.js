@@ -73,6 +73,9 @@ class Main extends React.Component {
   		  <Route path="/read/:show/:episode/:type" render={({match,history})=>{
   			return <ImageDisplay show={match.params.show} episode={match.params.episode} type={match.params.type} history={history}/>
   			}}/>
+        <Route path="/read/:show/:episode/:type" render={({match,history})=>{
+        return <ImageDisplay show={match.params.show} episode={match.params.episode} type={match.params.type} history={history}/>
+        }}/>
         <Route path="/new" render={({history})=> <ShowAdder history={history}/>}/>
   		</Switch>
   	</div>

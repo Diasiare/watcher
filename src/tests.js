@@ -116,10 +116,11 @@ test_extract_aditional = function () {
     }).then(console.log);
 }
 
-get_test_file("ggar.html").then(image_sequence.extract_body).then((body)=>{
-
-        return xpath("//div[@id='cc-comicbody']//img",body)[0].attributes[0];
-
-    }).then(console.log);
-
+test_create_thumbnail = function() {
+	image_sequence.create_thumbnail({
+		filename:"resources/images/double_arrow.jpg",
+		thumbnail_name:"test.jpg"
+	})
+}
+ test_create_thumbnail()
 
