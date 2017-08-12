@@ -8,12 +8,12 @@ import TextField from 'material-ui/TextField';
 import DownArrow from 'material-ui/svg-icons/navigation/expand-more';
 import UpArrow from 'material-ui/svg-icons/navigation/expand-less';
 import IconButton from 'material-ui/IconButton';
-
 const xpath = require('xpath').useNamespaces({"x": "http://www.w3.org/1999/xhtml"});
 const parse5 = require('parse5');
 const xmlser = require('xmlserializer');
 const dom = require('xmldom').DOMParser;
 const url = require('url');
+const nav = require("./navigate").navigate;
 
 
 function strip_uri(doc,urld) {
@@ -264,7 +264,9 @@ class ShowAdder extends React.Component {
 			}
 
 			$.post("/data/shows",data,(data)=>{
-
+				if (!data.failed){
+					nav("/read/" + data.identifier);
+				}
 			});
 
 		}

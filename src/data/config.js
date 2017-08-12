@@ -42,7 +42,10 @@ perfrom_setup = function (show) {
 		if (show.logo && !fs.existsSync(path.join(show.directory,"logo.jpg"))) {
 			return imdown.download_image({url:show.logo,
 				filename:path.join(show.directory,"logo.jpg")})
-			.catch(console.error).then(()=>console.log("ICON DOWNLOADED"))
+			.catch((e)=>{
+				console.error(e);
+				delete show.logo;
+			})
 			.return(show);
 		}
 		return show

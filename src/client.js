@@ -8,6 +8,8 @@ const {BrowserRouter:Router,Route,Switch} = require('react-router-dom');
 require("./css/index.css");
 const ImageDisplay = require("./front-end/ImageDisplay");
 const ShowList = require("./front-end/ShowList");
+const ShowPage = require("./front-end/ShowPage");
+const navigate = require("./front-end/navigate");
 const Menu = require("./front-end/Menu");
 const ShowAdder = require("./front-end/ShowAdder");
 const loader = require("./front-end/image-preloader");
@@ -53,7 +55,7 @@ class Main extends React.Component {
 	componentWillMount() {
 		this.props.history.listen(this.path_change)
 		this.path_change(this.props.location);
-
+    navigate.init(this.props.history.push);
 	}
 
 	path_change(location) {
@@ -68,13 +70,13 @@ class Main extends React.Component {
 
 	render() {
 		return <div className="contents">
-  	  <Menu navigate={this.props.history.push}/>
+  	  <Menu/>
   		<Switch>
-  		  <Route path="/read/:show/:episode/:type" render={({match,history})=>{
-  			return <ImageDisplay show={match.params.show} episode={match.params.episode} type={match.params.type} history={history}/>
+  		  <Route path="/read/:show/:episode/:type" render={({match})=>{
+  			return <ImageDisplay show={match.params.show} episode={match.params.episode} type={match.params.type}/>
   			}}/>
-        <Route path="/read/:show/:episode/:type" render={({match,history})=>{
-        return <ImageDisplay show={match.params.show} episode={match.params.episode} type={match.params.type} history={history}/>
+        <Route path="/read/:show" render={({match})=>{
+        return <ShowPage show={match.params.show}/>
         }}/>
         <Route path="/new" render={({history})=> <ShowAdder history={history}/>}/>
   		</Switch>

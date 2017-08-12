@@ -65,16 +65,27 @@ setup_data_calls = function () {
 				config.get_shows().map((show)=>{
 					return db.get_show_data(show.identifier).then((data)=>{
 						data.name = show.name;
+						if (data.logo) {
+							data.logo = build_resource_url(data.identifier,"logo.jpg");
+						}
 						return data;
 					})
 				}).then((data)=>{
+
 					res.json(data);
 				}).done();
 			});
 			return app;
 		}).then((app)=>{
 			app.get('/data/shows/:show',(req,res)=>{
-				db.get_show_data(req.params.show).then((data)=>{
+				Promise.all([db.get_show_data(req.params.show),config.get_show(req.params.show)])
+					.then(([data,show])=>{
+					if (show) {
+						data.name = show.name;
+					}
+					if (data.logo) {
+						data.logo = build_resource_url(data.identifier,"logo.jpg");
+					}
 					res.json(data);
 				});
 			});

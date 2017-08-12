@@ -148,8 +148,11 @@ get_show_data = function(identifier) {
 	return db.all("SELECT number , type FROM last_read WHERE show = ?",identifier)
 	.map((row)=>{
 		data[row.type]=row.number;
-	}).then(()=>config.get_show(identifier)).then((show)=>{
+	})
+	.then(()=>config.get_show(identifier))
+	.then((show)=>{
 		data.type = show.type;
+		if (show.logo) data.logo = true;
 	})
 	.return(data);
 }

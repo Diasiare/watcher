@@ -3,6 +3,7 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 const {Redirect,Link,Route} = require('react-router-dom');
 const loader = require("./image-preloader");
+const nav = require("./navigate").navigate;
 import Paper from 'material-ui/Paper';
 
 
@@ -41,7 +42,7 @@ class ImageDisplay extends React.Component {
         if (this.state[type]) {
             let episode = this.state[type];
             updateLastRead(episode.identifier,episode.number,this.props.type);
-            this.props.history.push(get_url_for(episode.identifier,episode.number,this.props.type));    
+            nav(get_url_for(episode.identifier,episode.number,this.props.type));    
         }
     }
 

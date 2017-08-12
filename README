@@ -1,3 +1,7 @@
+Watcher is a content agregator built in node, originally to track a large number of webcomics,
+	and to facilitate the reading of them in a seamless (no latency) fassion. It is built
+	to be deployed on a raspberry PI inside a secure network. As such there is no authentication
+	and very little care is taken to readuce the amount of traffic, favoring simplicity instead
 
 External dependencies: Sqlite3, imagemagick
 

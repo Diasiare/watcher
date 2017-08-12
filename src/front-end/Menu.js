@@ -2,6 +2,7 @@ const $ = require('jquery');
 const React = require('react');
 const ReactDOM = require('react-dom');
 const data_loader = require("./show-data-loader");
+const nav = require("./navigate").navigate;
 import IconButton from 'material-ui/IconButton';
 import MenuItem from 'material-ui/MenuItem';
 import Hamburger from 'material-ui/svg-icons/navigation/menu';
@@ -12,10 +13,9 @@ import Replay from 'material-ui/svg-icons/av/replay';
 import {List, ListItem, makeSelectable} from 'material-ui/List';
 import Drawer from 'material-ui/Drawer';
 
+var navigate = null;
 
 const SelectableList = makeSelectable(List);
-
-var navigate = null;
 
 class Menu extends React.Component {
 	constructor(props) {
@@ -28,7 +28,7 @@ class Menu extends React.Component {
 	componentWillMount() {
 		navigate = ((location)=>{
 			this.setState({open:false});
-			this.props.navigate(location);
+			nav(location);
 		}).bind(this);
 		data_loader.preload_data();
 	}
