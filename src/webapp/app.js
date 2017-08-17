@@ -27,11 +27,13 @@ ensure_started = function () {
 }
 
 serve_shows = function (shows) {
-	return Promise.map(shows, (show)=>{
-		ensure_started()
-		.then((app)=>app.use(build_resource_url(show.identifier),express.static(show.directory)))
-		.return(show);
-	});
+	return Promise.map(shows, serve_show);
+}
+
+serve_show = function(show) {
+		return ensure_started()
+			.then((app)=>app.use(build_resource_url(show.identifier),express.static(show.directory)))
+			.return(show)
 }
 
 serve_static_resources = function () {
@@ -44,6 +46,9 @@ setup_data_calls = function () {
 	return ensure_started()
 		.then((app)=>{
 			app.get('/data/shows/:show/:episode/:direction',(req,res)=>{
+				res.set({
+					"Cache-Control":"no-cache, no-store, must-revalidate"
+				})
 				let respond = (data)=>{
 					data.src = build_resource_url(data.identifier,data.number + ".jpg");
 					res.json(data);
@@ -62,6 +67,9 @@ setup_data_calls = function () {
 		})
 		.then((app)=>{
 			app.get('/data/shows/',(req,res)=>{
+				res.set({
+					"Cache-Control":"no-cache, no-store, must-revalidate"
+				})
 				config.get_shows().map((show)=>{
 					return db.get_show_data(show.identifier).then((data)=>{
 						data.name = show.name;
@@ -78,10 +86,14 @@ setup_data_calls = function () {
 			return app;
 		}).then((app)=>{
 			app.get('/data/shows/:show',(req,res)=>{
+				res.set({
+					"Cache-Control":"no-cache, no-store, must-revalidate"
+				})
 				Promise.all([db.get_show_data(req.params.show),config.get_show(req.params.show)])
 					.then(([data,show])=>{
 					if (show) {
 						data.name = show.name;
+						data.episode_count = show.number;
 					}
 					if (data.logo) {
 						data.logo = build_resource_url(data.identifier,"logo.jpg");
@@ -99,7 +111,10 @@ setup_data_calls = function () {
 		}).then((app)=>{
 			app.post('/data/shows',(req,res)=>{
 				let data = req.body;
-				Promise.resolve(data).then(config.add_new_show).then(()=>res.json({
+				Promise.resolve(data)
+				.then(config.add_new_show)
+				.then(serve_show)
+				.then(()=>res.json({
 					identifier:data.identifier,
 					failed:false
 				})).catch((e)=>res.json({
@@ -118,6 +133,14 @@ setup_data_calls = function () {
 				res.send(body);
 				})
 			});
+			return app;
+		}).then((app)=>{
+			app.delete('/data/shows/:show',(req,res)=>{
+					config.delete_show(req.params.show)
+						.then(()=>res.json({failed:false}))
+						.catch((e)=>res.json({failed:true,error:e}))
+						.then(()=>res.end());
+				})
 			return app;
 		});
 }

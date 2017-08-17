@@ -110,5 +110,6 @@ function change_episode(show,episode) {
 module.exports = {
 	register_callback : register_callback,
 	change_episode : change_episode,
+	remove_callback : remove_callback,
 	get_data : get_data
 }

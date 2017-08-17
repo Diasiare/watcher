@@ -44,7 +44,7 @@ stop_watcher = function(show) {
 }
 
 start_watchers = function(shows) {
-	return Promise.map(shows,start_watcher).return(shows);
+	return Promise.map(shows,add_watcher);
 }
 
 module.exports = {

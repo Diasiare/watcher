@@ -34,7 +34,7 @@ var download_sequence =  function(data) {
 				data.base_url = url.resolve(data.base_url,link);
 				data.download_this = true;
 				return Promise.delay(50).then(()=>
-					download_sequence(data))
+					download_sequence(data));
 			} else {
 				console.log("STOPPING " + data.number + " FOR " + data.identifier);
 				data.download_this = false;
@@ -76,12 +76,13 @@ var	is_last = function(doc,base_url,next_xpath){
 
 create_thumbnail = function(data) {
 	if (data.thumbnail_name) {
-
-		return new Promise((r,e)=>{
+		return new Promise((r,error)=>{
 				gm(data.filename)
 					.resize(100,150)
-					.write(data.thumbnail_name,e);
-				r(data)
+					.write(data.thumbnail_name,(e)=>{
+						if (e) error(e);
+						else r(data);						
+					});
 			})
 	}
 	return data;
@@ -89,8 +90,10 @@ create_thumbnail = function(data) {
 
 //Download an image
 var download_image = function(data) {
-	return new Promise((r,e)=>{gm(request(data.url)).write(data.filename,e);
-		r(data)
+	return new Promise((r,error)=>{gm(request(data.url)).write(data.filename,(e)=>{
+			if (e) error(e);
+			else r(data);
+		});	
 	}).then(create_thumbnail);
 }
 
@@ -127,7 +130,7 @@ var download_images = function(data) {
 					var thumbnail_name = path.join(data.thumbnail_dir,number+".jpg");
 					resolve({url:image_url
 						,filename:filename
-						,thumbnail:thumbnail_name
+						,thumbnail_name:thumbnail_name
 						,number:number
 						,identifier:data.identifier
 						,base_url:data.base_url});

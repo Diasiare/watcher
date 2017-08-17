@@ -151,14 +151,19 @@ get_show_data = function(identifier) {
 	})
 	.then(()=>config.get_show(identifier))
 	.then((show)=>{
-		data.type = show.type;
-		if (show.logo) data.logo = true;
+		if (show) {
+			data.type = show.type;
+			if (show.logo) data.logo = true;			
+		}
+
 	})
 	.return(data);
 }
 
 delete_show = function(identifier) {
-	return db.run("DELETE FROM shows WHERE identifier=?",identifier);
+	return db.run("DELETE FROM shows WHERE identifier=?",identifier)
+		.then(()=>db.run("DELETE FROM episodes WHERE show=?",identifier))
+		.then(()=>db.run("DELETE FROM last_read WHERE show=?",identifier));
 }
 
 module.exports = {

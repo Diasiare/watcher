@@ -19,12 +19,12 @@ const tmp_shows = [
             name : "Gunnerkrigg Court",
             image_xpath : "//img[@class='comic_image']",
             next_xpath : "//a[./img[@src='http://www.gunnerkrigg.com/images/next_a.jpg']]",
-            base_url : "http://www.gunnerkrigg.com/?p=1856"
+            base_url : "http://www.gunnerkrigg.com/?p=1856",
+            logo : "http://www.gunnerkrigg.com/images/title2.jpg"
         }
 ];
 
-add_tmp = function(shows) {
-	
+add_tmp = function(shows) {	
 	return Promise.map(tmp_shows,(tmp_show)=>{
 		return config.get_show(tmp_show.identifier).then((show)=>{
 			if (!show) return config.add_new_show(tmp_show);
@@ -37,6 +37,7 @@ add_tmp = function(shows) {
 start = function (db_name) {
 	return db.init(db_name)
 		.then(config.get_shows)
+        .then(add_tmp)
 		.then(app.start_all)
 		.then(config.get_shows)
 		.then(manager.start_watchers)

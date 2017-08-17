@@ -4,8 +4,9 @@ const path = require('path');
 const mkdir = Promise.promisify(fs.mkdir);
 const shelljs = require('shelljs');
 
-var config = null;
+const config = {shows:new Map()};
 const location = process.env.WATCHER_LOCATION;
+var loaded = false;
 
 const defaults = {
 	interval : 15*60*1000 //15 Minutes
@@ -15,9 +16,8 @@ const defaults = {
 
 ensure_loaded = function () {
 	return new Promise((r)=>{
-		if (!config) db.get_shows().then((shows)=>{
-			config = {shows:[],
-					  shows_alt:{}};
+		if (!loaded) db.get_shows().then((shows)=>{
+			loaded=true;
 			r(Promise.map(shows, perfrom_setup)
 				.return(config));
 		}); 
@@ -50,29 +50,28 @@ perfrom_setup = function (show) {
 		}
 		return show
 	})
-	.then(()=>{config.shows[show.identifier] = show;
+	.then(()=>{config.shows.set(show.identifier,show);
 				return show;
 	})
 	.return(show);
 }
 
 add_new_show = function(show) {
-	console.log("0");
-	return delete_show(show.identifier).then(()=>console.log("1"))
-	.then(()=>db.insert_new_show(show)).then(()=>console.log("2"))
+	return delete_show(show.identifier)
+	.then(()=>db.insert_new_show(show))
 	.then(()=>db.get_show(show.identifier))
 	.then(perfrom_setup)
-	.then(manager.add_watcher).then(()=>console.log("5"));
+	.then(manager.add_watcher);
 }
 
 get_shows = function () {
 	return ensure_loaded()
-	.then(()=>Object.values(config.shows));
+	.then(()=>config.shows.values());
 }
 
 get_show = function (identifier) {
 	return ensure_loaded()
-	.then(()=>config.shows[identifier]);
+	.then(()=>config.shows.get(identifier));
 }
 
 get_storage_location = function () {
@@ -92,6 +91,11 @@ delete_show = function(identifier) {
 			return identifier;
 		}
 		return Promise.resolve(show)
+			.then((show)=>{
+				console.log("CALLED");
+				config.shows.delete(identifier);
+				return show;
+			})
 			.then(manager.stop_watcher)
 			.then(()=>db.delete_show(identifier))
 			.then(()=>shelljs.rm("-rf",show.directory))
