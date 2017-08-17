@@ -1,19 +1,21 @@
-
 const request = require('request')
 const Promise = require('bluebird');
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser')
+var expressWs = require('express-ws');
 
 var app = null;
 const PORT = 8080;
+const sockets = new Set();
 
 ensure_started = function () {
 	return new Promise((r)=>{
 		if (!app) {
 			app = express();
+			expressWs = expressWs(app);
 			app.get('/', function (req, res) {
-  				res.redirect('/index.html');
+  				res.redirect('/list');
 			});
 			app.listen(PORT);
 			app.use( bodyParser.json() );       
@@ -27,12 +29,13 @@ ensure_started = function () {
 }
 
 serve_shows = function (shows) {
-	return Promise.map(shows, serve_show);
+	return Promise.all([ensure_started(),config.resolve_path("")])
+		.then(([app,dir])=>app.use("/shows",express.static(dir)));
 }
 
 serve_show = function(show) {
 		return ensure_started()
-			.then((app)=>app.use(build_resource_url(show.identifier),express.static(show.directory)))
+			//.then((app)=>app.use(build_resource_url(show.identifier),express.static(show.directory)))
 			.return(show)
 }
 
@@ -70,16 +73,8 @@ setup_data_calls = function () {
 				res.set({
 					"Cache-Control":"no-cache, no-store, must-revalidate"
 				})
-				config.get_shows().map((show)=>{
-					return db.get_show_data(show.identifier).then((data)=>{
-						data.name = show.name;
-						data.episode_count = show.number;
-						if (data.logo) {
-							data.logo = build_resource_url(data.identifier,"logo.jpg");
-						}
-						return data;
-					})
-				}).then((data)=>{
+				get_shows_data()
+				.then((data)=>{
 					res.json(data);
 				}).done();
 			});
@@ -104,7 +99,9 @@ setup_data_calls = function () {
 			return app;
 		}).then((app)=>{
 			app.post('/data/shows/:show/:episode/:type',(req,res)=>{
-				db.update_last_read(req.params.show,req.params.episode,req.params.type).done();
+				db.update_last_read(req.params.show,req.params.episode,req.params.type)
+				.then(perform_callbacks)
+				.done();
 				res.end();
 			});
 			return app;
@@ -117,10 +114,15 @@ setup_data_calls = function () {
 				.then(()=>res.json({
 					identifier:data.identifier,
 					failed:false
-				})).catch((e)=>res.json({
-					failed:true,
-					error:e
-				}));
+				}))
+				.then(perform_callbacks)
+				.catch((e)=>{
+					res.json({
+						failed:true,
+						error:e
+					});
+					console.error(e);
+				});
 			});
 			return app;
 		}).then((app)=>{
@@ -138,15 +140,64 @@ setup_data_calls = function () {
 			app.delete('/data/shows/:show',(req,res)=>{
 					config.delete_show(req.params.show)
 						.then(()=>res.json({failed:false}))
+						.then(perform_callbacks)
 						.catch((e)=>res.json({failed:true,error:e}))
 						.then(()=>res.end());
 				})
 			return app;
+		}).then((app)=>{
+			app.ws('/socket/shows', (ws,req)=>{
+				sockets.add(ws);
+				ws.on('close',()=>{
+					sockets.delete(ws);
+				});
+				get_shows_data()
+				.then((data)=>{
+					ws.send(JSON.stringify(data));
+				})	
+				ws.on("message",()=>{
+					get_shows_data()
+					.then((data)=>{
+						ws.send(data);
+					})	
+				})
+			});
+			return app;
 		});
 }
 
+perform_callbacks = function() {
+	get_shows_data().then((data)=>{
+		for (let ws of sockets.keys()){
+			ws.send(JSON.stringify(data));
+		}		
+	})
+}
+
+get_shows_data = function() {
+	return config.get_shows().map((show)=>{
+		return db.get_show_data(show.identifier).then((data)=>{
+			data.name = show.name;
+			data.episode_count = show.number;
+			if (data.logo) {
+				data.logo = build_resource_url(data.identifier,"logo.jpg");
+			}
+			return data;
+		})
+	})
+}
+
 setup_default = function () {
-	app.use(function (req, res, next) {
+	app.use("/",function (req, res, next) {
+  		res.sendFile(path.join(__dirname,"../../resources/index.html"));
+	})
+	app.use("/read*",function (req, res, next) {
+  		res.sendFile(path.join(__dirname,"../../resources/index.html"));
+	})
+	app.use("/list*",function (req, res, next) {
+  		res.sendFile(path.join(__dirname,"../../resources/index.html"));
+	})
+	app.use("/new*",function (req, res, next) {
   		res.sendFile(path.join(__dirname,"../../resources/index.html"));
 	})
 }
@@ -169,7 +220,8 @@ build_resource_url = function() {
 module.exports = {
 	serve_shows : serve_shows,
 	serve_static_resources : serve_static_resources,
-	start_all : start_all
+	start_all : start_all,
+	perform_callbacks : perform_callbacks
 }	
 
 const db = require('../data/db');

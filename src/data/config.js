@@ -61,7 +61,9 @@ add_new_show = function(show) {
 	.then(()=>db.insert_new_show(show))
 	.then(()=>db.get_show(show.identifier))
 	.then(perfrom_setup)
-	.then(manager.add_watcher);
+	.then(manager.add_watcher)
+	.then(app.perform_callbacks)
+	.then(()=>get_show(show.identifier));
 }
 
 get_shows = function () {
@@ -100,6 +102,7 @@ delete_show = function(identifier) {
 			.then(()=>db.delete_show(identifier))
 			.then(()=>shelljs.rm("-rf",show.directory))
 			.catch(console.error)
+			.then(app.perform_callbacks)
 			.return(identifier);
 	})
 }
@@ -114,3 +117,4 @@ module.exports = {
 const db = require('./db');
 const manager = require('./../downloaders/manager');
 const imdown = require('./../downloaders/image_sequence');
+const app = require('./../webapp/app');

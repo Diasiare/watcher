@@ -13,6 +13,7 @@ const navigate = require("./front-end/navigate");
 const Menu = require("./front-end/Menu");
 const ShowAdder = require("./front-end/ShowAdder");
 const loader = require("./front-end/image-preloader");
+const show_loader = require("./front-end/show-data-loader");
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import {
@@ -56,6 +57,7 @@ class Main extends React.Component {
 		this.props.history.listen(this.path_change)
 		this.path_change(this.props.location);
     navigate.init(this.props.history.push);
+    show_loader.preload_data();
 	}
 
 	path_change(location) {
@@ -78,7 +80,7 @@ class Main extends React.Component {
         <Route path="/read/:show" render={({match})=>{
          return <ShowPage show={match.params.show}/>
         }}/>
-        <Route path="/list/:filter" render={(match)=>{
+        <Route path="/list/:filter" render={({match})=>{
           return <ShowList filter={match.params.filter}/>
         }}/>
         <Route path="/list/" render={()=>{

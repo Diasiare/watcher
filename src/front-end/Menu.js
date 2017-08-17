@@ -11,8 +11,10 @@ import UpArrow from 'material-ui/svg-icons/navigation/expand-less';
 import LastPage from 'material-ui/svg-icons/navigation/last-page';
 import Replay from 'material-ui/svg-icons/av/replay';
 import New from 'material-ui/svg-icons/content/add-circle';
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import {List, ListItem, makeSelectable} from 'material-ui/List';
 import Drawer from 'material-ui/Drawer';
+import IconMenu from 'material-ui/IconMenu';
 
 var navigate = null;
 
@@ -31,7 +33,6 @@ class Menu extends React.Component {
 			this.setState({open:false});
 			nav(location);
 		}).bind(this);
-		data_loader.preload_data();
 	}
 
 	set_open(open) {
@@ -65,12 +66,24 @@ function MenuOpenButton(props) {
        <IconButton onTouchTap={()=>navigate("/new")}>
           <New/>
        </IconButton>
+       <IconButton onTouchTap={()=>navigate("/list/new")}>
+          <LastPage/>
+       </IconButton>
+       <IconMenu
+      	iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
+      	anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+     	targetOrigin={{horizontal: 'left', vertical: 'top'}}
+    	>
+	      	<MenuItem primaryText="All" onTouchTap={()=>navigate("/list")}/>
+	      	<MenuItem primaryText="Webcomics" onTouchTap={()=>navigate("/list/webcomic")}/>
+	      	<MenuItem primaryText="Manga" onTouchTap={()=>navigate("/list/manga")}/>
+    	</IconMenu>
 	</div>
 }
 
 
 function MenuDrawer(props) {
-	let types = ["webcomic"];
+	let types = ["webcomic","manga"];
 	return <Drawer
           docked={false}
           open={props.open}

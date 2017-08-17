@@ -2,6 +2,7 @@ const $ = require('jquery');
 const React = require('react');
 const ReactDOM = require('react-dom');
 const nav = require("./navigate").navigate;
+const data_loader = require("./show-data-loader");
 import LastPage from 'material-ui/svg-icons/navigation/last-page';
 import Replay from 'material-ui/svg-icons/av/replay';
 import Delete from 'material-ui/svg-icons/action/delete-forever';
@@ -15,25 +16,27 @@ class ShowPage  extends React.Component{
 	constructor(props){
 		super(props);
 		this.state={
-			name:"",
-			logo:null
+			show:null
 		}
 	}
 
 	componentWillMount() {
-		$.get("/data/shows/" + this.props.show, null, (data)=>{
-			if (data) {
-				this.setState({
-					name:data.name,
-					logo:data.logo,
-					episode_count:data.episode_count
-				})
-			}
-		})
+		data_loader.register_show_listener(this,"show",this.props.show);
+	}
+
+	componentWillUnmount() {
+		data_loader.remove_show_listener(this,this.props.show);
+	}
+
+	componentWillReceiveProps(newprops){
+		if (this.props.show != newprops.show) {
+			data_loader.remove_show_listener(this,this.props.show);
+			data_loader.register_show_listener(this,"show",newprops.show);
+		}
 	}
 
 	render() {
-		if (!this.state.name) {
+		if (!this.state.show) {
 			return <div className="showPage columnFelx standardWidth center" style={{
 					textAlign:"center"
 				}}> 
@@ -42,7 +45,7 @@ class ShowPage  extends React.Component{
 		}
 
 		let logo = null;
-		if(this.state.logo) {
+		if(this.state.show.logo) {
 			logo = <img src={this.state.logo} key="logo" style={{
 				marginRight:"12px",
 				maxHeight:"110px",
@@ -58,7 +61,7 @@ class ShowPage  extends React.Component{
 				paddingLeft: "2px",
 				marginBottom:"3px"
 			}}
-			>{this.state.name}</div>
+			>{this.state.show.name}</div>
 			<div className="rowFlex">	
 				<div className="columnFelx">
 					{logo}
@@ -72,8 +75,8 @@ class ShowPage  extends React.Component{
 				</div>
 			</div>
 			<div style={{marginTop:"10px"}}>
-				<p>Episodes: {this.state.episode_count}</p>
-				<Previews id={this.props.show} count={this.state.episode_count}/>
+				<p>Episodes: {this.state.show.episode_count}</p>
+				<Previews id={this.props.show} count={this.state.show.episode_count}/>
 			</div>
 		</div>	
 	}
@@ -160,7 +163,7 @@ class Previews  extends React.Component{
 
 	componentWillMount(){
 		$(window).scroll((()=>{
-      		if (this.again && $(window).scrollTop() >= $(document).height() - ($(window).height() + 5))  {
+      		if ($(window).scrollTop() >= $(document).height() - ($(window).height() + 5))  {
       			if (this.props.count > this.state.max) {
       				this.setState({max:this.state.max+40});
       			}     		

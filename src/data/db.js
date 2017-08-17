@@ -46,7 +46,9 @@ insert_new_episode = function (data) {
 	if ('data' in data) aditional_data = data.data;
 	aditional_data = JSON.stringify(aditional_data);
 	return db.run("INSERT INTO episodes VALUES(?,?,?,?,?)", identifier, number, image_url , page_url
-		, aditional_data).return(data);
+		, aditional_data)
+	.then(app.perform_callbacks)
+	.return(data);
 }
 
 //We store the data as a json object because that is much easier as the format needs to be
@@ -184,3 +186,4 @@ module.exports = {
 	delete_show : delete_show
 };
 const config = require('./config');
+const app = require('./../webapp/app');

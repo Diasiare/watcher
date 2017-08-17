@@ -259,8 +259,8 @@ class ShowAdder extends React.Component {
 				}
 			} else if (s.showType == 3) {
 				data.type = "manga" ;
-				data.next_xpath = "//div[@id='imgholder']//img" ;
-				data.image_xpath = "//div[@id='imgholder']/a" ;
+				data.next_xpath = "//div[@id='imgholder']/a" ;
+				data.image_xpath = "//div[@id='imgholder']//img" ;
 			}
 
 			$.post("/data/shows",data,(data)=>{

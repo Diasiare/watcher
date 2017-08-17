@@ -38,10 +38,18 @@ class ShowList  extends React.Component{
 		let shows = this.state.shows;
 
 		if (this.props.filter) {
-			
+			if (this.props.filter=="new"){
+				shows=shows.filter((show)=>{
+					return show.new && show.episode_count && show.new < show.episode_count;
+				});
+			} else {
+				shows=shows.filter((show)=>{
+					return show.type && show.type==this.props.filter;
+				});
+			}
 		}
 
-		for (let i = 0; i<this.state.shows.length;i++) {
+		for (let i = 0; i<shows.length;i++) {
 			elems.push(<ShowElement show={shows[i]} key={i}/>)
 		}
 
