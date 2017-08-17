@@ -78,6 +78,9 @@ class Main extends React.Component {
         <Route path="/read/:show" render={({match})=>{
          return <ShowPage show={match.params.show}/>
         }}/>
+        <Route path="/list/:filter" render={(match)=>{
+          return <ShowList filter={match.params.filter}/>
+        }}/>
         <Route path="/list/" render={()=>{
           return <ShowList/>
         }}/>

@@ -18,11 +18,11 @@ class ShowList  extends React.Component{
 	}
 
 	componentWillMount() {
-		$.get("/data/shows", null, (data)=>{
-			if (data) {
-				this.setState({shows:data})
-			}
-		})
+		data_loader.register_listener(this,"shows");
+	}
+
+	componentWillUnmount() {
+		data_loader.remove_listener(this);	
 	}
 
 	render() {
@@ -32,10 +32,17 @@ class ShowList  extends React.Component{
 			</div>
 		}
 
+
+
 		let elems = [];
+		let shows = this.state.shows;
+
+		if (this.props.filter) {
+			
+		}
 
 		for (let i = 0; i<this.state.shows.length;i++) {
-			elems.push(<ShowElement show={this.state.shows[i]} key={i}/>)
+			elems.push(<ShowElement show={shows[i]} key={i}/>)
 		}
 
 		return <div className="standardWidth center" style={{
@@ -106,6 +113,7 @@ class ShowElement extends React.Component {
 					height:"150px",
 					position:"relative",
 					margin:"5px",
+					cursor:"pointer",
 				}} onTouchTap={()=>nav("/read/" + s.identifier)}>
 				{elems}
 			</Paper>
@@ -128,3 +136,6 @@ function NavButton(props) {
 
 
 module.exports = ShowList;
+
+
+const data_loader = require("./show-data-loader");

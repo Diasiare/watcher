@@ -43,7 +43,10 @@ class ShowPage  extends React.Component{
 
 		let logo = null;
 		if(this.state.logo) {
-			logo = <img src={this.state.logo} key="logo"/>;
+			logo = <img src={this.state.logo} key="logo" style={{
+				marginRight:"12px",
+				maxHeight:"110px",
+			}}/>;
 		} 
 
 		return <div className="showPage columnFelx standardWidth center">
@@ -61,7 +64,6 @@ class ShowPage  extends React.Component{
 					{logo}
 				</div>
 				<div className="columnFelx" style={{
-					marginLeft:"12px",
 					width:"100%"
 				}}>
 					<NavButton id={this.props.show} type="new"/>
