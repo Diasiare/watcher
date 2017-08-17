@@ -145,7 +145,9 @@ function Title(props) {
         return null;
     }
 
-    return <div className="title">
+    return <div className="title" style={{
+                marginBottom:"5px",
+            }}>
                 {props.title}
             </div>
 }

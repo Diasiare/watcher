@@ -34,27 +34,31 @@ class ShowPage  extends React.Component{
 
 	render() {
 		if (!this.state.name) {
-			return <div className="showPage columnFelx standardWidth center"> 
+			return <div className="showPage columnFelx standardWidth center" style={{
+					textAlign:"center"
+				}}> 
 				<img src="/images/loading.gif" />
 			</div>
 		}
 
-		let title_n_logo = null;
+		let logo = null;
 		if(this.state.logo) {
-			title_n_logo = [
-			<div className="title" key="title">{this.state.name}</div>,
-			<img src={this.state.logo} key="logo"/>
-			]
-		} else {
-			title_n_logo = [
-				<div className="title" key="title">{this.state.name}</div>
-			]
-		}
+			logo = <img src={this.state.logo} key="logo"/>;
+		} 
 
 		return <div className="showPage columnFelx standardWidth center">
-			<div className="rowFlex">
+			<div key="title" style={{
+				width:"100%",
+				textAlign: "left",
+				fontSize: "24px",
+				fontWeight: "bold",
+				paddingLeft: "2px",
+				marginBottom:"3px"
+			}}
+			>{this.state.name}</div>
+			<div className="rowFlex">	
 				<div className="columnFelx">
-					{title_n_logo}
+					{logo}
 				</div>
 				<div className="columnFelx" style={{
 					marginLeft:"12px",
@@ -197,18 +201,19 @@ class EpisodePreview  extends React.Component{
 		return <Paper onTouchTap={(e)=>{
 			nav("/read/" + this.props.id + "/" + this.props.num + "/reread")
 		}} style={{
-			width:"100px",
+			width:"102px",
 			height:"170px",
-			margin:"2px",
+			margin:"2px auto",
 			textAlign:"center",
-			overflow:"hidden"
+			overflow:"hidden",
+			cursor:"pointer",
 		}} zDepth={2}>
 				<p style={{margin:"0px"}}>{this.props.num}</p>
 				<img src={src} style={{
 					marginLeft:"auto",
 					marginRight:"auto",
 					maxHeight:"150px",
-					maxWidth:"100%"
+					maxWidth:"100px"
 				}}/>
 
 			</Paper>

@@ -7,9 +7,10 @@ Add ability to import show from webpage - DONE
 Backend add ability to delete show - DONE
 Download logo for shows - DONE
 Create thumbnails for episodes - DONE
-Front end add show management page(s)
-Refresh Menu on backend changes
+Front end add show management page(s) 
 Page with shows with new episodes (filerable)
+Create funcitonallity to back up the json for all shows
+Refresh Menu on backend changes
 Add ability to download torrents to backend
 Serve video based shows
 Auto generate human readable identifiers

@@ -10,6 +10,7 @@ import DownArrow from 'material-ui/svg-icons/navigation/expand-more';
 import UpArrow from 'material-ui/svg-icons/navigation/expand-less';
 import LastPage from 'material-ui/svg-icons/navigation/last-page';
 import Replay from 'material-ui/svg-icons/av/replay';
+import New from 'material-ui/svg-icons/content/add-circle';
 import {List, ListItem, makeSelectable} from 'material-ui/List';
 import Drawer from 'material-ui/Drawer';
 
@@ -51,9 +52,18 @@ class Menu extends React.Component {
 
 
 function MenuOpenButton(props) {
-	return <div className="menuOpenButton">
+	return <div className="menuOpenButton" style={{
+		    position: "fixed",
+    		top: "0px",
+    		left: "0px",
+    		display:"flex",
+    		flexDirection:"column"
+		}}>
 	   <IconButton onTouchTap={props.action}>
           <Hamburger />
+       </IconButton>
+       <IconButton onTouchTap={()=>navigate("/new")}>
+          <New/>
        </IconButton>
 	</div>
 }
@@ -78,14 +88,34 @@ class ShowListing extends React.Component {
 
 
 	render () {
-		return <ListItem primaryText={this.props.show.name} open={true} nestedItems={[
-				<div className="listItemList" key="dontcomplain">
-					<NavButton type="reread" id={this.props.show.identifier} />
-					<NavButton type="new" id={this.props.show.identifier} />
+		let s = this.props.show;
+		return <div onTouchTap={()=>navigate("/read/" + s.identifier)}
+				style={{
+					paddingTop:"5px",
+					paddingBottom:"5px",
+					display:"flex",
+					paddingLeft:(10 + this.props.nestedLevel*10) + "px",
+					marginTop:"auto",
+					flexDirection:"row",
+					flexWrap:"wrap",
+					cursor:"pointer"
+			}}>
+				<div style={{
+					textAlign: "left",
+					fontSize: "16px",
+					marginTop:"auto",
+					marginBottom:"auto"
+				}}>
+					<p style={{margin:"0px"}}>{s.name}</p>
 				</div>
-			]}>
-
-			</ListItem>
+				<div style={{
+					display:"flex",
+					flexDirection:"row"
+				}}>
+					<NavButton id={s.identifier} type="reread"/>
+					<NavButton id={s.identifier} type="new"/>
+				</div>
+			</div>
 	}
 }
 
@@ -96,7 +126,8 @@ function NavButton(props) {
 	if (props.type == "reread") elem = <Replay/>;
 
 	return 	<IconButton onTouchTap={(e)=>{
-		$.get("/data/shows/" + props.id,(data)=>{
+		e.stopPropagation();
+		$.get("/data/shows/" + props.id,(data)=>{		
 			navigate("/read/" + props.id + "/" + data[props.type] + "/" + props.type);
 		});
 	}} >

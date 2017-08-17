@@ -73,13 +73,13 @@ setup_data_calls = function () {
 				config.get_shows().map((show)=>{
 					return db.get_show_data(show.identifier).then((data)=>{
 						data.name = show.name;
+						data.episode_count = show.number;
 						if (data.logo) {
 							data.logo = build_resource_url(data.identifier,"logo.jpg");
 						}
 						return data;
 					})
 				}).then((data)=>{
-
 					res.json(data);
 				}).done();
 			});
