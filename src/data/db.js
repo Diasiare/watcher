@@ -93,7 +93,10 @@ get_pure_shows = function() {
 
 get_pure_show = function(identifier) {
 	return db.get("SELECT data FROM shows WHERE identifier=?", identifier)
-		.then((show)=>Promise.resolve(JSON.parse(show.data)));
+		.then((show)=>{
+			if (show) return Promise.resolve(JSON.parse(show.data));
+			else return show;
+		});
 }
 get_show = function(identifier) {
 	return db.get("SELECT data FROM shows WHERE identifier=?",identifier)
