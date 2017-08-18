@@ -117,7 +117,11 @@ var download_image = function(data) {
 			if (e) error(e);
 			else r(data);
 		});	
-	}).then(create_thumbnail);
+	}).then(create_thumbnail)
+	.catch((e)=>{
+		console.error(e);
+		return data;
+	});
 }
 
 var extract_aditional =  function(episode,show,sequence,image_index) {
@@ -158,9 +162,6 @@ var download_images = function([show,sequence]) {
 						,base_url:sequence.base_url});
 				}).then((episode)=>extract_aditional(episode,show,sequence,index))
 				.then(download_image)
-				.catch((e)=>{
-					console.log(e);
-				})
 				.then(db.insert_new_episode);
 			}).then((images)=>{
 				if (images.length > 0) {
