@@ -1,0 +1,16 @@
+{
+  "apps" : [{
+    "name"        : "watcher",
+    "script"      : "npm",
+    "args"        : "start",
+    "error_file"  : "$WATCHER_HOME/error.log",
+    "out_file"    : "$WATCHER_HOME/out.log",
+    "watch"       : true,
+    "env": {
+      "NODE_ENV": "development"
+    },
+    "env_production" : {
+       "NODE_ENV": "production"
+    }
+  }]
+}
