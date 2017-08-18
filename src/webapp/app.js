@@ -134,7 +134,7 @@ setup_data_calls = function () {
 		}).then((app)=>{
 			app.post('/data/shows/:show/:episode/:type',(req,res)=>{
 				db.update_last_read(req.params.show,req.params.episode,req.params.type)
-				.then(perform_callbacks)
+				.then(()=>perform_callbacks(req.params.show))
 				.done();
 				res.end();
 			});
@@ -149,7 +149,7 @@ setup_data_calls = function () {
 					identifier:data.identifier,
 					failed:false
 				}))
-				.then(perform_callbacks)
+				.then(()=>perform_callbacks(data.identifier))
 				.catch((e)=>{
 					res.json({
 						failed:true,
@@ -187,25 +187,40 @@ setup_data_calls = function () {
 				});
 				get_shows_data()
 				.then((data)=>{
-					ws.send(JSON.stringify(data));
+					ws.send(JSON.stringify({data:data,
+							type:"all"}));
 				})	
 				ws.on("message",()=>{
 					get_shows_data()
 					.then((data)=>{
-						ws.send(data);
-					})	
-				})
+						ws.send(JSON.stringify({data:data,
+							type:"all"}));
+						})
+				})	
 			});
 			return app;
 		});
 }
 
-perform_callbacks = function() {
-	get_shows_data().then((data)=>{
-		for (let ws of sockets.keys()){
-			ws.send(JSON.stringify(data));
-		}		
-	})
+perform_callbacks = function(identifier) {
+	return Promise.all([db.get_show_data(identifier),config.get_show(identifier)])
+		.then(([data,show])=>{
+			if (show && data) {
+				data.name = show.name;
+				data.episode_count = show.number;
+			}
+			if (data && data.logo) {
+				data.logo = build_resource_url(data.identifier,"logo.jpg");
+			}
+			return data;
+		})
+		.then((data)=>{
+			for (let ws of sockets.keys()){
+				ws.send(JSON.stringify({data:data,
+										type:"single",
+										id:identifier}));
+			}		
+		})
 }
 
 get_shows_data = function() {

@@ -21,10 +21,23 @@ function preload_data() {
 			socket = new WebSocket(new_uri);
 			socket.addEventListener("message",(event)=>{
 				let d = JSON.parse(event.data);
-				let tmp = {};
-				d.forEach((show)=>tmp[show.identifier]=show);
-				data = tmp;
-				run_callbacks();
+				if (d.type == "all") {
+					let tmp = {};
+					d.data.forEach((show)=>tmp[show.identifier]=show);
+					data = tmp;
+					run_callbacks();
+				} else if (d.type == "single") {
+					if (!data) {
+						data = {};
+					}
+					if (d.data){
+						data[d.data.identifier] = d.data;
+					} else {
+						delete data[d.identifier];
+					}			
+					run_callbacks()
+				}
+
 			})
 			socket.addEventListener("close",(event)=>{
 				socket = null;

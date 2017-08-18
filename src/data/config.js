@@ -70,7 +70,7 @@ add_new_show = function(show) {
 				.then(()=>db.get_show(show.identifier))
 				.then(perfrom_setup)
 				.then(manager.add_watcher)
-				.then(app.perform_callbacks)
+				.then(()=>app.perform_callbacks(show.identifier))
 				.then(()=>get_show(show.identifier));
 		}
 	})

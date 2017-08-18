@@ -47,7 +47,7 @@ insert_new_episode = function (data) {
 	aditional_data = JSON.stringify(aditional_data);
 	return db.run("INSERT INTO episodes VALUES(?,?,?,?,?)", identifier, number, image_url , page_url
 		, aditional_data)
-	.then(app.perform_callbacks)
+	.then(()=>app.perform_callbacks(data.identifier))
 	.return(data);
 }
 
