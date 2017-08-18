@@ -196,6 +196,9 @@ setup_data_calls = function () {
 						ws.send(JSON.stringify({data:data,
 							type:"all"}));
 						})
+				})
+				ws.on("error",(e)=>{
+					console.error(e);
 				})	
 			});
 			return app;

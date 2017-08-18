@@ -43,7 +43,6 @@ perfrom_setup = function (show) {
 			return imdown.download_image({url:show.logo,
 				filename:path.join(show.directory,"logo.jpg")})
 			.catch((e)=>{
-				console.error(e);
 				delete show.logo;
 			})
 			.return(show);

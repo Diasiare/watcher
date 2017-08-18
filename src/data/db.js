@@ -32,7 +32,7 @@ close = function () {
 
 create_tables = function() {
 	return Promise.each(Object.keys(model),  (t_name)=>{
-			db.exec("CREATE TABLE IF NOT EXISTS " + t_name + " ( " + model[t_name] + " )");
+			return db.exec("CREATE TABLE IF NOT EXISTS " + t_name + " ( " + model[t_name] + " )");
 		}
 	);
 }
