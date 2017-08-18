@@ -158,6 +158,9 @@ var download_images = function([show,sequence]) {
 						,base_url:sequence.base_url});
 				}).then((episode)=>extract_aditional(episode,show,sequence,index))
 				.then(download_image)
+				.catch((e)=>{
+					console.log(e);
+				})
 				.then(db.insert_new_episode);
 			}).then((images)=>{
 				if (images.length > 0) {
@@ -165,7 +168,9 @@ var download_images = function([show,sequence]) {
 					show.base_url = sequence.base_url;
 					sequence.final_image_url = images[images.length-1].url;
 				}
-			}).return([show,sequence]));
+			})
+
+			.return([show,sequence]));
 		} else {
 			resolve([show,sequence]);
 		}
