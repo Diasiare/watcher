@@ -106,7 +106,10 @@ create_thumbnail = function(data) {
 
 //Download an image
 var download_image = function(data) {
-	return new Promise((r,error)=>{gm(request(data.url)).write(data.filename,(e)=>{
+	return new Promise((r,error)=>{gm(request(data.url))
+		.flatten()
+		.selectFrame(0)
+		.write(data.filename,(e)=>{
 			if (e) error(e);
 			else r(data);
 		});	
