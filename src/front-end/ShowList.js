@@ -50,7 +50,11 @@ class ShowList  extends React.Component{
 		}
 
 		for (let i = 0; i<shows.length;i++) {
-			elems.push(<ShowElement show={shows[i]} key={i}/>)
+			elems.push(<ShowElement show={shows[i]} key={i} new={this.props.filter=="new"}/>)
+		}
+
+		if(elems.length == 0) {
+			elems = <p>Nothing to see here, nothing matched the filter</p>
 		}
 
 		return <div className="standardWidth center" style={{
@@ -74,6 +78,17 @@ const absolute = {
 class ShowElement extends React.Component {
 	constructor(props){
 		super(props);
+		this.primary_ontouch = this.primary_ontouch.bind(this);
+	}
+
+	primary_ontouch(){
+		if(this.props.new){
+			$.get("/data/shows/" + this.props.show.identifier,(data)=>{
+				nav("/read/" + this.props.show.identifier + "/" + (data["new"]+1) + "/new" );
+			});			
+		} else {
+			nav("/read/" + this.props.show.identifier)
+		}
 	}
 
 	render() {
@@ -122,7 +137,7 @@ class ShowElement extends React.Component {
 					position:"relative",
 					margin:"5px",
 					cursor:"pointer",
-				}} onTouchTap={()=>nav("/read/" + s.identifier)}>
+				}} onTouchTap={this.primary_ontouch}>
 				{elems}
 			</Paper>
 	}

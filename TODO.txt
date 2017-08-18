@@ -10,7 +10,7 @@ Create thumbnails for episodes - DONE
 Front end add show management page(s) - DONE
 Page with shows with new episodes (filerable) - DONE
 Refresh Menu on backend changes - DONE
-Create funcitonallity to back up the json for all shows
+Create funcitonallity to back up the json for all shows - DONE
 Add ability to download torrents to backend
 Serve video based shows
 Auto generate human readable identifiers

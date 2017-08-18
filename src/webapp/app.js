@@ -2,7 +2,10 @@ const request = require('request')
 const Promise = require('bluebird');
 const express = require('express');
 const path = require('path');
-const bodyParser = require('body-parser')
+const bodyParser = require('body-parser');
+const multer  = require('multer');
+const upload = multer();
+
 var expressWs = require('express-ws');
 
 var app = null;
@@ -67,8 +70,7 @@ setup_data_calls = function () {
 					.then(respond);
 			});
 			return app;
-		})
-		.then((app)=>{
+		}).then((app)=>{
 			app.get('/data/shows/',(req,res)=>{
 				res.set({
 					"Cache-Control":"no-cache, no-store, must-revalidate"
@@ -95,6 +97,38 @@ setup_data_calls = function () {
 					}
 					res.json(data);
 				});
+			});
+			return app;
+		}).then((app)=>{
+			app.get('/data/backup.json',(req,res)=>{
+				res.set({
+					"Cache-Control":"no-cache, no-store, must-revalidate",
+					"Content-Disposition": 'attachment; filename="backup.json"',
+					"Content-Type" : "text/html"
+				})
+				db.get_pure_shows()
+				.then((data)=>{
+					res.send(JSON.stringify(data));
+				}).done();
+			});
+			return app;
+		}).then((app)=>{
+			app.post('/data/backup.json',upload.single("backup"),(req,res)=>{
+				Promise.resolve(JSON.parse(req.file.buffer))
+				.map(config.add_new_show)
+				.map(serve_show)
+				.then(()=>res.json({
+					failed:false
+				}))
+				.then(perform_callbacks)
+				.catch((e)=>{
+					res.json({
+						failed:true,
+						error:e
+					});
+					console.error(e);
+				});
+				res.end();
 			});
 			return app;
 		}).then((app)=>{

@@ -57,13 +57,23 @@ perfrom_setup = function (show) {
 }
 
 add_new_show = function(show) {
-	return delete_show(show.identifier)
-	.then(()=>db.insert_new_show(show))
-	.then(()=>db.get_show(show.identifier))
-	.then(perfrom_setup)
-	.then(manager.add_watcher)
-	.then(app.perform_callbacks)
-	.then(()=>get_show(show.identifier));
+	return db.get_pure_show(show.identifier)
+	.then((os)=>{
+		//Don't update if no chnages have been made
+		if (os && Object.keys(show).every((k)=>os[k]==show[k])
+			 && Object.keys(os).every((k)=>os[k]==show[k])) {
+			return os;
+		} else {
+			console.log("restaring");
+			return 	delete_show(show.identifier)
+				.then(()=>db.insert_new_show(show))
+				.then(()=>db.get_show(show.identifier))
+				.then(perfrom_setup)
+				.then(manager.add_watcher)
+				.then(app.perform_callbacks)
+				.then(()=>get_show(show.identifier));
+		}
+	})
 }
 
 get_shows = function () {

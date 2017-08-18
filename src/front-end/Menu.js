@@ -12,6 +12,7 @@ import LastPage from 'material-ui/svg-icons/navigation/last-page';
 import Replay from 'material-ui/svg-icons/av/replay';
 import New from 'material-ui/svg-icons/content/add-circle';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+import ArrowDropRight from 'material-ui/svg-icons/navigation-arrow-drop-right';
 import {List, ListItem, makeSelectable} from 'material-ui/List';
 import Drawer from 'material-ui/Drawer';
 import IconMenu from 'material-ui/IconMenu';
@@ -77,7 +78,41 @@ function MenuOpenButton(props) {
 	      	<MenuItem primaryText="All" onTouchTap={()=>navigate("/list")}/>
 	      	<MenuItem primaryText="Webcomics" onTouchTap={()=>navigate("/list/webcomic")}/>
 	      	<MenuItem primaryText="Manga" onTouchTap={()=>navigate("/list/manga")}/>
+	      	<MenuItem primaryText="Backup" rightIcon={<ArrowDropRight />} menuItems={[
+	      		<MenuItem primaryText="Download" onTouchTap={()=>
+					document.getElementById('downloadFrame').src = "/data/backup.json"}/>,
+        		<MenuItem primaryText="Uppload" onTouchTap={()=>
+        				$("#backupSelect").click()
+        			}/>,
+	      		]}/>
     	</IconMenu>
+    	<iframe id="downloadFrame" style={{display:"none"}}></iframe>
+    	<div style={{display:"none"}}>
+    		<form id="backupForm">
+  				<input type="file" id="backupSelect" name="fileName" onChange={(e)=>{
+  						e.preventDefault();
+  						let file = document.getElementById('backupSelect').files;
+  						if (file.length > 0) {
+  							file = file[0];
+  							let formData = new FormData();
+  							formData.append('backup',file,"backup.json");
+  							let xhr = new XMLHttpRequest();
+  							xhr.open('POST', '/data/backup.json', true);
+  							xhr.onload = function () {
+							    if (xhr.status === 200) {
+							    	navigate("/list");
+							    } else {
+							    	alert('An error occurred!');
+							    }
+							};
+							xhr.send(formData);
+
+  						}
+  						
+  					}
+  				}/>
+			</form>
+    	</div>
 	</div>
 }
 

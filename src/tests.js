@@ -38,11 +38,11 @@ test_download = function () {
             "image_xpath" : "//img[@class='comic_image']",
             "next_xpath" : "//a[./img[@src='http://www.gunnerkrigg.com/images/next_a.jpg']]",
             "base_url" : "http://www.gunnerkrigg.com/?p=1856",
-            number : 0,
-            download_this : true
+            number : 0
         }
     ))
     .then(db.close)
+    .then(delete_test_db)
     .done();
 }
 
@@ -122,5 +122,5 @@ test_create_thumbnail = function() {
 		thumbnail_name:"test.jpg"
 	})
 }
- test_create_thumbnail()
+ test_download()
 

@@ -83,9 +83,18 @@ update_last_read = function(show,number,type) {
 get_shows = function() {
 	return db.all("SELECT data FROM shows")
 		.map((show)=>Promise.resolve(JSON.parse(show.data))
-		.then(resolve_show));
+			.then(resolve_show));
 }
 
+get_pure_shows = function() {
+	return db.all("SELECT data FROM shows")
+		.map((show)=>Promise.resolve(JSON.parse(show.data)));
+}
+
+get_pure_show = function(identifier) {
+	return db.get("SELECT data FROM shows WHERE identifier=?", identifier)
+		.then((show)=>Promise.resolve(JSON.parse(show.data)));
+}
 get_show = function(identifier) {
 	return db.get("SELECT data FROM shows WHERE identifier=?",identifier)
 		.then((show)=>JSON.parse(show.data))
@@ -97,13 +106,9 @@ resolve_show = function (item) {
 			,item.identifier).then((row)=>{
 			if (row == undefined) {
 				item.number = 0;
-				item.download_this = true;
-				item.intital_run = true;
 			} else {
 				item.number = row.number;
 				item.base_url = row.page_url;
-				item.download_this=false;
-				item.intital_run = false;
 			}
 			return item;
 		});
@@ -182,6 +187,8 @@ module.exports = {
 	get_episode_data : get_episode_data,
 	get_show_data:get_show_data,
 	get_shows : get_shows,
+	get_pure_shows : get_pure_shows,
+	get_pure_show : get_pure_show,
 	get_show : get_show,
 	delete_show : delete_show
 };

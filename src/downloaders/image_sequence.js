@@ -12,9 +12,25 @@ const path = require('path');
 const url = require('url');
 const Promise = require('bluebird');
 //Download a sequence of images
-var download_sequence =  function(data) {
+
+var setup_download = function(show) {
+	return new Promise((r,e)=>{
+		let sequence = {}
+		sequence.base_url = show.base_url;
+		if (show.number == 0) {
+			sequence.download_this = true;
+			sequence.initial = true;
+		} else {
+			sequence.download_this = false;
+			sequence.initial = false;
+		}
+		r([show,sequence]);
+	}).then(download_sequence);
+}
+
+var download_sequence =  function([show,sequence]) {
 	return new Promise(function (resolve,reject) {
-		request(data.base_url, function (error,response,body){
+		request(sequence.base_url, function (error,response,body){
 		    if (error) {
 		    	reject(error);
 		    	return;
@@ -23,24 +39,23 @@ var download_sequence =  function(data) {
 		})
 	})
 	.then(extract_body)
-	.then((doc)=>data.doc=doc)
-	.return(data)
+	.then((doc)=>sequence.doc=doc)
+	.return([show,sequence])
 	.then(download_images)
-	.then((data)=>{
-			if (!is_last(data.doc,data.base_url,data.next_xpath)) {
-				console.log("CONTINUING " + data.number + " FOR " + data.identifier);
-				var link = xpath(data.next_xpath + "/@href",data.doc);
+	.then(([show,sequence])=>{
+			if (!is_last(sequence,show)) {
+				console.log("CONTINUING " + show.number + " FOR " + show.identifier);
+				var link = xpath(show.next_xpath + "/@href",sequence.doc);
 				link = link[0].value;
-				data.base_url = url.resolve(data.base_url,link);
-				data.download_this = true;
+				sequence.base_url = url.resolve(sequence.base_url,link);
+				sequence.download_this = true;
 				return Promise.delay(50).then(()=>
-					download_sequence(data));
+					download_sequence([show,sequence]));
 			} else {
-				
-				console.log("STOPPING " + data.number + " FOR " + data.identifier);
-				data.download_this = false;
-				data.initial = false;
-				return data;
+				console.log("STOPPING " + show.number + " FOR " + show.identifier);
+				sequence.download_this = false;
+				sequence.initial = false;
+				return show;
 			}
 	});
 }
@@ -70,9 +85,9 @@ extract_body = function(body) {
 	return strip_uri(doc);
 }
 
-var	is_last = function(doc,base_url,next_xpath){
-		var link = xpath(next_xpath + "/@href",doc);
-		return link.length == 0 || url.resolve(base_url,link[0].value) == base_url;
+var	is_last = function(sequence,show){
+		var link = xpath(show.next_xpath + "/@href",sequence.doc);
+		return link.length == 0 || url.resolve(sequence.base_url,link[0].value) == sequence.base_url ;
 }
 
 create_thumbnail = function(data) {
@@ -98,14 +113,14 @@ var download_image = function(data) {
 	}).then(create_thumbnail);
 }
 
-var extract_aditional =  function(episode,show,image_index) {
-	let title = xpath("//title/text()",show.doc);
+var extract_aditional =  function(episode,show,sequence,image_index) {
+	let title = xpath("//title/text()",sequence.doc);
 	episode.data = {};
 	if (title.length > 0) episode.data.title = title[0].data;
-	let alt_text = xpath(show.image_xpath + "/@title" , show.doc);
+	let alt_text = xpath(show.image_xpath + "/@title" , sequence.doc);
 	if (alt_text.length > image_index) episode.data.alt_text = alt_text[0].value;
 	if (show.text_xpath) {
-		let texts = xpath(show.text_xpath,show.doc);
+		let texts = xpath(show.text_xpath,sequence.doc);
 		episode.data.text = texts.map((text)=>{
 			return xmlser.serializeToString(text,true);
 		});
@@ -115,43 +130,43 @@ var extract_aditional =  function(episode,show,image_index) {
 
 }
 
-var download_images = function(data) {
+var download_images = function([show,sequence]) {
 	return new Promise(function (resolve,reject){
-		var image_xpath = data.image_xpath;
-		var doc = data.doc;
-		var identifier = data.identifier;
-		var csn = data.number;
-		if (data.download_this) {
+		var image_xpath = show.image_xpath;
+		var doc = sequence.doc;
+		var identifier = show.identifier;
+		if (sequence.download_this) {
 			var images = xpath(image_xpath + "/@src",doc);
 			resolve(Promise.map(images, function (rel_image_url,index,length) {
 				return new Promise ((resolve)=>{
-					var number = data.number+index+1;
-					var image_url = url.resolve(data.base_url,rel_image_url.value);
-					var filename = path.join(data.directory,number+".jpg");
-					var thumbnail_name = path.join(data.thumbnail_dir,number+".jpg");
+					var number = show.number+index+1;
+					var image_url = url.resolve(sequence.base_url,rel_image_url.value);
+					var filename = path.join(show.directory,number+".jpg");
+					var thumbnail_name = path.join(show.thumbnail_dir,number+".jpg");
 					resolve({url:image_url
 						,filename:filename
 						,thumbnail_name:thumbnail_name
 						,number:number
-						,identifier:data.identifier
-						,base_url:data.base_url});
-				}).then((episode)=>extract_aditional(episode,data,index))
+						,identifier:show.identifier
+						,base_url:sequence.base_url});
+				}).then((episode)=>extract_aditional(episode,show,sequence,index))
 				.then(download_image)
 				.then(db.insert_new_episode);
 			}).then((images)=>{
 				if (images.length > 0) {
-					data.number = data.number + images.length;
-					data.final_image_url = images[images.length-1].url;
+					show.number = show.number + images.length;
+					show.base_url = sequence.base_url;
+					sequence.final_image_url = images[images.length-1].url;
 				}
-			}).return(data));
+			}).return([show,sequence]));
 		} else {
-			resolve(data);
+			resolve([show,sequence]);
 		}
 	});
 }
 
 module.exports = {
-	download_sequence : download_sequence,
+	download_sequence : setup_download,
 	download_image : download_image,
 	extract_body : extract_body,
 	extract_aditional : extract_aditional,
