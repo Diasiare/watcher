@@ -249,6 +249,10 @@ setup_default = function () {
 	app.use("/new*",function (req, res, next) {
   		res.sendFile(path.join(__dirname,"../../resources/index.html"));
 	})
+	app.use(function (err, req, res, next) {
+  		console.error(err.stack)
+  		res.status(500).send('Something broke!')
+	})
 }
 
 start_all = function (shows) {
