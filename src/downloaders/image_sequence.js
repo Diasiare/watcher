@@ -39,10 +39,11 @@ var download_sequence =  function([show,sequence]) {
 			}
 		}, function (error,response,body){
 		    if (error) {
-			if (error.code && error.code == "ECONRESET"){
-			   resolve(download_sequence([show,sequence]));
-			   return ;
-			}
+		    	console.log(error.code);
+				if (error.code && error.code == "ECONRESET"){
+				   resolve(download_sequence([show,sequence]));
+				   return ;
+				}
 		    	reject(error);
 		    	return;
 		    }
