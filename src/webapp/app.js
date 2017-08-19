@@ -128,7 +128,6 @@ setup_data_calls = function () {
 					});
 					console.error(e);
 				});
-				res.end();
 			});
 			return app;
 		}).then((app)=>{
@@ -161,14 +160,20 @@ setup_data_calls = function () {
 			return app;
 		}).then((app)=>{
 			app.get('/function/get',(req,res)=>{
-				request(req.query.url, function (error,response,body){
-		   	 		if (error) {
-		    			res.send("");
-		    		return;
-		    		}
-				res.send(body);
-				})
-			});
+				request({
+						url:req.query.url,
+						method:'GET',
+						headers : {
+							'User-Agent' : "request",
+						}
+					}, function (error,response,body){
+			   	 		if (error) {
+			    			res.send("");
+			    		return;
+			    		}
+						res.send(body);
+					})
+				});
 			return app;
 		}).then((app)=>{
 			app.delete('/data/shows/:show',(req,res)=>{

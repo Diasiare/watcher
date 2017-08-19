@@ -30,7 +30,13 @@ var setup_download = function(show) {
 
 var download_sequence =  function([show,sequence]) {
 	return new Promise(function (resolve,reject) {
-		request(sequence.base_url, function (error,response,body){
+		request( {
+			url:sequence.base_url,
+			method:'GET',
+			headers : {
+				'User-Agent' : "request",
+			}
+		}, function (error,response,body){
 		    if (error) {
 		    	reject(error);
 		    	return;
@@ -109,9 +115,11 @@ var download_image = function(data) {
 	return new Promise((r,error)=>{gm(request({
 		url:data.url,
 		method:'GET',
-		encoding:null
-	}))
-		.flatten()
+		encoding:null,
+		headers : {
+			'User-Agent' : "request",
+		}
+	})).flatten()
 		.selectFrame(0)
 		.write(data.filename,(e)=>{
 			if (e) error(e);

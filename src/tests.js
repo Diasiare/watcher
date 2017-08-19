@@ -31,17 +31,20 @@ test_db = function () {
 
 test_download = function () {
     db.init(test_db_name)
-    .then(()=>db.insert_new_show({identifier:"gunn",base_url:"ggar.com"}))
+    .then(()=>db.insert_new_show({identifier:"mgn",base_url:"ggar.com"}))
     .then(()=>image_sequence.download_sequence(        {
-            "identifier":"gunn",
+            "identifier":"az",
             "name" : "Gunnerkrigg Court",
-            "image_xpath" : "//img[@class='comic_image']",
-            "next_xpath" : "//a[./img[@src='http://www.gunnerkrigg.com/images/next_a.jpg']]",
-            "base_url" : "http://www.gunnerkrigg.com/?p=1856",
-            number : 0
+            "image_xpath" : "//div[@id='comic']//img",
+            "next_xpath" : "//a[img[@alt='Next Comic']]",
+            "base_url" : "http://www.awkwardzombie.com/index.php?page=0&comic=092006",
+            directory : "E:\\test\\",
+            thumbnail_dir : "E:\\test\\t\\",
+            number : 1,
         }
     ))
     .then(db.close)
+    .catch((e)=>{console.log(e)})
     .then(delete_test_db)
     .done();
 }
@@ -122,5 +125,6 @@ test_create_thumbnail = function() {
 		thumbnail_name:"test.jpg"
 	})
 }
+delete_test_db()
  test_download()
 

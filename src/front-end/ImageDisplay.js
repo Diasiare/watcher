@@ -159,7 +159,7 @@ function AltText(props) {
     }
 
     return <div className="alt_text">
-                {props.alt_text}
+                <p>{props.alt_text}<p>
             </div>
 }
 
