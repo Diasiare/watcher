@@ -57,7 +57,7 @@ var download_sequence =  function([show,sequence]) {
 	.then(([show,sequence])=>{
 			if (!is_last(sequence,show)) {
 				console.log("CONTINUING " + show.number + " FOR " + show.identifier);
-				var link = xpath(show.next_xpath + "/@href",sequence.doc);
+				var link = xpath("("+show.next_xpath + ")/@href",sequence.doc);			
 				link = link[0].value;
 				sequence.base_url = url.resolve(sequence.base_url,link);
 				sequence.download_this = true;
