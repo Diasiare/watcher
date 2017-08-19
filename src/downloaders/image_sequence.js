@@ -33,11 +33,16 @@ var download_sequence =  function([show,sequence]) {
 		request( {
 			url:sequence.base_url,
 			method:'GET',
+			gzip : true,
 			headers : {
 				'User-Agent' : "request",
 			}
 		}, function (error,response,body){
 		    if (error) {
+			if (error.code && error.code == "ECONRESET"){
+			   resolve(download_sequence([show,sequence]));
+			   return ;
+			}
 		    	reject(error);
 		    	return;
 		    }
