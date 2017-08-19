@@ -17,6 +17,10 @@ ensure_started = function () {
 		if (!app) {
 			app = express();
 			expressWs = expressWs(app);
+			expressWs.getWss().on("error" ,(err,req,res)=>{
+				console.log(err);
+				res.end();
+			})
 			app.get('/', function (req, res) {
   				res.redirect('/list');
 			});
