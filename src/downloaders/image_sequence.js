@@ -16,6 +16,7 @@ const Promise = require('bluebird');
 var setup_download = function(show) {
 	return new Promise((r,e)=>{
 		let sequence = {}
+		sequence.restarts = 0;
 		sequence.base_url = show.base_url;
 		if (show.number == 0) {
 			sequence.download_this = true;
@@ -40,13 +41,17 @@ var download_sequence =  function([show,sequence]) {
 		}, function (error,response,body){
 		    if (error) {
 		    	console.log(error.code);
-				if (error.code && error.code == "ECONRESET"){
-				   resolve(download_sequence([show,sequence]));
-				   return ;
+				if (error.code && error.code == "ECONNRESET"){
+				    if (sequence.restarts < 10) {
+					    resolve(Promise.delay(50).then(()=>
+							download_sequence([show,sequence])));
+						return ;			   	
+				    }
 				}
 		    	reject(error);
 		    	return;
 		    }
+		    sequence.restarts = 0;
 			resolve(body);
 		})
 	})
