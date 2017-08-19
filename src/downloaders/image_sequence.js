@@ -92,7 +92,7 @@ extract_body = function(body) {
 }
 
 var	is_last = function(sequence,show){
-		var link = xpath(show.next_xpath + "/@href",sequence.doc);
+		var link = xpath("(" + show.next_xpath + ")/@href",sequence.doc);
 		return link.length == 0 || url.resolve(sequence.base_url,link[0].value) == sequence.base_url ;
 }
 
@@ -136,7 +136,7 @@ var extract_aditional =  function(episode,show,sequence,image_index) {
 	let title = xpath("//title/text()",sequence.doc);
 	episode.data = {};
 	if (title.length > 0) episode.data.title = title[0].data;
-	let alt_text = xpath(show.image_xpath + "/@title" , sequence.doc);
+	let alt_text = xpath("("+show.image_xpath + ")/@title" , sequence.doc);
 	if (alt_text.length > image_index) episode.data.alt_text = alt_text[0].value;
 	if (show.text_xpath) {
 		let texts = xpath(show.text_xpath,sequence.doc);
@@ -155,7 +155,7 @@ var download_images = function([show,sequence]) {
 		var doc = sequence.doc;
 		var identifier = show.identifier;
 		if (sequence.download_this) {
-			var images = xpath(image_xpath + "/@src",doc);
+			var images = xpath("("+image_xpath + ")/@src",doc);
 			resolve(Promise.map(images, function (rel_image_url,index,length) {
 				return new Promise ((resolve)=>{
 					var number = show.number+index+1;

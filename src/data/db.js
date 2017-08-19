@@ -105,7 +105,7 @@ get_show = function(identifier) {
 }
 
 resolve_show = function (item) {
-		return db.get("SELECT number , page_url FROM episodes WHERE show = ? ORDER BY number DESC;"
+		return db.get("SELECT number , page_url FROM episodes WHERE show=? ORDER BY number DESC;"
 			,item.identifier).then((row)=>{
 			if (row == undefined) {
 				item.number = 0;
@@ -149,13 +149,13 @@ get_prev = function (identifier,episode) {
 }
 
 get_last_unread = function(identifier,type) {
-	return db.get("SELECT show , number FROM last_read WHERE type = ? AND show = ?",
+	return db.get("SELECT show , number FROM last_read WHERE type=? AND show=?",
 		type,identifier).then((data)=>get_next(data.show,data.number));
 }
 
 get_show_data = function(identifier) {
 	let data = {identifier:identifier};
-	return db.all("SELECT number , type FROM last_read WHERE show = ?",identifier)
+	return db.all("SELECT number , type FROM last_read WHERE show=?",identifier)
 	.map((row)=>{
 		data[row.type]=row.number;
 	})

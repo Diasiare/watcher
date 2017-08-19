@@ -192,15 +192,23 @@ setup_data_calls = function () {
 				});
 				get_shows_data()
 				.then((data)=>{
-					ws.send(JSON.stringify({data:data,
+					try {
+						ws.send(JSON.stringify({data:data,
 							type:"all"}));
+					} catch (e) {
+						console.error(e);
+					}
 				})	
 				ws.on("message",()=>{
 					get_shows_data()
 					.then((data)=>{
-						ws.send(JSON.stringify({data:data,
-							type:"all"}));
-						})
+						try {
+							ws.send(JSON.stringify({data:data,
+								type:"all"}));
+						} catch (e) {
+							console.error(e);
+						}
+					})
 				})
 				ws.on("error",(e)=>{
 					console.error(e);
@@ -224,9 +232,14 @@ perform_callbacks = function(identifier) {
 		})
 		.then((data)=>{
 			for (let ws of sockets.keys()){
-				ws.send(JSON.stringify({data:data,
-										type:"single",
-										id:identifier}));
+				try {
+					ws.send(JSON.stringify({data:data,
+											type:"single",
+											id:identifier}));
+				} catch (e) {
+					console.error(e);
+				}
+
 			}		
 		})
 }
