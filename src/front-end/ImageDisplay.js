@@ -42,6 +42,7 @@ class ImageDisplay extends React.Component {
         if (this.state[type]) {
             let episode = this.state[type];
             updateLastRead(episode.identifier,episode.number,this.props.type);
+            $('html, body').animate({ scrollTop: 0 }, 'fast');
             nav(get_url_for(episode.identifier,episode.number,this.props.type));    
         }
     }
