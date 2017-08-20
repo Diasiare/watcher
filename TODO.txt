@@ -14,6 +14,7 @@ Create funcitonallity to back up the json for all shows - DONE
 Fix error where deleting show doesn't quite work
 Wrap alt text at apropriate width
 Add ability to download torrents to backend
+Add an indicator for new episodes
 Serve video based shows
 Auto generate human readable identifiers
 Fix the hangup crashes on the Websockets

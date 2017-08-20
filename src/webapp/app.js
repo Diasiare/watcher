@@ -10,7 +10,11 @@ var expressWs = require('express-ws');
 
 var app = null;
 const PORT = 8080;
-const sockets = new Set();
+
+function heartbeat() {
+  this.isAlive = true;
+}
+
 
 ensure_started = function () {
 	return new Promise((r)=>{
@@ -20,7 +24,21 @@ ensure_started = function () {
 			expressWs.getWss().on("error" ,(err,req,res)=>{
 				console.log(err);
 				res.end();
-			})
+			});
+			expressWs.getWss().on('connection', function connection(ws) {
+  				ws.isAlive = true;
+  				ws.on('pong', heartbeat);
+			});
+			setInterval(function ping() {
+			  expressWs.getWss().clients.forEach(function each(ws) {
+			    if (ws.isAlive === false) return ws.terminate();
+
+			    ws.isAlive = false;
+			    ws.ping('', false, true);
+			  });
+			}, 30000);
+
+
 			app.get('/', function (req, res) {
   				res.redirect('/list');
 			});
@@ -190,10 +208,7 @@ setup_data_calls = function () {
 			return app;
 		}).then((app)=>{
 			app.ws('/socket/shows', (ws,req)=>{
-				sockets.add(ws);
-				ws.on('close',()=>{
-					sockets.delete(ws);
-				});
+
 				get_shows_data()
 				.then((data)=>{
 					try {
@@ -235,7 +250,7 @@ perform_callbacks = function(identifier) {
 			return data;
 		})
 		.then((data)=>{
-			for (let ws of sockets.keys()){
+			for (let ws of expressWs.getWss().clients){
 				try {
 					ws.send(JSON.stringify({data:data,
 											type:"single",
