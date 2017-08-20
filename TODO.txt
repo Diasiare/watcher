@@ -13,7 +13,7 @@ Refresh Menu on backend changes - DONE
 Create funcitonallity to back up the json for all shows - DONE
 Fix error where deleting show doesn't quite work
 Wrap alt text at apropriate width
-Fix the hangup crashes on the Websockets
 Add ability to download torrents to backend
 Serve video based shows
 Auto generate human readable identifiers
+Fix the hangup crashes on the Websockets

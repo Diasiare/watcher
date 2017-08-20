@@ -18,6 +18,7 @@ var setup_download = function(show) {
 		let sequence = {}
 		sequence.restarts = 0;
 		sequence.base_url = show.base_url;
+		sequence.stop = false;
 		if (show.number == 0) {
 			sequence.download_this = true;
 			sequence.initial = true;
@@ -166,11 +167,15 @@ var download_images = function([show,sequence]) {
 		var doc = sequence.doc;
 		var identifier = show.identifier;
 		if (sequence.download_this) {
-			var images = xpath("("+image_xpath + ")/@src",doc);
-			resolve(Promise.map(images, function (rel_image_url,index,length) {
+			var images = xpath("("+image_xpath + ")/@src",doc)
+				.map((rel_url)=>url.resolve(sequence.base_url,rel_url.value));
+			let index = images.indexOf(show.last_episode_url)
+			if (index > -1) {
+				images.splice(index,1);
+			}
+			resolve(Promise.map(images, function (image_url,index,length) {
 				return new Promise ((resolve)=>{
 					var number = show.number+index+1;
-					var image_url = url.resolve(sequence.base_url,rel_image_url.value);
 					var filename = path.join(show.directory,number+".jpg");
 					var thumbnail_name = path.join(show.thumbnail_dir,number+".jpg");
 					resolve({url:image_url
@@ -186,10 +191,9 @@ var download_images = function([show,sequence]) {
 				if (images.length > 0) {
 					show.number = show.number + images.length;
 					show.base_url = sequence.base_url;
-					sequence.final_image_url = images[images.length-1].url;
+					show.last_episode_url = images[images.length-1].url;
 				}
 			})
-
 			.return([show,sequence]));
 		} else {
 			resolve([show,sequence]);

@@ -105,13 +105,14 @@ get_show = function(identifier) {
 }
 
 resolve_show = function (item) {
-		return db.get("SELECT number , page_url FROM episodes WHERE show=? ORDER BY number DESC;"
+		return db.get("SELECT number , page_url , image_url FROM episodes WHERE show=? ORDER BY number DESC;"
 			,item.identifier).then((row)=>{
 			if (row == undefined) {
 				item.number = 0;
 			} else {
 				item.number = row.number;
 				item.base_url = row.page_url;
+				item.last_episode_url = row.image_url;
 			}
 			return item;
 		});

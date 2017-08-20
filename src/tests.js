@@ -31,13 +31,13 @@ test_db = function () {
 
 test_download = function () {
     db.init(test_db_name)
-    .then(()=>db.insert_new_show({identifier:"mgn",base_url:"ggar.com"}))
+    .then(()=>db.insert_new_show({identifier:"sin",base_url:"ggar.com"}))
     .then(()=>image_sequence.download_sequence(        {
-            "identifier":"az",
-            "name" : "Gunnerkrigg Court",
-            "image_xpath" : "//div[@id='comic']//img",
-            "next_xpath" : "//a[img[@alt='Next Comic']]",
-            "base_url" : "http://www.awkwardzombie.com/index.php?page=0&comic=092006",
+            "identifier":"sin",
+            "name" : "Sin Fest",
+            "image_xpath" : "//tbody[@class='style5']//img",
+            "next_xpath" : "//a[img[@src='../images/next.gif']]",
+            "base_url" : "http://www.sinfest.net/view.php?date=2017-08-19",
             directory : "E:\\test\\",
             thumbnail_dir : "E:\\test\\t\\",
             number : 1,
@@ -126,5 +126,5 @@ test_create_thumbnail = function() {
 	})
 }
 delete_test_db()
- test_download()
+test_download()
 
