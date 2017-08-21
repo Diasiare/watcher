@@ -105,7 +105,7 @@ get_show = function(identifier) {
 }
 
 resolve_show = function (item) {
-		return db.get("SELECT number , page_url , image_url FROM episodes WHERE show=? ORDER BY number DESC;"
+		return db.get("SELECT number , page_url , image_url FROM episodes WHERE show=? ORDER BY number DESC LIMIT 1"
 			,item.identifier).then((row)=>{
 			if (row == undefined) {
 				item.number = 0;
@@ -171,6 +171,13 @@ get_show_data = function(identifier) {
 	.return(data);
 }
 
+check_image_exists = function (show,image_url) {
+	return db.get("SELECT number FROM episodes WHERE show=$show AND image_url=$image_url LIMIT 1", {
+		$show:show,
+		$image_url:image_url
+	}).then((s)=>!!s);
+}
+
 delete_show = function(identifier) {
 	return db.run("DELETE FROM shows WHERE identifier=?",identifier)
 		.then(()=>db.run("DELETE FROM episodes WHERE show=?",identifier))
@@ -194,6 +201,7 @@ module.exports = {
 	get_pure_shows : get_pure_shows,
 	get_pure_show : get_pure_show,
 	get_show : get_show,
+	check_image_exists : check_image_exists,
 	delete_show : delete_show
 };
 const config = require('./config');

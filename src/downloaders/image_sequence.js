@@ -26,6 +26,10 @@ var setup_download = function(show) {
 			sequence.download_this = false;
 			sequence.initial = false;
 		}
+		if (["sin"].includes(show.identifier)){
+			sequence.check_all_episodes = true;
+		}
+
 		r([show,sequence]);
 	}).then(download_sequence);
 }
@@ -173,7 +177,13 @@ var download_images = function([show,sequence]) {
 			if (index > -1) {
 				images.splice(index,1);
 			}
-			resolve(Promise.map(images, function (image_url,index,length) {
+			resolve(Promise.filter(images,(img)=>{
+				if(sequence.check_all_episodes) {
+					return db.check_image_exists(show.identifier,img).then(b=>!b)
+				} else {
+					return true;
+				}
+			}).map( function (image_url,index,length) {
 				return new Promise ((resolve)=>{
 					var number = show.number+index+1;
 					var filename = path.join(show.directory,number+".jpg");

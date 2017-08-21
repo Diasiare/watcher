@@ -238,29 +238,32 @@ setup_data_calls = function () {
 }
 
 perform_callbacks = function(identifier) {
-	return Promise.all([db.get_show_data(identifier),config.get_show(identifier)])
-		.then(([data,show])=>{
-			if (show && data) {
-				data.name = show.name;
-				data.episode_count = show.number;
-			}
-			if (data && data.logo) {
-				data.logo = build_resource_url(data.identifier,"logo.jpg");
-			}
-			return data;
-		})
-		.then((data)=>{
-			for (let ws of expressWs.getWss().clients){
-				try {
-					ws.send(JSON.stringify({data:data,
-											type:"single",
-											id:identifier}));
-				} catch (e) {
-					console.error(e);
+	if (app) {
+		return Promise.all([db.get_show_data(identifier),config.get_show(identifier)])
+			.then(([data,show])=>{
+				if (show && data) {
+					data.name = show.name;
+					data.episode_count = show.number;
 				}
-
-			}		
-		})
+				if (data && data.logo) {
+					data.logo = build_resource_url(data.identifier,"logo.jpg");
+				}
+				return data;
+			})
+			.then((data)=>{
+				for (let ws of expressWs.getWss().clients){
+					try {
+						ws.send(JSON.stringify({data:data,
+												type:"single",
+												id:identifier}));
+					} catch (e) {
+						console.error(e);
+					}
+				}
+				return identifier;		
+			});
+	}
+	return identifier;
 }
 
 get_shows_data = function() {
