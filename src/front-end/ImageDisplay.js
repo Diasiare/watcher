@@ -128,7 +128,9 @@ class ImageContainer extends React.Component {
         if (this.props.episode) {
             return (<div className="imageContainer" onClick={()=>this.props.navigate("next")}>
                         <Title title={this.props.episode.data.title}/>
-                        <img src={this.props.episode.src}/>
+                        <img src={this.props.episode.src} style={{
+                            maxWidth:"1500px",
+                        }}/>
                         <AltText alt_text={this.props.episode.data.alt_text}/>
                     </div>          
             )
@@ -159,7 +161,7 @@ function AltText(props) {
         return null;
     }
 
-    return <div className="alt_text">
+    return <div className="alt_text standardWidth">
                 <p style={{margin:"0px"}}>{props.alt_text}</p>
             </div>
 }
