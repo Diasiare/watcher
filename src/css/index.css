@@ -69,6 +69,7 @@
 
 .imageContainer {
 	padding: 10px 0px;
+	text-align:center;
 	flex-basis:auto;
 	flex :0;
 }
