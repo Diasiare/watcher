@@ -12,7 +12,7 @@ Page with shows with new episodes (filerable) - DONE
 Refresh Menu on backend changes - DONE
 Create funcitonallity to back up the json for all shows - DONE
 Fix error where deleting show doesn't quite work
-Wrap alt text at apropriate width
+FIx the memmory leak
 Add ability to download torrents to backend
 Add an indicator for new episodes
 Serve video based shows

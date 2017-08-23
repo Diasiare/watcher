@@ -84,19 +84,20 @@ var download_sequence =  function([show,sequence]) {
 
 strip_uri = function(doc) {
 	let v = new Set();
-	let f = (e)=>{
-		v.add(e);
-		if ('namespaceURI' in e) e.namespaceURI = null;
-		for (var p in e) {
-			if (!v.has(e[p]) &&
-				 e[p] !==null && 
-				 typeof(e[p])=="object") {
-				f(e[p]);
-			}
-		}
-	} 
-	f(doc);
+	strip_uri_rec(v,doc);
 	return doc;
+}
+
+strip_uri_rec = function(v,e) {
+	v.add(e);
+	if ('namespaceURI' in e) e.namespaceURI = null;
+	for (var p in e) {
+		if (!v.has(e[p]) &&
+			 e[p] !==null && 
+			 typeof(e[p])=="object") {
+			strip_uri_rec(v,e[p]);
+		}
+	}
 }
 
 
