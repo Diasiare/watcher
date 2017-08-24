@@ -44,6 +44,7 @@ stop_watcher = function(show) {
 }
 
 start_watchers = function(shows) {
+	//Stagger this so that the server doesn't become unresponsive every 15 min
 	return Promise.all(shows.map((show,i)=>Promise.resolve(show)
 		.delay(i*2000)
 		.then(add_watcher)));
