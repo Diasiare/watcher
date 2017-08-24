@@ -29,7 +29,7 @@ var setup_download = function(show) {
 		if (["sin"].includes(show.identifier)){
 			sequence.check_all_episodes = true;
 		}
-
+		console.log("SHOW\n",show,"\nSEQUENCE\n",sequence);
 		r([show,sequence]);
 	}).then(download_sequence);
 }
@@ -198,12 +198,6 @@ var download_images = function([show,sequence]) {
 				}).then((episode)=>extract_aditional(episode,show,sequence,index))
 				.then(download_image)
 				.then(db.insert_new_episode);
-			}).then((images)=>{
-				if (images.length > 0) {
-					show.number = show.number + images.length;
-					show.base_url = sequence.base_url;
-					show.last_episode_url = images[images.length-1].url;
-				}
 			})
 			.return([show,sequence]));
 		} else {
@@ -219,4 +213,4 @@ module.exports = {
 	extract_aditional : extract_aditional,
 	create_thumbnail : create_thumbnail
 };
-const db = require('./../data/db');
+const db = require('./../data/config');

@@ -54,7 +54,7 @@ ensure_started = function () {
 }
 
 serve_shows = function (shows) {
-	return Promise.all([ensure_started(),config.resolve_path("")])
+	return Promise.all([ensure_started(),db.resolve_path("")])
 		.then(([app,dir])=>app.use("/shows",express.static(dir)));
 }
 
@@ -108,7 +108,7 @@ setup_data_calls = function () {
 				res.set({
 					"Cache-Control":"no-cache, no-store, must-revalidate"
 				})
-				Promise.all([db.get_show_data(req.params.show),config.get_show(req.params.show)])
+				Promise.all([db.get_show_data(req.params.show),db.get_show(req.params.show)])
 					.then(([data,show])=>{
 					if (show) {
 						data.name = show.name;
@@ -137,7 +137,7 @@ setup_data_calls = function () {
 		}).then((app)=>{
 			app.post('/data/backup.json',upload.single("backup"),(req,res)=>{
 				Promise.resolve(JSON.parse(req.file.buffer))
-				.map(config.add_new_show)
+				.map(db.add_new_show)
 				.map(serve_show)
 				.then(()=>res.json({
 					failed:false
@@ -164,7 +164,7 @@ setup_data_calls = function () {
 			app.post('/data/shows',(req,res)=>{
 				let data = req.body;
 				Promise.resolve(data)
-				.then(config.add_new_show)
+				.then(db.add_new_show)
 				.then(serve_show)
 				.then(()=>res.json({
 					identifier:data.identifier,
@@ -199,11 +199,13 @@ setup_data_calls = function () {
 			return app;
 		}).then((app)=>{
 			app.delete('/data/shows/:show',(req,res)=>{
-					config.delete_show(req.params.show)
-						.then(()=>res.json({failed:false}))
-						.then(perform_callbacks)
-						.catch((e)=>res.json({failed:true,error:e}))
-						.then(()=>res.end());
+					db.delete_show(req.params.show)
+						.then(()=>res.json({failed:false}))			
+						.catch((e)=>{
+							console.error(e);
+							res.json({failed:true,error:e});
+						})
+						.then(()=>perform_callbacks(req.params.show));
 				})
 			return app;
 		}).then((app)=>{
@@ -239,7 +241,7 @@ setup_data_calls = function () {
 
 perform_callbacks = function(identifier) {
 	if (app) {
-		return Promise.all([db.get_show_data(identifier),config.get_show(identifier)])
+		return Promise.all([db.get_show_data(identifier),db.get_show(identifier)])
 			.then(([data,show])=>{
 				if (show && data) {
 					data.name = show.name;
@@ -267,7 +269,7 @@ perform_callbacks = function(identifier) {
 }
 
 get_shows_data = function() {
-	return config.get_shows().map((show)=>{
+	return db.get_shows().map((show)=>{
 		return db.get_show_data(show.identifier).then((data)=>{
 			data.name = show.name;
 			data.episode_count = show.number;
@@ -320,5 +322,4 @@ module.exports = {
 	perform_callbacks : perform_callbacks
 }	
 
-const db = require('../data/db');
-const config = require('../data/config');
+const db = require('../data/config');
