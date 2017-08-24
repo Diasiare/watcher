@@ -243,13 +243,14 @@ perform_callbacks = function(identifier) {
 	if (app) {
 		return Promise.all([db.get_show_data(identifier),db.get_show(identifier)])
 			.then(([data,show])=>{
-				if (show && data) {
+				if (!show || !data.type) return null;
+				if (data) {
 					data.name = show.name;
 					data.episode_count = show.number;
 				}
 				if (data && data.logo) {
 					data.logo = build_resource_url(data.identifier,"logo.jpg");
-				}
+				} 
 				return data;
 			})
 			.then((data)=>{

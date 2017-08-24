@@ -103,3 +103,8 @@ ReactDOM.render(
   </MuiThemeProvider>,
   document.getElementById('root')
 );
+
+
+if (Notification.permission === "default") {
+  Notification.requestPermission();
+}

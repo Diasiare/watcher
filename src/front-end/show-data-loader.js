@@ -1,10 +1,11 @@
 const $ = require("jquery");
-
+const nav = require("./navigate").navigate;
 var listeners = new Map();
 var show_listeners = new Map();
 var socket = null;
 var data = null;
-
+const notifications = {};
+var last_notification_id = null;
 
 function preload_data() {
 	if (!socket) {
@@ -31,6 +32,28 @@ function preload_data() {
 						data = {};
 					}
 					if (d.data){
+						//Do not push noteifications for the same show twice in a row
+						if ((!data[d.identifier] 
+								|| data[d.identifier].episode_count < d.data.episode_count) 
+							&& d.data.episode_count > 0 
+							&& last_notification_id !== d.identifier) {
+							if (notifications[d.identifier]) {
+								notifications[d.identifier].close();
+							}
+							let n = new Notification("Watcher: " + d.data.name, {
+								data : d,
+								icon : window.location.protocol +  "//" 
+										+ window.location.host + "/shows/" 
+										+ d.data.identifier + "/thumbnails/" 
+										+ d.data.episode_count + ".jpg",
+								body : ""+ d.data.name+ " episode " + d.data.episode_count +" is out!",
+							});
+							n.onclick= (e)=>{
+								nav("/read/" + d.data.identifier + "/" + (data[d.data.identifier].new) + "/new");
+							};
+							notifications[d.identifier] = n;
+							last_notification_id = d.identifier;
+						}
 						data[d.data.identifier] = d.data;
 					} else {
 						delete data[d.identifier];
