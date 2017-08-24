@@ -36,7 +36,8 @@ function preload_data() {
 						if ((!data[d.identifier] 
 								|| data[d.identifier].episode_count < d.data.episode_count) 
 							&& d.data.episode_count > 0 
-							&& last_notification_id !== d.identifier) {
+							&& last_notification_id !== d.identifier
+							&& Notification.permission === "granted") {
 							if (notifications[d.identifier]) {
 								notifications[d.identifier].close();
 							}
