@@ -103,7 +103,7 @@ perfrom_setup = function (show) {
 
 
 get_shows = function () {
-	return Promise.resolve(config.shows.values());
+	return Promise.resolve(Array.from(config.shows.values()));
 }
 
 get_pure_shows = function() {
