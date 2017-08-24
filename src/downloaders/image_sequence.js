@@ -29,7 +29,6 @@ var setup_download = function(show) {
 		if (["sin"].includes(show.identifier)){
 			sequence.check_all_episodes = true;
 		}
-		console.log("SHOW\n",show,"\nSEQUENCE\n",sequence);
 		r([show,sequence]);
 	}).then(download_sequence);
 }
