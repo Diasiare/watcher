@@ -75,16 +75,16 @@ class Main extends React.Component {
           <Menu/>
               <Switch>
                     <Route path="/read/:show/:episode/:type" render={({match})=>{
-                     return <ImageDisplay show={match.params.show} episode={match.params.episode} type={match.params.type}/>
+                     return <ImageDisplay show={match.params.show} keyepisode={match.params.episode} type={match.params.type}/>
                     }}/>
                     <Route path="/read/:show" render={({match})=>{
-                     return <ShowPage show={match.params.show}/>
+                     return <ShowPage show={match.params.show} key={match.params.show}/>
                     }}/>
                     <Route path="/list/:filter" render={({match})=>{
-                      return <ShowList filter={match.params.filter}/>
+                      return <ShowList filter={match.params.filter} key={match.params.filter}/>
                     }}/>
                     <Route path="/list/" render={()=>{
-                      return <ShowList/>
+                      return <ShowList key="none"/>
                     }}/>
                     <Route path="/new" render={({history})=> <ShowAdder history={history}/>}/>
               </Switch>
