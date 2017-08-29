@@ -54,14 +54,8 @@ ensure_started = function () {
 }
 
 serve_shows = function (shows) {
-	return Promise.all([ensure_started(),db.resolve_path("")])
+	return Promise.all([ensure_started(),db.resolve_path("shows")])
 		.then(([app,dir])=>app.use("/shows",express.static(dir)));
-}
-
-serve_show = function(show) {
-		return ensure_started()
-			//.then((app)=>app.use(build_resource_url(show.identifier),express.static(show.directory)))
-			.return(show)
 }
 
 serve_static_resources = function () {
@@ -165,7 +159,6 @@ setup_data_calls = function () {
 				let data = req.body;
 				Promise.resolve(data)
 				.then(db.add_new_show)
-				.then(serve_show)
 				.then(()=>res.json({
 					identifier:data.identifier,
 					failed:false

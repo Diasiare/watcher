@@ -76,11 +76,11 @@ perfrom_setup = function (show) {
 	return Promise.map(Object.keys(defaults),  (name)=>{
 		if (!(name in show)) show[name]=defaults[name];
 	})
-	.then(()=>resolve_path(show.identifier))
+	.then(()=>resolve_path(path.join("shows",show.identifier)))
 	.then((d)=>{show.directory=d;return d})
 	.then((dir)=>shelljs.mkdir('-p',dir))
 	.catch(console.error)
-	.then(()=>resolve_path(path.join(show.identifier,"thumbnails")))
+	.then(()=>resolve_path(path.join("shows",show.identifier,"thumbnails")))
 	.then((d)=>{show.thumbnail_dir=d;return d})
 	.then((dir)=>shelljs.mkdir('-p',dir))
 	.catch(console.error)
