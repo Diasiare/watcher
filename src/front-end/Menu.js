@@ -107,7 +107,6 @@ class ShortMenu extends React.Component {
             </IconButton>
            {new_menu_item}
            <IconMenu 
-            tooltip="More Options"
             iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
             anchorOrigin={{horizontal: 'left', vertical: 'top'}}
             targetOrigin={{horizontal: 'left', vertical: 'top'}}
