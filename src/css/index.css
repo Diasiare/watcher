@@ -1,9 +1,9 @@
 .center{
-	margin:auto;
+    margin:auto;
 }
 
 .flex_center {
-	-webkit-align-items: center;
+    -webkit-align-items: center;
     align-items: center;
     -webkit-justify-content: center;
     justify-content: center;
@@ -11,85 +11,85 @@
 
 
 .contents {
-	width: 95%;
-	font-family: Roboto;
-	margin:auto;
+    width: 95%;
+    font-family: Roboto;
+    margin:auto;
 }
 
 .menubar {
-	max-width: 600px;
-	margin :auto;
-	height : 30px;
-	display: flex;
-	justify-content : center;
-	background-color: black;
-	flex-direction: row;
-	color: white;
+    max-width: 600px;
+    margin :auto;
+    height : 30px;
+    display: flex;
+    justify-content : center;
+    background-color: black;
+    flex-direction: row;
+    color: white;
 }
 
 .menuItem {
-	height: 100%;
-	flex:1;
-	margin: 0 ;
-	padding: 0px 10px 0px 10px;
-	flex-basis: auto;
-	border-color: white;
-	border-style: solid;
-	border-left-width: 2px;
-	border-right-width: 2px; 
-	text-align: center;
+    height: 100%;
+    flex:1;
+    margin: 0 ;
+    padding: 0px 10px 0px 10px;
+    flex-basis: auto;
+    border-color: white;
+    border-style: solid;
+    border-left-width: 2px;
+    border-right-width: 2px; 
+    text-align: center;
 }
 
 .vAlign {
-	margin : auto;
+    margin : auto;
 }
 
 .columnFlex {
     display: flex;
-	display: -webkit-flex;
+    display: -webkit-flex;
     -webkit-flex-direction: column;
-    flex-direction: column;		
+    flex-direction: column;     
 }
 
 .rowFlex {
     display: flex;
-	display: -webkit-flex;
+    display: -webkit-flex;
     -webkit-flex-direction: row;
-    flex-direction: row;		
+    flex-direction: row;        
 }
 
 
 .imageNav {
-	display: flex;
-	flex-direction : row;
-	flex :1;
-	flex-basis:auto;
-	width: 850px;
+    display: flex;
+    flex-direction : row;
+    flex :1;
+    flex-basis:auto;
+    width: 850px;
 }
 
 .imageContainer {
-	padding: 10px 0px;
-	text-align:center;
-	flex-basis:auto;
-	flex :0;
+    padding: 10px 0px;
+    text-align:center;
+    flex-basis:auto;
+    flex :0;
 }
 
 .navImage {
-	width :30px;
-	height: 30px;
-	padding : 5px;
+    width :30px;
+    height: 30px;
+    padding : 5px;
 }
 
 .navButton {
-	text-align: center;
-	flex : 1;
+    text-align: center;
+    flex : 1;
 }
 .flipped {
-	-moz-transform: scale(-1, 1);
-	-webkit-transform: scale(-1, 1);
-	-o-transform: scale(-1, 1);
-	transform: scale(-1, 1);
-	filter: FlipH;
+    -moz-transform: scale(-1, 1);
+    -webkit-transform: scale(-1, 1);
+    -o-transform: scale(-1, 1);
+    transform: scale(-1, 1);
+    filter: FlipH;
 }
 
 .menuOpenButton {
@@ -99,45 +99,45 @@
 }
 
 .listItemList {
-	width : 95%;
-	margin :auto;
-	height : 100%;
-	display: flex;
-	flex-direction: row;
+    width : 95%;
+    margin :auto;
+    height : 100%;
+    display: flex;
+    flex-direction: row;
 }
 
 .title{
-	width:100%;
-	text-align: left;
-	font-size: 16px;
-	font-weight: bold;
-	padding-left: 5px;
+    width:100%;
+    text-align: left;
+    font-size: 16px;
+    font-weight: bold;
+    padding-left: 5px;
 }
 
 .pageTitle{
-	height: 100%;
-	text-align: left;
-	font-size: 20px;
-	font-weight: bold;
-	vertical-align: bottom;
-	display: inline-block;
-	flex : 0 0 auto;
+    height: 100%;
+    text-align: left;
+    font-size: 20px;
+    font-weight: bold;
+    vertical-align: bottom;
+    display: inline-block;
+    flex : 0 0 auto;
 }
 
 .alt_text{
-	width:100%;
-	text-align: center;
-	font-size: 16px;
-	font-weight: medium;
+    width:100%;
+    text-align: center;
+    font-size: 16px;
+    font-weight: medium;
 }
 
 .text_area{
-	text-align: left;
-	font-weight: medium;
-	padding : 0px 10px;
-	margin-top: 10px;
+    text-align: left;
+    font-weight: medium;
+    padding : 0px 10px;
+    margin-top: 10px;
 }
 
 .standardWidth{
-	width: 900px;
+    width: 900px;
 }

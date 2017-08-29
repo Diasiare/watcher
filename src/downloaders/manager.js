@@ -1,5 +1,3 @@
-
-
 const Promise = require('bluebird');
 var started = false;
 Promise.config({
@@ -13,46 +11,46 @@ const current_watchers = {};
 
 
 watching_cycle = function (show) {
-	if (!current_watchers[show.identifier].p ||
-		!current_watchers[show.identifier].p.isPending())
-		current_watchers[show.identifier].p = imdown.download_sequence(show).catch((e)=>{
-		console.error("ERROR");
-		console.error(e);
-		console.error(show);
-	});
+    if (!current_watchers[show.identifier].p ||
+        !current_watchers[show.identifier].p.isPending())
+        current_watchers[show.identifier].p = imdown.download_sequence(show).catch((e)=>{
+        console.error("ERROR");
+        console.error(e);
+        console.error(show);
+    });
 }
 
 start_watcher = function (show) {
-	current_watchers[show.identifier] = {};
-	watching_cycle(show);
-	current_watchers[show.identifier].t = setInterval(watching_cycle,show.interval,show);
-	return show;
+    current_watchers[show.identifier] = {};
+    watching_cycle(show);
+    current_watchers[show.identifier].t = setInterval(watching_cycle,show.interval,show);
+    return show;
 }
 
 add_watcher = function(show) {
-	return Promise.resolve(show)
-		.then(stop_watcher)
-		.then(start_watcher);
+    return Promise.resolve(show)
+        .then(stop_watcher)
+        .then(start_watcher);
 }
 
 stop_watcher = function(show) {
-	if (show.identifier in current_watchers) {		
-		clearInterval(current_watchers[show.identifier].t);
-		current_watchers[show.identifier].p.cancel();	
-	}
-	return show;
+    if (show.identifier in current_watchers) {      
+        clearInterval(current_watchers[show.identifier].t);
+        current_watchers[show.identifier].p.cancel();   
+    }
+    return show;
 }
 
 start_watchers = function(shows) {
-	//Stagger this so that the server doesn't become unresponsive every 15 min
-	return Promise.all(shows.map((show,i)=>Promise.resolve(show)
-		.delay(i*2000)
-		.then(add_watcher)));
+    //Stagger this so that the server doesn't become unresponsive every 15 min
+    return Promise.all(shows.map((show,i)=>Promise.resolve(show)
+        .delay(i*2000)
+        .then(add_watcher)));
 }
 
 module.exports = {
-	start_watchers : start_watchers,
-	add_watcher : add_watcher,
-	stop_watcher: stop_watcher
+    start_watchers : start_watchers,
+    add_watcher : add_watcher,
+    stop_watcher: stop_watcher
 };
 const imdown = require('./image_sequence');

@@ -48,58 +48,57 @@ const theme = getMuiTheme({spacing: spacing,
 });
 
 class Main extends React.Component {
-	constructor(props){
-		super(props);
-		this.path_change = this.path_change.bind(this);
-	}
+  constructor(props){
+    super(props);
+    this.path_change = this.path_change.bind(this);
+  }
 
-	componentWillMount() {
-		this.props.history.listen(this.path_change)
-		this.path_change(this.props.location);
+  componentWillMount() {
+    this.props.history.listen(this.path_change)
+    this.path_change(this.props.location);
     navigate.init(this.props.history.push);
     show_loader.preload_data();
-	}
+  }
 
-	path_change(location) {
-		let parts = location.pathname.split("/");
-		parts.splice(0,1);
-		if (parts.length == 4 && parts[0] == "read") {
-			loader.change_episode(parts[1],parts[2]);	
-		}
+  path_change(location) {
+    let parts = location.pathname.split("/");
+    parts.splice(0,1);
+    if (parts.length == 4 && parts[0] == "read") {
+      loader.change_episode(parts[1],parts[2]); 
+    }
 
-	}
+  }
 
 
-	render() {
-		return <div className="contents">
-  	  <Menu/>
-  		<Switch>
-  		  <Route path="/read/:show/:episode/:type" render={({match})=>{
-  			 return <ImageDisplay show={match.params.show} episode={match.params.episode} type={match.params.type}/>
-  			}}/>
-        <Route path="/read/:show" render={({match})=>{
-         return <ShowPage show={match.params.show}/>
-        }}/>
-        <Route path="/list/:filter" render={({match})=>{
-          return <ShowList filter={match.params.filter}/>
-        }}/>
-        <Route path="/list/" render={()=>{
-          return <ShowList/>
-        }}/>
-        <Route path="/new" render={({history})=> <ShowAdder history={history}/>}/>
-  		</Switch>
-  	</div>
-
-	}
+    render() {
+        return <div className="contents">
+          <Menu/>
+              <Switch>
+                    <Route path="/read/:show/:episode/:type" render={({match})=>{
+                     return <ImageDisplay show={match.params.show} episode={match.params.episode} type={match.params.type}/>
+                    }}/>
+                    <Route path="/read/:show" render={({match})=>{
+                     return <ShowPage show={match.params.show}/>
+                    }}/>
+                    <Route path="/list/:filter" render={({match})=>{
+                      return <ShowList filter={match.params.filter}/>
+                    }}/>
+                    <Route path="/list/" render={()=>{
+                      return <ShowList/>
+                    }}/>
+                    <Route path="/new" render={({history})=> <ShowAdder history={history}/>}/>
+              </Switch>
+        </div>
+  }
 }
 
 const RouterMain = withRouter(Main);
 
 ReactDOM.render(
   <MuiThemeProvider muiTheme={theme}>
-  	<Router>
-  	  <RouterMain/>
-  	</Router>
+    <Router>
+      <RouterMain/>
+    </Router>
   </MuiThemeProvider>,
   document.getElementById('root')
 );

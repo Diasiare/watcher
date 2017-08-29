@@ -13,8 +13,9 @@ Refresh Menu on backend changes - DONE
 Create funcitonallity to back up the json for all shows - DONE
 FIx the memmory leak - DONE
 Fix the hangup crashes on the Websockets - DONE
+Add an indicator for new episodes - DONE
 Fix error where deleting show doesn't quite work, front end does not change
 Add ability to download torrents to backend
-Add an indicator for new episodes
 Serve video based shows
+Configure automatic deployment using bitbucket pipelines
 Auto generate human readable identifiers
