@@ -18,7 +18,11 @@ class ShowList  extends React.Component{
 	}
 
 	componentWillMount() {
-		data_loader.register_listener(this,"shows");
+		if (this.props.filter){
+			data_loader.register_listener(this,"shows",this.props.filter);
+		} else {
+			data_loader.register_listener(this,"shows");
+		}
 	}
 
 	componentWillUnmount() {
@@ -36,18 +40,6 @@ class ShowList  extends React.Component{
 
 		let elems = [];
 		let shows = this.state.shows;
-
-		if (this.props.filter) {
-			if (this.props.filter=="new"){
-				shows=shows.filter((show)=>{
-					return show.new && show.episode_count && show.new < show.episode_count;
-				});
-			} else {
-				shows=shows.filter((show)=>{
-					return show.type && show.type==this.props.filter;
-				});
-			}
-		}
 
 		for (let i = 0; i<shows.length;i++) {
 			elems.push(<ShowElement show={shows[i]} key={shows[i].identifier} new={this.props.filter=="new"}/>)

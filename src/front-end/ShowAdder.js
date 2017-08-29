@@ -266,6 +266,10 @@ class ShowAdder extends React.Component {
 			$.post("/data/shows",data,(data)=>{
 				if (!data.failed){
 					nav("/read/" + data.identifier);
+				} else {
+					let s = "Failed to create new show!\n\n";
+					s+= data.error;
+					alert(s);
 				}
 			});
 
