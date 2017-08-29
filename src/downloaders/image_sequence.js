@@ -44,7 +44,6 @@ var download_sequence =  function([show,sequence]) {
 			}
 		}, function (error,response,body){
 		    if (error) {
-		    	console.log(error.code);
 				if (error.code && error.code == "ECONNRESET"){
 				    if (sequence.restarts < 10) {
 					    resolve(Promise.delay(50).then(()=>

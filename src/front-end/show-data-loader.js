@@ -88,9 +88,17 @@ function run_callback(o) {
 	let tmp = {};
 	let {status,type} = listeners.get(o); 
 	let items = Object.keys(data).map((k)=>data[k]);
-	if (type) items = items.filter((item)=>{
-		return type===item.type;
-	});
+	if (type) {
+		if (type=="new"){
+			items=items.filter((show)=>{
+				return show.new && show.episode_count && show.new < show.episode_count;
+			});
+		} else {
+			items=items.filter((show)=>{
+				return show.type && show.type==type;
+			});
+		}
+	}
 	tmp[status] = items;
 	o.setState(tmp);
 }
