@@ -46,7 +46,7 @@ class ShowPage  extends React.Component{
 
 		let logo = null;
 		if(this.state.show.logo) {
-			logo = <img src={this.state.logo} key="logo" style={{
+			logo = <img src={this.state.show.logo} key="logo" style={{
 				marginRight:"12px",
 				maxHeight:"110px",
 			}}/>;
