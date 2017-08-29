@@ -8,14 +8,14 @@ const db_name = "database.sqlite"
 
 
 start = function (db_name) {
-		return Promise.resolve()
-		.return(db_name)
-		.then(db.init)
-		.then(db.get_shows)
-		.then(app.start_all)
-		.then(db.get_shows)
-		.then(manager.start_watchers)
-		.done();
+        return Promise.resolve()
+        .return(db_name)
+        .then(db.init)
+        .then(db.get_shows)
+        .then(app.start_all)
+        .then(db.get_shows)
+        .then(manager.start_watchers)
+        .done();
 }
 
 const image_sequence = require('./downloaders/image_sequence');
