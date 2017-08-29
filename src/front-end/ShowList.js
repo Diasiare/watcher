@@ -50,7 +50,7 @@ class ShowList  extends React.Component{
 		}
 
 		for (let i = 0; i<shows.length;i++) {
-			elems.push(<ShowElement show={shows[i]} key={i} new={this.props.filter=="new"}/>)
+			elems.push(<ShowElement show={shows[i]} key={shows[i].identifier} new={this.props.filter=="new"}/>)
 		}
 
 		if(elems.length == 0) {
