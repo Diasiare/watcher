@@ -76,7 +76,7 @@ class ShowElement extends React.Component {
     primary_ontouch(){
         if(this.props.new){
             $.get("/data/shows/" + this.props.show.identifier,(data)=>{
-                nav("/read/" + this.props.show.identifier + "/" + (data["new"]+1) + "/new" );
+                nav("/read/" + this.props.show.identifier + "/" + Math.min(data["new"]+1,this.props.show.episode_count) + "/new" );
             });         
         } else {
             nav("/read/" + this.props.show.identifier)

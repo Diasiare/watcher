@@ -72,8 +72,13 @@ setup_data_calls = function () {
                     "Cache-Control":"no-cache, no-store, must-revalidate"
                 })
                 let respond = (data)=>{
-                    data.src = build_resource_url(data.identifier,data.number + ".jpg");
-                    res.json(data);
+                    if (data){
+                        data.src = build_resource_url(data.identifier,data.number + ".jpg");
+                        res.json(data);                        
+                    } else {
+                        res.json({data:{}});
+                    }
+
                 }
                 let episode = parseInt(req.params.episode);
                 if (req.params.direction === "last") db.get_last(req.params.show).then(respond);
@@ -83,6 +88,7 @@ setup_data_calls = function () {
                 else if (req.params.direction === "prev") db.get_prev(req.params.show,episode)
                     .then(respond);
                 else if (req.params.direction === "current") db.get_episode_data(req.params.show,episode)
+                    .catch(()=>undefined)
                     .then(respond);
             });
             return app;

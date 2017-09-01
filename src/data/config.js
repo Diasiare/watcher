@@ -33,6 +33,8 @@ const defaults = {
     interval : 15*60*1000 //15 Minutes
 }
 
+
+
 init = function (path) {
     return resolve_path(path)
     .then((full_path)=>db.open(full_path, {Promise}))
@@ -65,6 +67,22 @@ ensure_loaded = function () {
     });
 }
 
+//Function to run on restart to fix possible problems that might crop up with the data
+ensure_consistency = function (show) {
+    return get_show_data(show.identifier)
+        .then((data)=>{
+            return ["new","reread"].map((type)=>{
+                if (data[type] > show.number) {
+                    return update_last_read(show.identifier,show.number,type)
+                } else {
+                    return null;
+                }
+            })
+        })
+        .all()
+        .return(show);
+}
+
 load_shows = function() {
     return db.all("SELECT data FROM shows")
         .map((show)=>Promise.resolve(JSON.parse(show.data))
@@ -95,9 +113,11 @@ perfrom_setup = function (show) {
         }
         return show
     })
-    .then(()=>{config.shows.set(show.identifier,show);
-                return show;
+    .then(()=>{
+        config.shows.set(show.identifier,show);
+        return show;
     })
+    .then(ensure_consistency)
     .return(show);
 }
 
@@ -201,19 +221,21 @@ resolve_path = function (filename) {
     .then((location)=>path.resolve(location,filename));
 }
 
-update_last_read = function(show,number,type) {
+update_last_read = function(identifier,number,type) {
     if (type != "new" )
-        return db.run("UPDATE last_read SET number=$number WHERE show=$show AND type=$type",
-            {$number:number,
-                $show:show,
-                $type:type});
+        return get_show(identifier)
+        .then((show)=>{
+            db.run("UPDATE last_read SET number=$number WHERE show=$show AND type=$type",
+                {$number:Math.min(show.number,number),
+                    $show:identifier,
+                    $type:type})            
+        });
     else 
-        return get_show_data(show,type)
-        .then((data)=>db.run("UPDATE last_read SET number=MAX(number,$number) WHERE show=$show AND type=$type",
-            {$number:Math.max(number,data[type]),
-                $show:show,
+        return Promise.all([get_show_data(identifier,type),get_show(identifier)])
+        .then(([data,show])=>db.run("UPDATE last_read SET number=$number WHERE show=$show AND type=$type",
+            {$number:Math.min(Math.max(number,data[type]),show.number),
+                $show:identifier,
                 $type:type}));
-
 }
 
 
