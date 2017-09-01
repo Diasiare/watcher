@@ -31,7 +31,7 @@ class ShowList  extends React.Component{
 
     render() {
         if (!this.state.shows) {
-            return <div className="columnFelx standardWidth center"> 
+            return <div className="columnFelx center" style={{width:resolve_width(this.props.width)}}> 
                 <img src="/images/loading.gif" />
             </div>
         }
@@ -42,17 +42,25 @@ class ShowList  extends React.Component{
         let shows = this.state.shows;
 
         for (let i = 0; i<shows.length;i++) {
-            elems.push(<ShowElement show={shows[i]} key={shows[i].identifier} new={this.props.filter=="new"}/>)
+            elems.push(<ShowElement show={shows[i]} 
+                width={this.props.width}
+                key={shows[i].identifier} 
+                new={this.props.filter=="new"}/>)
         }
 
         if(elems.length == 0) {
-            elems = <p>Nothing to see here, nothing matched the filter</p>
+            elems = <p style={{
+                margin:"auto",
+                fontWeight: "bold",
+                fontSize: "16px"
+            }}>Nothing to see here, nothing matched the filter</p>
         }
 
-        return <div className="standardWidth center" style={{
+        return <div className="center" style={{
             display:"flex",
             flexWrap:"wrap",
-            flexDirection:"row"
+            flexDirection:"row",
+            width:resolve_width(this.props.width),
         }}>
             {elems}
         </div>  
@@ -122,10 +130,15 @@ class ShowElement extends React.Component {
                 </div>
             </div>
         )
-
+        
+        //Basically we want the elements to fill the space availible
+        let num_elem = Math.floor(resolve_width_int(this.props.width)/250);
+        let width = Math.floor((resolve_width_int(this.props.width)/num_elem)-10);
+        let height = Math.floor((3/5)*width)
+    
         return <Paper zDepth={2} style={{
-                    width:"250px",
-                    height:"150px",
+                    width:width+"px",
+                    height:height+"px",
                     position:"relative",
                     margin:"5px",
                     cursor:"pointer",
@@ -154,3 +167,4 @@ module.exports = ShowList;
 
 
 const data_loader = require("./show-data-loader");
+const {resolve_width,resolve_width_int} = require("./helpers");

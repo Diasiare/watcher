@@ -10,6 +10,7 @@ const ImageDisplay = require("./front-end/ImageDisplay");
 const ShowList = require("./front-end/ShowList");
 const ShowPage = require("./front-end/ShowPage");
 const navigate = require("./front-end/navigate");
+const {is_mobile} = require("./front-end/helpers");
 const Menu = require("./front-end/Menu");
 const ShowAdder = require("./front-end/ShowAdder");
 const loader = require("./front-end/image-preloader");
@@ -51,6 +52,8 @@ class Main extends React.Component {
   constructor(props){
     super(props);
     this.path_change = this.path_change.bind(this);
+    this.state = { width: '0', height: '0' };
+    this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
   }
 
   componentWillMount() {
@@ -58,6 +61,11 @@ class Main extends React.Component {
     this.path_change(this.props.location);
     navigate.init(this.props.history.push);
     show_loader.preload_data();
+    window.addEventListener('resize', this.updateWindowDimensions);
+  }
+  
+  componentDidMount() {
+    this.updateWindowDimensions();
   }
 
   path_change(location) {
@@ -66,27 +74,43 @@ class Main extends React.Component {
     if (parts.length == 4 && parts[0] == "read") {
       loader.change_episode(parts[1],parts[2]); 
     }
-
   }
 
+  updateWindowDimensions() {
+    this.setState({ width: document.body.clientWidth, height: window.innerHeight });
+  }
 
     render() {
-        return <div className="contents">
-          <Menu/>
-              <Switch>
+        let width = this.state.width;
+        let style= {
+            width: (this.state.width-100)+"px",
+            fontFamily: "Roboto",
+            margin:"auto",
+        }
+        if (is_mobile(width)) {
+            style.width="100%";
+        }
+
+
+        return <div style={style}>
+                <Menu width={width}/>
+                <Switch>
                     <Route path="/read/:show/:episode/:type" render={({match})=>{
-                     return <ImageDisplay show={match.params.show} episode={match.params.episode} type={match.params.type}/>
+                     return <ImageDisplay width={width} 
+                        show={match.params.show} 
+                        episode={match.params.episode} 
+                        type={match.params.type}/>
                     }}/>
                     <Route path="/read/:show" render={({match})=>{
-                     return <ShowPage show={match.params.show} key={match.params.show}/>
+                     return <ShowPage width={width} show={match.params.show} key={match.params.show}/>
                     }}/>
                     <Route path="/list/:filter" render={({match})=>{
-                      return <ShowList filter={match.params.filter} key={match.params.filter}/>
+                      return <ShowList width={width} filter={match.params.filter} key={match.params.filter}/>
                     }}/>
                     <Route path="/list/" render={()=>{
-                      return <ShowList key="none"/>
+                      return <ShowList key="none" width={width}/>
                     }}/>
-                    <Route path="/new" render={({history})=> <ShowAdder history={history}/>}/>
+                    <Route path="/new" render={({history})=> <ShowAdder history={history} width={width}/>}/>
               </Switch>
         </div>
   }

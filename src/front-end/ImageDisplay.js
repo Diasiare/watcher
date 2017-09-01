@@ -5,6 +5,8 @@ const {Redirect,Link,Route} = require('react-router-dom');
 const loader = require("./image-preloader");
 const nav = require("./navigate").navigate;
 import Paper from 'material-ui/Paper';
+const {resolve_width,resolve_width_int} = require("./helpers");
+
 
 
 function updateLastRead(show,number,type) {
@@ -66,11 +68,13 @@ class ImageDisplay extends React.Component {
         let elems = []
 
         let info = this.state.current.data;
-        elems.push(<ImageContainer episode={this.state.current} navigate={this.navigate} key="contaner"/>);
-        elems.push(<NavElements navigate={this.navigate} key="nav"/>);
+        elems.push(<ImageContainer episode={this.state.current} 
+            width={this.props.width} 
+            navigate={this.navigate} key="container"/>);
+        elems.push(<NavElements navigate={this.navigate} width={this.props.width} key="nav"/>);
 
         if (info && "text" in info) {
-            elems.push(<Description text={info.text} key="text"/>);
+            elems.push(<Description text={info.text} width={this.props.width} key="text"/>);
         }
 
         let stuff = (
@@ -84,7 +88,11 @@ class ImageDisplay extends React.Component {
 }
 
 function NavElements(props) {
-    return <div className="imageNav flex_center">
+    return <div className="flex_center" style={{
+                width:(resolve_width_int(props.width)-50)+"px",
+                display: "flex",
+                flexDirection : "row",
+            }}>
             <NavButton type="first" navigate={props.navigate}/>
             <NavButton type="prev" navigate={props.navigate}/>
             <NavButton type="next" navigate={props.navigate}/>
@@ -129,9 +137,9 @@ class ImageContainer extends React.Component {
             return (<div className="imageContainer" onClick={()=>this.props.navigate("next")}>
                         <Title title={this.props.episode.data.title}/>
                         <img src={this.props.episode.src} style={{
-                            maxWidth:"1500px",
+                            maxWidth:Math.min(1500,this.props.width-4)+"px",
                         }}/>
-                        <AltText alt_text={this.props.episode.data.alt_text}/>
+                        <AltText alt_text={this.props.episode.data.alt_text} width={this.props.width}/>
                     </div>          
             )
         }
@@ -148,8 +156,13 @@ function Title(props) {
         return null;
     }
 
-    return <div className="title" style={{
+    return <div style={{
                 marginBottom:"5px",
+                marginLeft:"5px",    
+                width:"95%",
+                textAlign: "left",
+                fontSize: "16px",
+                fontWeight: "bold",
             }}>
                 {props.title}
             </div>
@@ -161,7 +174,7 @@ function AltText(props) {
         return null;
     }
 
-    return <div className="alt_text standardWidth">
+    return <div className="alt_text" style={{width:resolve_width(props.width)}}>
                 <p style={{margin:"0px"}}>{props.alt_text}</p>
             </div>
 }
@@ -172,7 +185,10 @@ function Description(props) {
 	}
 
     //This should be fine since the data in here is parsed directly from the source webpage (links may not resolve)
-	return <Paper className="text_area standardWidth" dangerouslySetInnerHTML={{__html:props.text}}>
+	return <Paper className="text_area" style={{
+                width:resolve_width(props.width),
+                }}
+                dangerouslySetInnerHTML={{__html:props.text}}>
            </Paper>
 }
 

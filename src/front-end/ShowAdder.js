@@ -14,6 +14,7 @@ const xmlser = require('xmlserializer');
 const dom = require('xmldom').DOMParser;
 const url = require('url');
 const nav = require("./navigate").navigate;
+const {resolve_width} = require("./helpers");
 
 
 function strip_uri(doc,urld) {
@@ -325,7 +326,7 @@ class ShowAdder extends React.Component {
 
 
 
-		return <div className="showAdder columnFelx standardWidth center">
+		return <div className="showAdder columnFelx center" style={{width:resolve_width(this.props.width)}}>
 					<div className="rowFlex">
 						<h1 className="pageTitle">
 							Add new show

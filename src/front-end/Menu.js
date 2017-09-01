@@ -3,6 +3,7 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 const data_loader = require("./show-data-loader");
 const nav = require("./navigate").navigate;
+const {is_mobile} = require("./helpers");
 import IconButton from 'material-ui/IconButton';
 import MenuItem from 'material-ui/MenuItem';
 import Hamburger from 'material-ui/svg-icons/navigation/menu';
@@ -14,6 +15,7 @@ import New from 'material-ui/svg-icons/content/add-circle';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import ArrowDropRight from 'material-ui/svg-icons/navigation-arrow-drop-right';
 import {List, ListItem, makeSelectable} from 'material-ui/List';
+import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui/Toolbar';
 import Drawer from 'material-ui/Drawer';
 import IconMenu from 'material-ui/IconMenu';
 import Badge from 'material-ui/Badge';
@@ -47,7 +49,7 @@ class Menu extends React.Component {
 
     render() {
         return <div>
-            <ShortMenu action={this.change}/>
+            <ShortMenu action={this.change} width={this.props.width}/>
             <MenuDrawer open={this.state.open} action={this.set_open}/>
         </div>;
     }
@@ -72,13 +74,14 @@ class ShortMenu extends React.Component {
 
     render() {
 
-        let new_menu_item = <IconButton onTouchTap={()=>navigate("/list/new")} 
+        let new_menu_item = <IconButton key="latest" 
+                                onTouchTap={()=>navigate("/list/new")} 
             tooltip="New Episodes"
             tooltipPosition="bottom-right">
               <LastPage/>
            </IconButton>;
         if (this.state.new_shows.length > 0){
-            new_menu_item = <Badge 
+            new_menu_item = <Badge key="latest"
                 badgeContent={this.state.new_shows.length}
                 badgeStyle={{top: 0, right: 0}}
                 style={{padding:"0px 0px 0px 0px"}}
@@ -88,25 +91,19 @@ class ShortMenu extends React.Component {
                 </Badge>
         } 
 
-        return <div className="menuOpenButton" style={{
-                position: "fixed",
-                top: "0px",
-                left: "0px",
-                display:"flex",
-                flexDirection:"column"
-            }}>
-           <IconButton onTouchTap={this.props.action} 
-           tooltip="Open Drawer"
-           tooltipPosition="bottom-right">
-              <Hamburger />
-           </IconButton>
-           <IconButton onTouchTap={()=>navigate("/new")} 
-           tooltip="Add New Show"
-           tooltipPosition="bottom-right">
+        let items = [
+            <IconButton key="open" onTouchTap={this.props.action} 
+                tooltip="Open Drawer"
+                tooltipPosition="bottom-right">
+                <Hamburger />
+            </IconButton>,
+            <IconButton key="new" onTouchTap={()=>navigate("/new")} 
+                tooltip="Add New Show"
+                tooltipPosition="bottom-right">
                 <New/>
-            </IconButton>
-           {new_menu_item}
-           <IconMenu 
+            </IconButton>,
+            new_menu_item,
+            <IconMenu key="selecion"
             iconButtonElement={<IconButton><MoreVertIcon /></IconButton>}
             anchorOrigin={{horizontal: 'left', vertical: 'top'}}
             targetOrigin={{horizontal: 'left', vertical: 'top'}}
@@ -121,9 +118,30 @@ class ShortMenu extends React.Component {
                             $("#backupSelect").click()
                         }/>,
                     ]}/>
-            </IconMenu>
-            <BackupHandlers/>
-        </div>      
+            </IconMenu>,
+            <BackupHandlers key="invisible"/>
+        ]
+
+        if (is_mobile(this.props.width)) {
+            return <Toolbar style={{
+                width:"100%",
+                margin:"0px 0px 5px 0px"
+            }}>
+                {items}
+            </Toolbar>
+        }
+
+
+
+        return <div className="menuOpenButton" style={{
+                position: "fixed",
+                top: "0px",
+                left: "0px",
+                display:"flex",
+                flexDirection:"column"
+            }}>
+                {items}            
+            </div>      
     }
 
 }

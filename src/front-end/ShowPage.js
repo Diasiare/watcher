@@ -3,6 +3,7 @@ const React = require('react');
 const ReactDOM = require('react-dom');
 const nav = require("./navigate").navigate;
 const data_loader = require("./show-data-loader");
+const {resolve_width} = require("./helpers");
 import LastPage from 'material-ui/svg-icons/navigation/last-page';
 import Replay from 'material-ui/svg-icons/av/replay';
 import Delete from 'material-ui/svg-icons/action/delete-forever';
@@ -37,8 +38,9 @@ class ShowPage  extends React.Component{
 
     render() {
         if (!this.state.show) {
-            return <div className="showPage columnFelx standardWidth center" style={{
-                    textAlign:"center"
+            return <div className="showPage columnFelx center" style={{
+                    textAlign:"center",
+                    width:resolve_width(this.props.width)
                 }}> 
                 <img src="/images/loading.gif" />
             </div>
@@ -46,23 +48,29 @@ class ShowPage  extends React.Component{
 
         let logo = null;
         if(this.state.show.logo) {
-            logo = <img src={this.state.show.logo} key="logo" style={{
-                marginRight:"12px",
-                maxHeight:"110px",
-            }}/>;
+            logo = <Paper zDepth={1} key="logo" style={{
+                    marginRight:"5px",
+                    height:"108px",           
+                }}>
+                <img src={this.state.show.logo}  style={{
+                    height:"108px",
+                }}/>
+            </Paper>
         } 
 
-        return <div className="showPage columnFelx standardWidth center">
+        return <div className="showPage columnFelx center" style={{width:resolve_width(this.props.width)}}>
             <div key="title" style={{
                 width:"100%",
                 textAlign: "left",
                 fontSize: "24px",
                 fontWeight: "bold",
-                paddingLeft: "2px",
+                margingLeft: "5px",
                 marginBottom:"3px"
             }}
             >{this.state.show.name}</div>
-            <div className="rowFlex">   
+            <div className="rowFlex" style={{
+                margin:"0px 2px",
+            }}>   
                 <div className="columnFelx">
                     {logo}
                 </div>
@@ -75,7 +83,7 @@ class ShowPage  extends React.Component{
                 </div>
             </div>
             <div style={{marginTop:"10px"}}>
-                <p>Episodes: {this.state.show.episode_count}</p>
+                <p style={{marginLeft:"5px"}}>Episodes: {this.state.show.episode_count}</p>
                 <Previews id={this.props.show} count={this.state.show.episode_count}/>
             </div>
         </div>  
@@ -112,8 +120,10 @@ class DeleteButton  extends React.Component{
 
     render() {
         let text = <p>Do you wish to delete <b>{this.props.name}</b>? This action is permanent.</p>;
+        let title = "Confirm Deletion";
         if (!this.props.name) {
-            text = <p>Do you wish to delete this show? This action is permanent.</p>
+            text = <p>Do you wish to delete this show? This action is permanent.</p>;
+            title = "Confirm Deletion of " + this.props.name;
         }
 
         let actions = [      
@@ -142,7 +152,7 @@ class DeleteButton  extends React.Component{
             <RaisedButton labelPosition="before" label="Delete Show" icon={<Delete/>} style={button_style}
                 onTouchTap={(e)=>this.setState({confirm:true})}/>
             <Dialog
-              title="Dialog With Actions"
+              title={title}
               actions={actions}
               modal={false}
               open={this.state.confirm}
