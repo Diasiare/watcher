@@ -73,9 +73,7 @@ class ShowPage  extends React.Component{
             <div className="rowFlex" style={{
                 margin:"0px 2px",
             }}>   
-                <div className="columnFelx">
-                    {logo}
-                </div>
+                {logo}
                 <div className="columnFelx" style={{
                     width:"100%"
                 }}>
