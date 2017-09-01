@@ -50,10 +50,12 @@ class ShowPage  extends React.Component{
         if(this.state.show.logo) {
             logo = <Paper zDepth={1} key="logo" style={{
                     marginRight:"5px",
-                    height:"108px",           
+                    height:"108px",
+                    maxWidth:"70%",           
                 }}>
                 <img src={this.state.show.logo}  style={{
                     height:"108px",
+                    maxWidth:"100%",
                 }}/>
             </Paper>
         } 
