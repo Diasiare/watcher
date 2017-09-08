@@ -26,9 +26,7 @@ var setup_download = function(show) {
             sequence.download_this = false;
             sequence.initial = false;
         }
-        if (["sin"].includes(show.identifier)){
-            sequence.check_all_episodes = true;
-        }
+        sequence.check_all_episodes = true;
         r([show,sequence]);
     }).then(download_sequence);
 }

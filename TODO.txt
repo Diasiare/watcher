@@ -14,6 +14,8 @@ Create funcitonallity to back up the json for all shows - DONE
 FIx the memmory leak - DONE
 Fix the hangup crashes on the Websockets - DONE
 Add an indicator for new episodes - DONE
+Responsive Design - DONE
+Move the titles in the show list to the bottom of the element
 Fix error where deleting show doesn't quite work, front end does not change
 Add ability to download torrents to backend
 Serve video based shows

@@ -50,7 +50,7 @@ class ShowList  extends React.Component{
 
         if(elems.length == 0) {
             elems = <p style={{
-                margin:"auto",
+                margin:"10px auto 0px auto",
                 fontWeight: "bold",
                 fontSize: "16px"
             }}>Nothing to see here, nothing matched the filter</p>
