@@ -30,7 +30,7 @@ const model = {
 var loaded = false;
 
 const defaults = {
-    interval : 15*60*1000 //15 Minutes
+    interval : 30*60*1000 //15 Minutes
 }
 
 
