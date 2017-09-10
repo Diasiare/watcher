@@ -19,9 +19,9 @@ const {resolve_width} = require("./helpers");
 const manga_sources = [{name:"Mangareader"
                         ,next_xpath:"//div[@id='imgholder']/a"
                         ,image_xpath:"//div[@id='imgholder']/a/img"},
-                        {name:"Manga Fox"
-                        ,next_xpath:"//div[@class='read_img']/a"
-                        ,image_xpath:"//div[@class='read_img']//img"},]
+                        {name:"mangakakalot"
+                        ,next_xpath:"//a[@class='back']"
+                        ,image_xpath:"//div[@id='vungdoc']/img"},]
 
 function strip_uri(doc,urld) {
 	let v = new Set();
