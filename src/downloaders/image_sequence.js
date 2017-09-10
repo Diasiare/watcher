@@ -37,6 +37,7 @@ var download_sequence =  function([show,sequence]) {
             url:sequence.base_url,
             method:'GET',
             gzip : true,
+            encoding:"utf-8",
             headers : {
                 'User-Agent' : "request",
             }

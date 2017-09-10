@@ -16,6 +16,12 @@ const url = require('url');
 const nav = require("./navigate").navigate;
 const {resolve_width} = require("./helpers");
 
+const manga_sources = [{name:"Mangareader"
+                        ,next_xpath:"//div[@id='imgholder']/a"
+                        ,image_xpath:"//div[@id='imgholder']/a/img"},
+                        {name:"Manga Fox"
+                        ,next_xpath:"//div[@class='read_img']/a"
+                        ,image_xpath:"//div[@class='read_img']//img"},]
 
 function strip_uri(doc,urld) {
 	let v = new Set();
@@ -194,6 +200,7 @@ class ShowAdder extends React.Component {
 			nextxpath:"",
 			textxpath:"",
 			logo:"",
+            manga_type:0,
 			doc:null
 		}
 		this.showTypeDropdownChange = this.showTypeDropdownChange.bind(this);
@@ -260,8 +267,8 @@ class ShowAdder extends React.Component {
 				}
 			} else if (s.showType == 3) {
 				data.type = "manga" ;
-				data.next_xpath = "//div[@id='imgholder']/a" ;
-				data.image_xpath = "//div[@id='imgholder']/a/img" ;
+				data.next_xpath = manga_sources[s.manga_type].next_xpath ;
+				data.image_xpath = manga_sources[s.manga_type].image_xpath ;
 			}
 
 			$.post("/data/shows",data,(data)=>{
@@ -278,7 +285,18 @@ class ShowAdder extends React.Component {
 	}
 
 	render() {
-		let remainder = [];
+        let remainder = [];
+        let r2_extra = [];
+        
+
+        if ([3].includes(this.state.showType)) {
+                r2_extra.push(<DropDownMenu key="manga_source" 
+                        value={this.state.manga_type} 
+                        onChange={(event,index,value)=>this.change("manga_type",value)}>
+                        {manga_sources.map((m,i)=><MenuItem value={i} primaryText={m.name} />)}
+                    </DropDownMenu>);
+        }
+
 
 		if ([2,3].includes(this.state.showType)) {
 			remainder.push(
@@ -290,6 +308,8 @@ class ShowAdder extends React.Component {
 					hintText="Start URL"/>
 			);
 		}
+
+
 
 		if ([2].includes(this.state.showType)) {
 			remainder.push(
@@ -335,7 +355,7 @@ class ShowAdder extends React.Component {
         					onChange={this.showTypeDropdownChange}>
           					<MenuItem value={1} primaryText="Select Type" />
           					<MenuItem value={2} primaryText="Webcomic" />
-          					<MenuItem value={3} primaryText="Mangareader" />
+          					<MenuItem value={3} primaryText="Manga" />
         				</DropDownMenu>	
         				<div style={{width:"100%",paddingRight:"10px"}}>
         				 <InteractiveImage
@@ -362,6 +382,7 @@ class ShowAdder extends React.Component {
         					style={{flexGrow:1}}
         					onChange={(e)=>this.change("name",e.target.value)}
         					hintText="Name"/>
+                        {r2_extra}
         			</div>
         			<div className="columnFelx" style={{width:"100%"}}>
         				{remainder}

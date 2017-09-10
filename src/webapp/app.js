@@ -183,10 +183,12 @@ setup_data_calls = function () {
             app.get('/function/get',(req,res)=>{
                 request({
                         url:req.query.url,
+                        encoding:"utf-8",
                         method:'GET',
                         headers : {
                             'User-Agent' : "request",
-                        }
+                        },
+                        gzip:true
                     }, function (error,response,body){
                         if (error) {
                             res.send("");
