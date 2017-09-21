@@ -241,7 +241,7 @@ update_last_read = function(identifier,number,type) {
 
 
 get_episode_data = function (show,episode) {
-    return db.get("SELECT * FROM episodes WHERE show=? AND number=?", show , episode)
+    return db.get("SELECT * FROM episodes WHERE show=? AND number=? LIMIT 1", show , episode)
         .then((resp)=>{return new Promise((r,e) => {
                 if (!resp) {
                     e("episode not found");
@@ -254,6 +254,17 @@ get_episode_data = function (show,episode) {
         });
 }
 
+get_episode_page_url = function (show,episode) {
+    return db.get("SELECT * FROM episodes WHERE show=? AND number=? LIMIT 1", show , episode)
+        .then((resp)=>{return new Promise((r,e) => {
+                if (!resp) {
+                    e("episode not found");
+                    return;
+                }
+                r(resp.page_url);
+            });
+        });
+}
 get_first = function (identifier) {
     return get_episode_data(identifier,1);
 }
@@ -338,6 +349,7 @@ module.exports = {
     get_pure_show : get_pure_show,
     get_show : get_show,
     check_image_exists : check_image_exists,
+    get_episode_page_url : get_episode_page_url,
 };
 const manager = require('./../downloaders/manager');
 const imdown = require('./../downloaders/image_sequence');

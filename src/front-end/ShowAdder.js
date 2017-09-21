@@ -293,7 +293,7 @@ class ShowAdder extends React.Component {
                 r2_extra.push(<DropDownMenu key="manga_source" 
                         value={this.state.manga_type} 
                         onChange={(event,index,value)=>this.change("manga_type",value)}>
-                        {manga_sources.map((m,i)=><MenuItem value={i} primaryText={m.name} />)}
+                        {manga_sources.map((m,i)=><MenuItem key={i} value={i} primaryText={m.name} />)}
                     </DropDownMenu>);
         }
 

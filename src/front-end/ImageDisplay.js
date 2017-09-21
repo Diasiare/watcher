@@ -5,6 +5,8 @@ const {Redirect,Link,Route} = require('react-router-dom');
 const loader = require("./image-preloader");
 const nav = require("./navigate").navigate;
 import Paper from 'material-ui/Paper';
+import Replay from 'material-ui/svg-icons/av/replay';
+import IconButton from 'material-ui/IconButton';
 const {resolve_width,resolve_width_int} = require("./helpers");
 
 
@@ -71,7 +73,8 @@ class ImageDisplay extends React.Component {
         elems.push(<ImageContainer episode={this.state.current} 
             width={this.props.width} 
             navigate={this.navigate} key="container"/>);
-        elems.push(<NavElements navigate={this.navigate} width={this.props.width} key="nav"/>);
+        elems.push(<NavElements navigate={this.navigate} data={this.state.current} 
+            width={this.props.width} key="nav"/>);
 
         if (info && "text" in info) {
             elems.push(<Description text={info.text} width={this.props.width} key="text"/>);
@@ -95,9 +98,39 @@ function NavElements(props) {
             }}>
             <NavButton type="first" navigate={props.navigate}/>
             <NavButton type="prev" navigate={props.navigate}/>
+            <Redownload data={props.data} />
             <NavButton type="next" navigate={props.navigate}/>
             <NavButton type="last" navigate={props.navigate}/>
         </div>
+}
+
+class Redownload extends React.Component {
+    constructor(props) {
+        super(props);
+        this.trigger = this.trigger.bind(this);
+    }
+
+    trigger() {
+        $.post("/data/shows/"+this.props.data.identifier+"/"+this.props.data.number,null,(data)=>{
+            if (!data.failed){
+                location.reload();
+            } else {
+                let s = "Failed to redownload!\n\n";
+                s+= data.error;
+                alert(s);
+            }
+        });
+    }
+
+    render() {
+        if (!this.props.data){
+            return null;
+        }
+
+        return <div className="navButton flex_center" style={{textAlign:"center"}} onClick={this.trigger}>
+            <img className="navImage" src="/images/redownload.png"/>
+        </div>  
+    }
 }
 
 class NavButton extends React.Component {

@@ -14,24 +14,49 @@ const Promise = require('bluebird');
 //Download a sequence of images
 
 var setup_download = function(show) {
-    return new Promise((r,e)=>{
-        let sequence = {}
-        sequence.restarts = 0;
-        sequence.base_url = show.base_url;
-        sequence.stop = false;
-        if (show.number == 0) {
-            sequence.download_this = true;
-            sequence.initial = true;
-        } else {
-            sequence.download_this = false;
-            sequence.initial = false;
-        }
-        sequence.check_all_episodes = true;
-        r([show,sequence]);
-    }).then(download_sequence);
+    return download_sequence([show,build_sequence(show)]);
+}
+
+var build_sequence = function(show) {
+    let sequence = {}
+    sequence.restarts = 0;
+    sequence.base_url = show.base_url;
+    sequence.stop = false;
+    sequence.number = show.number;
+    if (show.number == 0) {
+        sequence.download_this = true;
+        sequence.initial = true;
+    } else {
+        sequence.download_this = false;
+        sequence.initial = false;
+    }
+    sequence.check_all_episodes = true;
+    return sequence;
 }
 
 var download_sequence =  function([show,sequence]) {
+    return make_request([show,sequence])
+    .then(download_images)
+    .then(([show,sequence])=>{
+            if (!is_last(sequence,show)) {
+                console.log("CONTINUING " + show.number + " FOR " + show.identifier);
+                var link = xpath("("+show.next_xpath + ")/@href",sequence.doc);         
+                link = link[0].value;
+                sequence.base_url = url.resolve(sequence.base_url,link);
+                sequence.download_this = true;
+                sequence.number = show.number;
+                return Promise.delay(50).then(()=>
+                    download_sequence([show,sequence]));
+            } else {
+                console.log("STOPPING " + show.number + " FOR " + show.identifier);
+                sequence.download_this = false;
+                sequence.initial = false;
+                return show;
+            }
+    });
+}
+
+make_request = function([show,sequence]) {
     return new Promise(function (resolve,reject) {
         request( {
             url:sequence.base_url,
@@ -56,27 +81,28 @@ var download_sequence =  function([show,sequence]) {
             sequence.restarts = 0;
             resolve(body);
         })
-    })
+    })    
     .then(extract_body)
     .then((doc)=>sequence.doc=doc)
-    .return([show,sequence])
-    .then(download_images)
-    .then(([show,sequence])=>{
-            if (!is_last(sequence,show)) {
-                console.log("CONTINUING " + show.number + " FOR " + show.identifier);
-                var link = xpath("("+show.next_xpath + ")/@href",sequence.doc);         
-                link = link[0].value;
-                sequence.base_url = url.resolve(sequence.base_url,link);
-                sequence.download_this = true;
-                return Promise.delay(50).then(()=>
-                    download_sequence([show,sequence]));
-            } else {
-                console.log("STOPPING " + show.number + " FOR " + show.identifier);
-                sequence.download_this = false;
-                sequence.initial = false;
-                return show;
-            }
-    });
+    .return([show,sequence]);
+
+}
+
+redownload = function(identifier,episode) {
+    return get_show(identifier)
+        .then((show)=>{
+            let sequence = build_sequence(show);
+            sequence.number = episode-1;
+            sequence.download_this = true;
+            sequence.check_all_episodes = false;
+            return db.get_episode_page_url(identifier,episode)
+                .then((page_url)=>{
+                    sequence.base_url = page_url;
+                })
+                .return([show,sequence])
+                .then(make_request)
+                .then(download_images);
+        })
 }
 
 strip_uri = function(doc) {
@@ -183,7 +209,7 @@ var download_images = function([show,sequence]) {
                 }
             }).map( function (image_url,index,length) {
                 return new Promise ((resolve)=>{
-                    var number = show.number+index+1;
+                    var number = sequence.number+index+1;
                     var filename = path.join(show.directory,number+".jpg");
                     var thumbnail_name = path.join(show.thumbnail_dir,number+".jpg");
                     resolve({url:image_url
@@ -208,6 +234,7 @@ module.exports = {
     download_image : download_image,
     extract_body : extract_body,
     extract_aditional : extract_aditional,
-    create_thumbnail : create_thumbnail
+    create_thumbnail : create_thumbnail,
+    redownload : redownload,
 };
 const db = require('./../data/config');

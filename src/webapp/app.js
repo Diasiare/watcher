@@ -161,6 +161,21 @@ setup_data_calls = function () {
             });
             return app;
         }).then((app)=>{
+            app.post('/data/shows/:show/:episode',(req,res)=>{
+                downloader.redownload(req.params.show,parseInt(req.params.episode))
+                .then(()=>res.json({
+                    failed:false
+                }))
+                .catch((e)=>{
+                    res.json({
+                        failed:true,
+                        error:e
+                    });
+                    console.error(e);
+                });
+            });
+            return app;
+        }).then((app)=>{
             app.post('/data/shows',(req,res)=>{
                 let data = req.body;
                 Promise.resolve(data)
@@ -325,3 +340,4 @@ module.exports = {
 }   
 
 const db = require('../data/config');
+const downloader = require('../downloaders/image_sequence');
