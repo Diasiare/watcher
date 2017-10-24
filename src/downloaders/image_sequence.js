@@ -71,7 +71,7 @@ make_request = function([show,sequence]) {
                 if (error.code && error.code == "ECONNRESET"){
                     if (sequence.restarts < 10) {
                         resolve(Promise.delay(50).then(()=>
-                            download_sequence([show,sequence])));
+                            make_request([show,sequence])));
                         return ;                
                     }
                 }
