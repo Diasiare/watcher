@@ -140,7 +140,6 @@ get_pure_show = function(identifier) {
 }
 
 get_show = function (identifier) {
-    get_pure_show(identifier).then(console.log)
     let show = config.shows.get(identifier)
     if (show) {
         return Promise.resolve(show);
@@ -322,7 +321,6 @@ delete_show = function(identifier) {
 }
 
 restart_from = function(identifier, episode, new_url, next_xpath, image_xpath, text_xpath) {
-    console.log(next_xpath,image_xpath,text_xpath);
     return Promise.all([get_show(identifier),get_show_data(identifier)])
     .then(([show,data])=>{
         if (!show) {
@@ -341,7 +339,6 @@ restart_from = function(identifier, episode, new_url, next_xpath, image_xpath, t
                 Math.min(Math.min(episode,data["reread"]),show.number) ,identifier, "reread"))
             .then(()=>{
                 if (new_url) {
-                    console.log("Settiong url")
                     return Promise.resolve(show)
                         .then(()=>db.run("UPDATE episodes SET page_url=? WHERE show=? AND number=?",
                             new_url, identifier, episode));
