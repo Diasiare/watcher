@@ -238,7 +238,7 @@ update_last_read = function(identifier,number,type) {
     if (type != "new" )
         return get_show(identifier)
         .then((show)=>{
-            db.run("UPDATE last_read SET number=$number WHERE show=$show AND type=$type",
+            return db.run("UPDATE last_read SET number=$number WHERE show=$show AND type=$type",
                 {$number:Math.min(show.number,number),
                     $show:identifier,
                     $type:type})            
@@ -257,7 +257,7 @@ get_episode_data = function (show,episode) {
     return db.get("SELECT * FROM episodes WHERE show=? AND number=? LIMIT 1", show , episode)
         .then((resp)=>{return new Promise((r,e) => {
                 if (!resp) {
-                    e("episode not found");
+                    e(e);
                     return;
                 }
                 r({number:resp.number,
@@ -272,7 +272,7 @@ get_episode_page_url = function (show,episode) {
     return db.get("SELECT * FROM episodes WHERE show=? AND number=? LIMIT 1", show , episode)
         .then((resp)=>{return new Promise((r,e) => {
                 if (!resp) {
-                    e("episode not found");
+                    e(e);
                     return;
                 }
                 r(resp.page_url);
