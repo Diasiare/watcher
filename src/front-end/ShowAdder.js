@@ -393,4 +393,8 @@ class ShowAdder extends React.Component {
 }
 
 
-module.exports = ShowAdder;
+module.exports = {
+    ShowAdder: ShowAdder,
+    extract_body: extract_body,
+    InteractiveXpath: InteractiveXpath,
+}

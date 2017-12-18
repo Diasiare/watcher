@@ -7,7 +7,10 @@ const nav = require("./navigate").navigate;
 import Paper from 'material-ui/Paper';
 import Replay from 'material-ui/svg-icons/av/replay';
 import IconButton from 'material-ui/IconButton';
+import RaisedButton from 'material-ui/RaisedButton';
+import TextField from 'material-ui/TextField';
 const {resolve_width,resolve_width_int} = require("./helpers");
+const {extract_body, InteractiveXpath} = require("./ShowAdder");
 
 
 
@@ -25,11 +28,13 @@ class ImageDisplay extends React.Component {
         super(props);
         this.on_key = this.on_key.bind(this);
         this.navigate = this.navigate.bind(this);
+        this.flip_menu = this.flip_menu.bind(this);
         this.state= {next:null,
                     prev:null,
                     current:null,
                     first:null,
-                    last:null};
+                    last:null,
+                    menu_open:false};
     }
 
     on_key(e) {
@@ -40,6 +45,10 @@ class ImageDisplay extends React.Component {
         } else {
             return;
         }
+    }
+
+    flip_menu() {
+        this.setState({menu_open:!this.state.menu_open}); 
     }
 
     navigate(type) {
@@ -74,11 +83,17 @@ class ImageDisplay extends React.Component {
             width={this.props.width} 
             navigate={this.navigate} key="container"/>);
         elems.push(<NavElements navigate={this.navigate} data={this.state.current} 
-            width={this.props.width} key="nav"/>);
+            width={this.props.width} flip_menu={this.flip_menu} key="nav"/>);
+
+        if (this.state.menu_open) {
+            elems.push(<Options episode={this.state.current} width={this.props.width}
+                key="options" />)
+        }
 
         if (info && "text" in info) {
             elems.push(<Description text={info.text} width={this.props.width} key="text"/>);
         }
+
 
         let stuff = (
             <div className="center">
@@ -98,10 +113,135 @@ function NavElements(props) {
             }}>
             <NavButton type="first" navigate={props.navigate}/>
             <NavButton type="prev" navigate={props.navigate}/>
-            <Redownload data={props.data} />
+            <OptionsButton flip_menu={props.flip_menu}/>
             <NavButton type="next" navigate={props.navigate}/>
             <NavButton type="last" navigate={props.navigate}/>
         </div>
+}
+
+
+function OptionsButton(props) {
+    return <div className="navButton flex_center" style={{textAlign:"center"}} onClick={props.flip_menu}>
+            <img className="navImage" src="/images/options.png"/>
+        </div>  
+}
+
+class Options extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            new_url:"",
+            imxpath:"",
+            nextxpath:"",
+            textxpath:"",
+        }
+        this.restart = this.restart.bind(this);
+        this.change = this.change.bind(this);
+    }
+
+    restart() {
+        $.post("/data/shows/" + this.props.episode.identifier,{
+            episode:this.props.episode.number,
+            new_url:this.state.new_url,
+            imxpath:this.state.imxpath,
+            nextxpath:this.state.nextxpath,
+            textxpath:this.state.textxpath,
+        },(data)=>{
+            if (!data.failed){
+                location.reload();
+            } else {
+                let s = "Failed to restart!\n\n";
+                s+= data.error;
+                alert(s);
+            }
+        });
+    }
+
+    componentWillMount() {
+        $.get("/function/get",{url:this.props.episode.original_url},(data)=>{
+            if (data){
+                this.setState({doc:extract_body(data,this.props.episode.original_url)});
+            }
+        })
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (this.props.episode.original_url != nextProps.episode.original_url) {
+            $.get("/function/get",{url:nextProps.episode.original_url},(data)=>{
+                if (data){
+                    this.setState({doc:extract_body(data,nextProps.episode.original_url)});
+                }
+            })
+        }
+    }
+
+    change(s,v){
+        let tmp = {};
+        tmp[s]=v;
+        this.setState(tmp);
+    }
+
+
+    render() {
+        return (<div style={{
+                    width:(resolve_width_int(this.props.width)-50)+"px",
+                    display: "flex",
+                    flexDirection : "column",
+                }}>
+            <div className="flex_center" style={{
+                    width:(resolve_width_int(this.props.width)-50)+"px",
+                    display: "flex",
+                    flexDirection : "row",
+                }}>
+                <Redownload data={this.props.episode} />
+                <RaisedButton 
+                    label="Open Original" 
+                    style={{
+                        margin: "0px 5px",
+                    }}
+                    onTouchTap={()=>window.open(this.props.episode.original_url)}/>
+                <TextField 
+                    key="new_url"
+                    style={{
+                        margin: "0px 5px",
+                        flex:"1 1 auto"
+                    }}
+                    value={this.state.new_url} 
+                    onChange={(e)=>this.setState({new_url:e.target.value})}
+                    hintText="New URL"/>
+                <RaisedButton 
+                    label="Restart"
+                    style={{
+                        margin: "0px 5px"
+                    }}
+                    onTouchTap={this.restart}/>
+            </div>
+            <InteractiveXpath 
+                key="imxpath"
+                text="Image Xpath"
+                valName="imxpath"
+                val={this.state.imxpath}
+                doc={this.state.doc}
+                url={this.props.episode.original_url}
+                change={this.change}/>
+            <InteractiveXpath 
+                key="nextxpath"
+                text="Next Xpath"
+                valName="nextxpath"
+                val={this.state.nextxpath}
+                doc={this.state.doc}
+                url={this.props.episode.original_url}
+                change={this.change}/>
+            <InteractiveXpath 
+                key="textxpath"
+                text="Text Xpath"
+                valName="textxpath"
+                val={this.state.textxpath}
+                doc={this.state.doc}
+                url={this.props.episode.original_url}
+                change={this.change}/>
+        </div>)
+    }
 }
 
 class Redownload extends React.Component {
@@ -127,9 +267,9 @@ class Redownload extends React.Component {
             return null;
         }
 
-        return <div className="navButton flex_center" style={{textAlign:"center"}} onClick={this.trigger}>
-            <img className="navImage" src="/images/redownload.png"/>
-        </div>  
+        return <RaisedButton 
+                label="Redownload" 
+                onTouchTap={this.trigger}/>
     }
 }
 

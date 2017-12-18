@@ -140,7 +140,14 @@ get_pure_show = function(identifier) {
 }
 
 get_show = function (identifier) {
-    return Promise.resolve(config.shows.get(identifier));
+    get_pure_show(identifier).then(console.log)
+    let show = config.shows.get(identifier)
+    if (show) {
+        return Promise.resolve(show);
+    } else {
+        return Promise.reject(new Error("Show does not exist"));
+    }
+    
 }
 
 resolve_show = function (item) {
@@ -179,15 +186,21 @@ add_new_show = function(show) {
         } else {
             return  delete_show(show.identifier)
                 .then(()=>insert_new_show(show))
-                .then(()=>db.get("SELECT data FROM shows WHERE identifier=?", show.identifier))
-                .then((r)=>JSON.parse(r.data))
-                .then(resolve_show)
-                .then(perfrom_setup)
-                .then(manager.add_watcher)
+                .then(()=>start_show(show.identifier))
                 .then(()=>app.perform_callbacks(show.identifier))
                 .then(()=>get_show(show.identifier));
         }
     })
+}
+
+start_show = function(identifier) {
+    return Promise.resolve(identifier)
+        .then(()=>db.get("SELECT data FROM shows WHERE identifier=?", identifier))
+        .then((r)=>JSON.parse(r.data))
+        .then(resolve_show)
+        .then(perfrom_setup)
+        .then(manager.add_watcher);
+
 }
 
 insert_new_episode = function (data) {
@@ -249,6 +262,7 @@ get_episode_data = function (show,episode) {
                 }
                 r({number:resp.number,
                     identifier:resp.show,
+                    original_url:resp.page_url,
                     data:JSON.parse(resp.aditional_data)});
             });
         });
@@ -299,10 +313,58 @@ delete_show = function(identifier) {
             })
             .then(manager.stop_watcher)
             .then(()=>db.run("DELETE FROM shows WHERE identifier=?",identifier))
-            .then(()=>db.run("DELETE FROM episodes WHERE show=?",identifier))
+            .then(()=>db.run("DELETE FROM episodes WHERE show=? AND ",identifier))
             .then(()=>db.run("DELETE FROM last_read WHERE show=?",identifier))
             .then(()=>shelljs.rm("-rf",show.directory))
             .catch(console.error)
+            .return(identifier);
+    })
+}
+
+restart_from = function(identifier, episode, new_url, next_xpath, image_xpath, text_xpath) {
+    console.log(next_xpath,image_xpath,text_xpath);
+    return Promise.all([get_show(identifier),get_show_data(identifier)])
+    .then(([show,data])=>{
+        if (!show) {
+            return identifier;
+        }
+        return Promise.resolve(show)
+            .then((show)=>{
+                config.shows.delete(identifier);
+                return show;
+            })
+            .then(manager.stop_watcher)
+            .then(()=>db.run("DELETE FROM episodes WHERE show=? AND number > ?",identifier,episode))
+            .then(()=>db.run("UPDATE last_read SET number=? WHERE show=? AND type=?",
+                Math.min(Math.min(episode,data["new"]),show.number) ,identifier, "new"))
+            .then(()=>db.run("UPDATE last_read SET number=? WHERE show=? AND type=?",
+                Math.min(Math.min(episode,data["reread"]),show.number) ,identifier, "reread"))
+            .then(()=>{
+                if (new_url) {
+                    console.log("Settiong url")
+                    return Promise.resolve(show)
+                        .then(()=>db.run("UPDATE episodes SET page_url=? WHERE show=? AND number=?",
+                            new_url, identifier, episode));
+                }
+                return show;
+            })
+            .then(()=>{
+                if (next_xpath || image_xpath || text_xpath) {
+                    return get_pure_show(identifier)
+                        .then((pure_data)=>{
+                            if (next_xpath) pure_data.next_xpath = next_xpath;
+                            if (image_xpath) pure_data.image_xpath = image_xpath;
+                            if (text_xpath) pure_data.text_xpath = text_xpath;
+                            return db.run("UPDATE shows SET data=? WHERE identifier=?" , 
+                                JSON.stringify(pure_data),
+                                identifier)
+                        })
+                } else {
+                    return show
+                }
+            })
+            .catch(console.error)
+            .then(()=>start_show(identifier))
             .return(identifier);
     })
 }
@@ -350,6 +412,7 @@ module.exports = {
     get_show : get_show,
     check_image_exists : check_image_exists,
     get_episode_page_url : get_episode_page_url,
+    restart_from : restart_from,
 };
 const manager = require('./../downloaders/manager');
 const imdown = require('./../downloaders/image_sequence');

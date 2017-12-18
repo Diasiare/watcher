@@ -176,6 +176,27 @@ setup_data_calls = function () {
             });
             return app;
         }).then((app)=>{
+            //Restart from
+            app.post('/data/shows/:show',(req,res)=>{
+                let data = req.body;
+                Promise.resolve(data)
+                .then(()=>db.restart_from(req.params.show,parseInt(data.episode),data.new_url,
+                    data.nextxpath, data.imxpath, data.textxpath))
+                .then(()=>res.json({
+                    identifier:data.identifier,
+                    failed:false
+                }))
+                .then(()=>perform_callbacks(req.params.show))
+                .catch((e)=>{
+                    res.json({
+                        failed:true,
+                        error:e
+                    });
+                    console.error(e);
+                });
+            });
+            return app;
+        }).then((app)=>{
             app.post('/data/shows',(req,res)=>{
                 let data = req.body;
                 Promise.resolve(data)

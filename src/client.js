@@ -12,7 +12,7 @@ const ShowPage = require("./front-end/ShowPage");
 const navigate = require("./front-end/navigate");
 const {is_mobile} = require("./front-end/helpers");
 const Menu = require("./front-end/Menu");
-const ShowAdder = require("./front-end/ShowAdder");
+const {ShowAdder} = require("./front-end/ShowAdder");
 const loader = require("./front-end/image-preloader");
 const show_loader = require("./front-end/show-data-loader");
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
