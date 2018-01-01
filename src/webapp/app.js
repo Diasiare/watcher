@@ -67,6 +67,9 @@ serve_static_resources = function () {
 setup_data_calls = function () {
     return ensure_started()
         .then((app)=>{
+            /* Gets the episode that is in direction of the given episode
+             *
+             */
             app.get('/data/shows/:show/:episode/:direction',(req,res)=>{
                 res.set({
                     "Cache-Control":"no-cache, no-store, must-revalidate"
@@ -93,6 +96,9 @@ setup_data_calls = function () {
             });
             return app;
         }).then((app)=>{
+            /* Gets the metadata for all shows 
+             *
+             */ 
             app.get('/data/shows/',(req,res)=>{
                 res.set({
                     "Cache-Control":"no-cache, no-store, must-revalidate"
@@ -104,6 +110,9 @@ setup_data_calls = function () {
             });
             return app;
         }).then((app)=>{
+            /* Gets the basic data for show
+             *
+             */ 
             app.get('/data/shows/:show',(req,res)=>{
                 res.set({
                     "Cache-Control":"no-cache, no-store, must-revalidate"
@@ -122,6 +131,9 @@ setup_data_calls = function () {
             });
             return app;
         }).then((app)=>{
+            /* Send a backup.json file that can be used to restore all shows
+             * from their metadata
+             */
             app.get('/data/backup.json',(req,res)=>{
                 res.set({
                     "Cache-Control":"no-cache, no-store, must-revalidate",
@@ -135,6 +147,10 @@ setup_data_calls = function () {
             });
             return app;
         }).then((app)=>{
+            /* Recreates the server from a backup
+             * 
+             * re adds every show in the JSON file sent by the user
+             */ 
             app.post('/data/backup.json',upload.single("backup"),(req,res)=>{
                 Promise.resolve(JSON.parse(req.file.buffer))
                 .map(db.add_new_show)
@@ -161,6 +177,12 @@ setup_data_calls = function () {
             });
             return app;
         }).then((app)=>{
+            /* Redownload episode of show
+             *
+             * this will refetch the page of the episode and update the downloaded
+             * image if there is one, along with the metadata of the episode such as title,
+             * hover text and text
+             */ 
             app.post('/data/shows/:show/:episode',(req,res)=>{
                 downloader.redownload(req.params.show,parseInt(req.params.episode))
                 .then(()=>res.json({
@@ -176,7 +198,15 @@ setup_data_calls = function () {
             });
             return app;
         }).then((app)=>{
-            //Restart from
+            /* Restart a show from a specific point, potentially with new configuartion for the show
+             *
+             * Body componenets:
+             *   episode: the episode to restart from (String parsable to int)
+             *   new_url: the new page url of episode
+             *   nextpath: the new next_xpath that the show should use from now
+             *   imxpath: the new image xpath the show should use from now
+             *   textxpath: the new text xpath that the show should use from now 
+             */
             app.post('/data/shows/:show',(req,res)=>{
                 let data = req.body;
                 Promise.resolve(data)
@@ -197,6 +227,10 @@ setup_data_calls = function () {
             });
             return app;
         }).then((app)=>{
+            /*
+             * Create new show
+             */
+             //TODO: Validate the data here
             app.post('/data/shows',(req,res)=>{
                 let data = req.body;
                 Promise.resolve(data)
@@ -216,6 +250,12 @@ setup_data_calls = function () {
             });
             return app;
         }).then((app)=>{
+            /*
+             * Get the page located at req.query.url
+             *
+             * Used to bypas anti XSS limitations in browsers, very dangerous, 
+             * but nessesary for creating the interactive XPATH elements
+             */ 
             app.get('/function/get',(req,res)=>{
                 request({
                         url:req.query.url,
@@ -235,6 +275,9 @@ setup_data_calls = function () {
                 });
             return app;
         }).then((app)=>{
+            /*
+             * Delete a show
+             */
             app.delete('/data/shows/:show',(req,res)=>{
                     db.delete_show(req.params.show)
                         .then(()=>res.json({failed:false}))         
@@ -246,6 +289,11 @@ setup_data_calls = function () {
                 })
             return app;
         }).then((app)=>{
+            /*
+             * Websocket implementation, regardless of message we send back
+             * all shows, sending specific shows is only done as a result of
+             * backend updates
+             */
             app.ws('/socket/shows', (ws,req)=>{
 
                 get_shows_data()

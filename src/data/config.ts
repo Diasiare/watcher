@@ -1,13 +1,18 @@
+import * as Promise from 'bluebird' ;
+import {RawShow} from '../types/RawShow';
+import {Show} from '../types/Show';
 const fs = require('fs');
 const db = require("sqlite");
-const Promise = require('bluebird');
 const path = require('path');
 const mkdir = Promise.promisify(fs.mkdir);
 const shelljs = require('shelljs');
 
-const config = {shows:new Map()};
-const location = process.env.WATCHER_LOCATION;
+interface Config {
+    shows : Map<string, Show>
+}
 
+const config : Config = {shows:new Map()};
+const location : string = process.env.WATCHER_LOCATION;
 
 const model = {
     shows:`identifier TEXT NOT NULL PRIMARY KEY,
@@ -35,26 +40,27 @@ const defaults = {
 
 
 
-init = function (path) {
+
+const init = function (path) : Promise<Config> {
     return resolve_path(path)
     .then((full_path)=>db.open(full_path, {Promise}))
     .then(create_tables)
     .then(ensure_loaded);
 }
 
-create_tables = function() {
+const create_tables = function() : Promise<any> {
     return Promise.each(Object.keys(model),  (t_name)=>{
             return db.exec("CREATE TABLE IF NOT EXISTS " + t_name + " ( " + model[t_name] + " )");
         }
     );
 }
 
-close = function () {
+const close = function () : Promise<any> {
     console.log("DATABASE CLOSED")
     return db.close();
 }
 
-ensure_loaded = function () {
+const ensure_loaded = function () : Promise<Config> {
     return new Promise((r)=>{
         if (!loaded) load_shows().then((shows)=>{
             loaded=true;
@@ -68,7 +74,7 @@ ensure_loaded = function () {
 }
 
 //Function to run on restart to fix possible problems that might crop up with the data
-ensure_consistency = function (show) {
+const ensure_consistency = function (show : Show) : Promise<Show> {
     return get_show_data(show.identifier)
         .then((data)=>{
             return ["new","reread"].map((type)=>{
@@ -83,14 +89,13 @@ ensure_consistency = function (show) {
         .return(show);
 }
 
-load_shows = function() {
-    return db.all("SELECT data FROM shows")
-        .map((show)=>Promise.resolve(JSON.parse(show.data))
-        .then(resolve_show));
+const load_shows = function() : Promise<Show[]> {
+    return get_pure_shows().map(resolve_show);
 }
 
 //Load default values and ensure that directories exist
-perfrom_setup = function (show) {
+const perfrom_setup = function (rshow : Show) : Promise<Show> {
+    let show : Show = <Show> rshow;
     return Promise.map(Object.keys(defaults),  (name)=>{
         if (!(name in show)) show[name]=defaults[name];
     })
@@ -122,16 +127,16 @@ perfrom_setup = function (show) {
 }
 
 
-get_shows = function () {
+const get_shows = function () : Promise<Show[]> {
     return Promise.resolve(Array.from(config.shows.values()));
 }
 
-get_pure_shows = function() {
+const get_pure_shows = function() : Promise<RawShow[]> {
     return db.all("SELECT data FROM shows")
         .map((show)=>Promise.resolve(JSON.parse(show.data)));
 }
 
-get_pure_show = function(identifier) {
+const get_pure_show = function(identifier: string) : Promise<RawShow> {
     return db.get("SELECT data FROM shows WHERE identifier=?", identifier)
         .then((show)=>{
             if (show) return Promise.resolve(JSON.parse(show.data));
@@ -139,7 +144,7 @@ get_pure_show = function(identifier) {
         });
 }
 
-get_show = function (identifier) {
+const get_show = function (identifier: string) : Promise<Show> {
     let show = config.shows.get(identifier)
     if (show) {
         return Promise.resolve(show);
@@ -149,7 +154,8 @@ get_show = function (identifier) {
     
 }
 
-resolve_show = function (item) {
+const resolve_show = function (ritem: RawShow) : Show {
+    let item : Show = <Show> ritem; 
     return db.get("SELECT number , page_url , image_url FROM episodes WHERE show=? ORDER BY number DESC LIMIT 1"
         ,item.identifier).then((row)=>{
         if (row == undefined) {
@@ -166,7 +172,7 @@ resolve_show = function (item) {
 //We store the data as a json object because that is much easier as the format needs to be
 //wastly different for differnt types of shows (image_sequence, torrent, tv, etc), the overhead should be minimal
 //As this table should only rarely be written to
-insert_new_show = function (data) {
+const insert_new_show = function (data: RawShow) : Promise<RawShow> {
     var identifier = data.identifier;
     var aditional_data = JSON.stringify(data);
     return Promise.resolve("").then(()=>db.run("INSERT INTO shows VALUES(?,?)", identifier, aditional_data))
@@ -175,13 +181,13 @@ insert_new_show = function (data) {
     .return(data);
 }
 
-add_new_show = function(show) {
+const add_new_show = function(show : RawShow) : Promise<Show> {
     return get_pure_show(show.identifier)
     .then((os)=>{
         //Don't update if no chnages have been made
         if (os && Object.keys(show).every((k)=>os[k]==show[k])
              && Object.keys(os).every((k)=>os[k]==show[k])) {
-            return os;
+            return get_show(show.identifier);
         } else {
             return  delete_show(show.identifier)
                 .then(()=>insert_new_show(show))
@@ -192,7 +198,7 @@ add_new_show = function(show) {
     })
 }
 
-start_show = function(identifier) {
+const start_show = function(identifier: string) : Promise<Show> {
     return Promise.resolve(identifier)
         .then(()=>db.get("SELECT data FROM shows WHERE identifier=?", identifier))
         .then((r)=>JSON.parse(r.data))
@@ -202,7 +208,7 @@ start_show = function(identifier) {
 
 }
 
-insert_new_episode = function (data) {
+const insert_new_episode = function (data) {
     var identifier = data.identifier;
     var number = data.number;
     var image_url = data.url;
@@ -224,16 +230,16 @@ insert_new_episode = function (data) {
     .return(data);
 }
 
-get_storage_location = function () {
+const get_storage_location = function () {
     return Promise.resolve(location);
 }
 
-resolve_path = function (filename) {
+const resolve_path = function (filename) {
     return get_storage_location()
     .then((location)=>path.resolve(location,filename));
 }
 
-update_last_read = function(identifier,number,type) {
+const update_last_read = function(identifier,number,type) {
     if (type != "new" )
         return get_show(identifier)
         .then((show)=>{
@@ -243,7 +249,7 @@ update_last_read = function(identifier,number,type) {
                     $type:type})            
         });
     else 
-        return Promise.all([get_show_data(identifier,type),get_show(identifier)])
+        return Promise.all([get_show_data(identifier), get_show(identifier)])
         .then(([data,show])=>db.run("UPDATE last_read SET number=$number WHERE show=$show AND type=$type",
             {$number:Math.min(Math.max(number,data[type]),show.number),
                 $show:identifier,
@@ -252,7 +258,7 @@ update_last_read = function(identifier,number,type) {
 
 
 
-get_episode_data = function (show,episode) {
+const get_episode_data = function (show,episode) {
     return db.get("SELECT * FROM episodes WHERE show=? AND number=? LIMIT 1", show , episode)
         .then((resp)=>{return new Promise((r,e) => {
                 if (!resp) {
@@ -267,7 +273,7 @@ get_episode_data = function (show,episode) {
         });
 }
 
-get_episode_page_url = function (show,episode) {
+const get_episode_page_url = function (show,episode) {
     return db.get("SELECT * FROM episodes WHERE show=? AND number=? LIMIT 1", show , episode)
         .then((resp)=>{return new Promise((r,e) => {
                 if (!resp) {
@@ -278,49 +284,45 @@ get_episode_page_url = function (show,episode) {
             });
         });
 }
-get_first = function (identifier) {
+const get_first = function (identifier) {
     return get_episode_data(identifier,1);
 }
 
-get_last = function (identifier) {
+const get_last = function (identifier) {
     return get_show(identifier).then((show)=>get_episode_data(identifier,show.number));
 }
 
-get_next = function (identifier,episode) {
+const get_next = function (identifier,episode) {
     return get_episode_data(identifier,episode+1).catch((e)=>get_episode_data(identifier,episode)).catch(()=>undefined);
 }
 
 
-get_prev = function (identifier,episode) {
+const get_prev = function (identifier,episode) {
     return get_episode_data(identifier,episode-1).catch(()=>get_episode_data(identifier,episode)).catch(()=>undefined);
 }
 
-get_last_unread = function(identifier,type) {
+const get_last_unread = function(identifier,type) {
     return db.get("SELECT show , number FROM last_read WHERE type=? AND show=?",
         type,identifier).then((data)=>get_next(data.show,data.number));
 }
 
-delete_show = function(identifier) {
-    return get_show(identifier).then((show)=>{
-        if (!show) {
-            return identifier;
-        }
-        return Promise.resolve(show)
+const delete_show = function(identifier) {
+    return get_show(identifier)
             .then((show)=>{
                 config.shows.delete(identifier);
                 return show;
             })
             .then(manager.stop_watcher)
             .then(()=>db.run("DELETE FROM shows WHERE identifier=?",identifier))
-            .then(()=>db.run("DELETE FROM episodes WHERE show=? AND ",identifier))
+            .then(()=>db.run("DELETE FROM episodes WHERE show=?",identifier))
             .then(()=>db.run("DELETE FROM last_read WHERE show=?",identifier))
-            .then(()=>shelljs.rm("-rf",show.directory))
+            .then(()=>get_show(identifier))
+            .then((show)=>shelljs.rm("-rf",show.directory))
             .catch(console.error)
             .return(identifier);
-    })
 }
 
-restart_from = function(identifier, episode, new_url, next_xpath, image_xpath, text_xpath) {
+const restart_from = function(identifier, episode, new_url, next_xpath, image_xpath, text_xpath) {
     return Promise.all([get_show(identifier),get_show_data(identifier)])
     .then(([show,data])=>{
         if (!show) {
@@ -366,8 +368,11 @@ restart_from = function(identifier, episode, new_url, next_xpath, image_xpath, t
     })
 }
 
-get_show_data = function(identifier) {
-    let data = {identifier:identifier};
+const get_show_data = function(identifier) {
+    let data = {identifier:identifier,
+        type: null,
+        logo: null,
+    };
     return db.all("SELECT number , type FROM last_read WHERE show=?",identifier)
     .map((row)=>{
         data[row.type]=row.number;
@@ -382,7 +387,7 @@ get_show_data = function(identifier) {
     .return(data);
 }
 
-check_image_exists = function (show,image_url) {
+const check_image_exists = function (show,image_url) {
     return db.get("SELECT number FROM episodes WHERE show=$show AND image_url=$image_url LIMIT 1", {
         $show:show,
         $image_url:image_url
@@ -392,7 +397,7 @@ check_image_exists = function (show,image_url) {
 module.exports = {
     get_shows : get_shows,
     resolve_path: resolve_path,
-    add_new_show , add_new_show,
+    add_new_show : add_new_show,
     delete_show : delete_show,
     init : init,
     close : close,

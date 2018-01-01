@@ -7,7 +7,7 @@ const path = require('path');
 const db_name = "database.sqlite"
 
 
-start = function (db_name) {
+let start = function (db_name) {
         return Promise.resolve()
         .return(db_name)
         .then(db.init)
