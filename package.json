@@ -3,11 +3,11 @@
   "version": "1.0.0",
   "description": "It watches the web",
   "author": "Felix Plymouth <f.plymouth@gmail.com>",
-  "main": "src/server.js",
+  "main": "dist/server.js",
   "scripts": {
     "start": "node --max_old_space_size=400 dist/server.js",
-    "test": "node src/tests.js",
-    "build": "tsc --listFiles --listEmittedFiles && webpack"
+    "test": "node dist/tests.js",
+    "build": "(tsc --listFiles --listEmittedFiles || echo 'typescript has errors') && webpack"
   },
   "dependencies": {
     "ajv": "^5.5.2",

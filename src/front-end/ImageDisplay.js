@@ -11,6 +11,7 @@ import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
 const {resolve_width,resolve_width_int} = require("./helpers");
 const {extract_body, InteractiveXpath} = require("./ShowAdder");
+const show_loader = require("./show-data-loader");
 
 
 
@@ -128,24 +129,35 @@ function OptionsButton(props) {
 
 class Options extends React.Component {
     constructor(props) {
-        super(props);
-        this.state = {
-            new_url:"",
-            imxpath:"",
-            nextxpath:"",
-            textxpath:"",
+        super(props);      
+        this.show = show_loader.get_show_data(props.episode.identifier);
+        if (this.show) {
+            this.state = {
+                new_url: props.episode.original_url,
+                imxpath: this.show.image_xpath,
+                nextxpath: this.show.next_xpath,
+                textxpath: this.show.text_xpath,
+            }
+        } else {
+            this.state = {
+                new_url: props.episode.original_url,
+                imxpath:"",
+                nextxpath:"",
+                textxpath:"",
+            }
         }
+
         this.restart = this.restart.bind(this);
         this.change = this.change.bind(this);
     }
 
     restart() {
         $.post("/data/shows/" + this.props.episode.identifier,{
-            episode:this.props.episode.number,
-            new_url:this.state.new_url,
-            imxpath:this.state.imxpath,
-            nextxpath:this.state.nextxpath,
-            textxpath:this.state.textxpath,
+            episode: this.props.episode.number,
+            new_url: this.state.new_url,
+            imxpath: this.state.imxpath == this.show.image_xpath ? "" : this.state.imxpath,
+            nextxpath: this.state.nextxpath == this.show.next_xpath ? "" : this.state.nextxpath,
+            textxpath: this.state.textxpath == this.show.text_xpath ? "" : this.state.textxpath,
         },(data)=>{
             if (!data.failed){
                 location.reload();
@@ -158,20 +170,40 @@ class Options extends React.Component {
     }
 
     componentWillMount() {
-        $.get("/function/get",{url:this.props.episode.original_url},(data)=>{
+        $.get("/function/get",{url: this.state.new_url},(data)=>{
             if (data){
                 this.setState({doc:extract_body(data,this.props.episode.original_url)});
             }
-        })
+        })      
     }
 
     componentWillReceiveProps(nextProps) {
         if (this.props.episode.original_url != nextProps.episode.original_url) {
+            this.setState({new_url: nextProps.episode.original_url});
             $.get("/function/get",{url:nextProps.episode.original_url},(data)=>{
                 if (data){
                     this.setState({doc:extract_body(data,nextProps.episode.original_url)});
                 }
             })
+        }
+
+        if (this.props.episode.identifier != nextProps.episode.identifier) {
+            this.show = show_loader.get_show_data(props.episode.identifier);
+            if (this.show) {
+                this.setState({
+                    new_url: props.episode.original_url,
+                    imxpath: this.show.image_xpath,
+                    nextxpath: this.show.next_xpath,
+                    textxpath: this.show.text_xpath,
+                })
+            } else {
+                this.setState({
+                    new_url: props.episode.original_url,
+                    imxpath:"",
+                    nextxpath:"",
+                    textxpath:"",
+                })
+            }
         }
     }
 

@@ -1,10 +1,13 @@
 const request = require('request')
-const Promise = require('bluebird');
+import * as Promise from 'bluebird' ;
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
 const multer  = require('multer');
 const upload = multer();
+import {RawShow} from '../types/RawShow';
+import {Show} from '../types/Show';
+
 
 var expressWs = require('express-ws');
 
@@ -16,7 +19,7 @@ function heartbeat() {
 }
 
 
-ensure_started = function () {
+const ensure_started = function () : any {
     return new Promise((r)=>{
         if (!app) {
             app = express();
@@ -53,18 +56,18 @@ ensure_started = function () {
     });
 }
 
-serve_shows = function (shows) {
+const serve_shows = function (shows) {
     return Promise.all([ensure_started(),db.resolve_path("shows")])
         .then(([app,dir])=>app.use("/shows",express.static(dir)));
 }
 
-serve_static_resources = function () {
+const serve_static_resources = function () {
     return ensure_started()
         .then((app)=>app.use(express.static("resources")));
 }
 
 
-setup_data_calls = function () {
+const setup_data_calls = function () {
     return ensure_started()
         .then((app)=>{
             /* Gets the episode that is in direction of the given episode
@@ -119,10 +122,6 @@ setup_data_calls = function () {
                 })
                 Promise.all([db.get_show_data(req.params.show),db.get_show(req.params.show)])
                     .then(([data,show])=>{
-                    if (show) {
-                        data.name = show.name;
-                        data.episode_count = show.number;
-                    }
                     if (data.logo) {
                         data.logo = build_resource_url(data.identifier,"logo.jpg");
                     }
@@ -154,7 +153,6 @@ setup_data_calls = function () {
             app.post('/data/backup.json',upload.single("backup"),(req,res)=>{
                 Promise.resolve(JSON.parse(req.file.buffer))
                 .map(db.add_new_show)
-                .map(serve_show)
                 .then(()=>res.json({
                     failed:false
                 }))
@@ -324,7 +322,7 @@ setup_data_calls = function () {
         });
 }
 
-perform_callbacks = function(identifier) {
+const perform_callbacks = function(identifier) {
     if (app) {
         return Promise.all([db.get_show_data(identifier),db.get_show(identifier)])
             .then(([data,show])=>{
@@ -354,8 +352,8 @@ perform_callbacks = function(identifier) {
     return identifier;
 }
 
-get_shows_data = function() {
-    return db.get_shows().map((show)=>{
+const get_shows_data = function() {
+    return db.get_shows().map((show : Show)=>{
         return db.get_show_data(show.identifier).then((data)=>{
             data.name = show.name;
             data.episode_count = show.number;
@@ -367,7 +365,7 @@ get_shows_data = function() {
     })
 }
 
-setup_default = function () {
+const setup_default = function () {
     app.use("/",function (req, res, next) {
         res.sendFile(path.join(__dirname,"../../resources/index.html"));
     })
@@ -386,17 +384,17 @@ setup_default = function () {
     })
 }
 
-start_all = function (shows) {
+const start_all = function (shows) {
     return serve_shows(shows)
         .then(serve_static_resources)
         .then(setup_data_calls)
         .then(setup_default);
 }
 
-build_resource_url = function() {
+const build_resource_url = function(...parts: string[]) {
     let adress = ""
-    if (arguments.length >= 1) adress = adress +"/shows/" + arguments[0];
-    if (arguments.length >= 2) adress = adress + "/" + arguments[1];
+    if (parts.length >= 1) adress = adress +"/shows/" + parts[0];
+    if (parts.length >= 2) adress = adress + "/" + parts[1];
     return adress;
 
 }
@@ -408,5 +406,6 @@ module.exports = {
     perform_callbacks : perform_callbacks
 }   
 
-const db = require('../data/config');
-const downloader = require('../downloaders/image_sequence');
+
+import * as db from '../data/config' ;
+import * as downloader from '../downloaders/image_sequence';

@@ -1,8 +1,10 @@
 import * as Promise from 'bluebird' ;
+import * as sqlite from 'sqlite' ;
 import {RawShow} from '../types/RawShow';
 import {Show} from '../types/Show';
+import {ShowData} from '../types/ShowData';
+//const db = require('sqlite');
 const fs = require('fs');
-const db = require("sqlite");
 const path = require('path');
 const mkdir = Promise.promisify(fs.mkdir);
 const shelljs = require('shelljs');
@@ -37,13 +39,14 @@ var loaded = false;
 const defaults = {
     interval : 30*60*1000 //30 Minutes
 }
-
+var db : sqlite.Database = null;
 
 
 
 const init = function (path) : Promise<Config> {
     return resolve_path(path)
-    .then((full_path)=>db.open(full_path, {Promise}))
+    .then((full_path)=>sqlite.open(full_path, <any> {Promise}))
+    .then((sql)=>db=sql)
     .then(create_tables)
     .then(ensure_loaded);
 }
@@ -55,9 +58,9 @@ const create_tables = function() : Promise<any> {
     );
 }
 
-const close = function () : Promise<any> {
+const close = function () : Promise<void> {
     console.log("DATABASE CLOSED")
-    return db.close();
+    return <any> db.close();
 }
 
 const ensure_loaded = function () : Promise<Config> {
@@ -132,12 +135,12 @@ const get_shows = function () : Promise<Show[]> {
 }
 
 const get_pure_shows = function() : Promise<RawShow[]> {
-    return db.all("SELECT data FROM shows")
+    return (<any> db.all("SELECT data FROM shows"))
         .map((show)=>Promise.resolve(JSON.parse(show.data)));
 }
 
 const get_pure_show = function(identifier: string) : Promise<RawShow> {
-    return db.get("SELECT data FROM shows WHERE identifier=?", identifier)
+    return <any> db.get("SELECT data FROM shows WHERE identifier=?", identifier)
         .then((show)=>{
             if (show) return Promise.resolve(JSON.parse(show.data));
             else return show;
@@ -156,7 +159,7 @@ const get_show = function (identifier: string) : Promise<Show> {
 
 const resolve_show = function (ritem: RawShow) : Show {
     let item : Show = <Show> ritem; 
-    return db.get("SELECT number , page_url , image_url FROM episodes WHERE show=? ORDER BY number DESC LIMIT 1"
+    return <any> db.get("SELECT number , page_url , image_url FROM episodes WHERE show=? ORDER BY number DESC LIMIT 1"
         ,item.identifier).then((row)=>{
         if (row == undefined) {
             item.number = 0;
@@ -216,8 +219,8 @@ const insert_new_episode = function (data) {
     var aditional_data = {};
     if ('data' in data) aditional_data = data.data;
     aditional_data = JSON.stringify(aditional_data);
-    return db.run("INSERT INTO episodes VALUES(?,?,?,?,?)", identifier, number, image_url , page_url
-        , aditional_data)
+    return (<any>db.run("INSERT INTO episodes VALUES(?,?,?,?,?)", identifier, number, image_url , page_url
+        , aditional_data))
     .then(()=>get_show(data.identifier))
     .then((show)=>{
         if (show.number < data.number) {
@@ -345,7 +348,6 @@ const restart_from = function(identifier, episode, new_url, next_xpath, image_xp
                         .then(()=>db.run("UPDATE episodes SET page_url=? WHERE show=? AND number=?",
                             new_url, identifier, episode));
                 }
-                return show;
             })
             .then(()=>{
                 if (next_xpath || image_xpath || text_xpath) {
@@ -357,7 +359,7 @@ const restart_from = function(identifier, episode, new_url, next_xpath, image_xp
                             return db.run("UPDATE shows SET data=? WHERE identifier=?" , 
                                 JSON.stringify(pure_data),
                                 identifier)
-                        })
+                        }).return(show)
                 } else {
                     return show
                 }
@@ -368,20 +370,24 @@ const restart_from = function(identifier, episode, new_url, next_xpath, image_xp
     })
 }
 
-const get_show_data = function(identifier) {
-    let data = {identifier:identifier,
-        type: null,
-        logo: null,
-    };
-    return db.all("SELECT number , type FROM last_read WHERE show=?",identifier)
+const get_show_data = function(identifier : string) : Promise<ShowData>
+{
+    let data : ShowData = <ShowData> {};
+    data.identifier = identifier;
+    return (<any>db.all("SELECT number , type FROM last_read WHERE show=?",identifier))
     .map((row)=>{
         data[row.type]=row.number;
     })
     .then(()=>get_show(identifier))
-    .then((show)=>{
+    .then((show : Show)=>{
         if (show) {
+            data.episode_count = show.number;
+            data.name = show.name;
             data.type = show.type;
-            if (show.logo) data.logo = true;            
+            data.logo = show.logo;
+            data.image_xpath = show.image_xpath;
+            data.next_xpath = show.next_xpath;
+            data.text_xpath = show.text_xpath;   
         }
     })
     .return(data);
@@ -394,27 +400,27 @@ const check_image_exists = function (show,image_url) {
     }).then((s)=>!!s);
 }
 
-module.exports = {
-    get_shows : get_shows,
-    resolve_path: resolve_path,
-    add_new_show : add_new_show,
-    delete_show : delete_show,
-    init : init,
-    close : close,
-    insert_new_episode:insert_new_episode,
-    update_last_read : update_last_read,
-    get_next : get_next,
-    get_prev :get_prev,
-    get_last : get_last,
-    get_first : get_first,
-    get_episode_data : get_episode_data,
-    get_show_data: get_show_data,
-    get_pure_shows : get_pure_shows,
-    get_pure_show : get_pure_show,
-    get_show : get_show,
-    check_image_exists : check_image_exists,
-    get_episode_page_url : get_episode_page_url,
-    restart_from : restart_from,
+export {
+    get_shows,
+    resolve_path,
+    add_new_show,
+    delete_show,
+    init,
+    close,
+    insert_new_episode,
+    update_last_read,
+    get_next,
+    get_prev,
+    get_last,
+    get_first,
+    get_episode_data,
+    get_show_data,
+    get_pure_shows,
+    get_pure_show,
+    get_show,
+    check_image_exists,
+    get_episode_page_url,
+    restart_from,
 };
 const manager = require('./../downloaders/manager');
 const imdown = require('./../downloaders/image_sequence');

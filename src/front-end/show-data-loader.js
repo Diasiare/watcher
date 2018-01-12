@@ -152,12 +152,17 @@ function run_show_callback(identifier,o) {
     }
 }
 
+function get_show_data(identifier) {
+    return data[identifier];
+}
+
 module.exports = {
     preload_data : preload_data,
     register_listener : add_listener,
     remove_listener : remove_listener,
     register_show_listener : register_show_listener,
-    remove_show_listener : remove_show_listener
+    remove_show_listener : remove_show_listener,
+    get_show_data : get_show_data,
 }
 
 

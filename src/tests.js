@@ -2,13 +2,14 @@
 //Basically I'll just be copying the JIT tests that I've written into here
 
 const image_sequence = require('./downloaders/image_sequence');
-const db = require('./data/db');
+const db = require('./data/config');
 const config = require('./data/config');
 const app = require('./webapp/app');
 const fs = require('fs');
 const Promise = require('bluebird');
 const dom = require('xmldom').DOMParser;
 const xpath = require('xpath').useNamespaces({"x": "http://www.w3.org/1999/xhtml"});
+const sqlite = require('sqlite');
 
 const test_db_name = "test.sqlite";
 //delete database afterwards
@@ -125,6 +126,8 @@ test_create_thumbnail = function() {
 		thumbnail_name:"test.jpg"
 	})
 }
-delete_test_db()
-test_download()
+//delete_test_db()
+//test_download()
 
+
+sqlite.open("db1").then(()=>sqlite.open("db2"))
