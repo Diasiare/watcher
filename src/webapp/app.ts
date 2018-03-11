@@ -399,11 +399,11 @@ const build_resource_url = function(...parts: string[]) {
 
 }
 
-module.exports = {
-    serve_shows : serve_shows,
-    serve_static_resources : serve_static_resources,
-    start_all : start_all,
-    perform_callbacks : perform_callbacks
+export {
+    serve_shows,
+    serve_static_resources,
+    start_all,
+    perform_callbacks
 }   
 
 

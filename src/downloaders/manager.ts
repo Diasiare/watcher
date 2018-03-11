@@ -50,9 +50,9 @@ const start_watchers = function(shows : Show[]) : Promise<Show[]> {
         .then(add_watcher)));
 }
 
-module.exports = {
-    start_watchers : start_watchers,
-    add_watcher : add_watcher,
-    stop_watcher: stop_watcher
+export {
+    start_watchers,
+    add_watcher,
+    stop_watcher
 };
 const imdown = require('./image_sequence');

@@ -1,5 +1,10 @@
 
-const Promise = require('bluebird');
+import * as Promise from 'bluebird' ;
+import * as image_sequence from './downloaders/image_sequence';
+import * as db from './data/config';
+import * as manager from './downloaders/manager';
+import * as app from './webapp/app';
+
 const fs = require('fs');
 const shell = require('shelljs');
 const path = require('path');
@@ -18,10 +23,6 @@ let start = function (db_name) {
         .done();
 }
 
-const image_sequence = require('./downloaders/image_sequence');
-const db = require('./data/config');
-const manager = require('./downloaders/manager');
-const app = require('./webapp/app');
 start(db_name);
 
 
