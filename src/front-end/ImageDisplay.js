@@ -133,7 +133,7 @@ class Options extends React.Component {
         this.show = show_loader.get_show_data(props.episode.identifier);
         if (this.show) {
             this.state = {
-                new_url: props.episode.original_url,
+                new_url: props.episode.base_url,
                 imxpath: this.show.image_xpath,
                 nextxpath: this.show.next_xpath,
                 textxpath: this.show.text_xpath,
@@ -172,17 +172,17 @@ class Options extends React.Component {
     componentWillMount() {
         $.get("/function/get",{url: this.state.new_url},(data)=>{
             if (data){
-                this.setState({doc:extract_body(data,this.props.episode.original_url)});
+                this.setState({doc:extract_body(data,this.props.episode.base_url)});
             }
         })      
     }
 
     componentWillReceiveProps(nextProps) {
-        if (this.props.episode.original_url != nextProps.episode.original_url) {
-            this.setState({new_url: nextProps.episode.original_url});
-            $.get("/function/get",{url:nextProps.episode.original_url},(data)=>{
+        if (this.props.episode.base_url != nextProps.episode.base_url) {
+            this.setState({new_url: nextProps.episode.base_url});
+            $.get("/function/get",{url:nextProps.episode.base_url},(data)=>{
                 if (data){
-                    this.setState({doc:extract_body(data,nextProps.episode.original_url)});
+                    this.setState({doc:extract_body(data,nextProps.episode.base_url)});
                 }
             })
         }
@@ -191,14 +191,14 @@ class Options extends React.Component {
             this.show = show_loader.get_show_data(props.episode.identifier);
             if (this.show) {
                 this.setState({
-                    new_url: props.episode.original_url,
+                    new_url: props.episode.base_url,
                     imxpath: this.show.image_xpath,
                     nextxpath: this.show.next_xpath,
                     textxpath: this.show.text_xpath,
                 })
             } else {
                 this.setState({
-                    new_url: props.episode.original_url,
+                    new_url: props.episode.base_url,
                     imxpath:"",
                     nextxpath:"",
                     textxpath:"",
@@ -231,7 +231,7 @@ class Options extends React.Component {
                     style={{
                         margin: "0px 5px",
                     }}
-                    onTouchTap={()=>window.open(this.props.episode.original_url)}/>
+                    onTouchTap={()=>window.open(this.props.episode.base_url)}/>
                 <TextField 
                     key="new_url"
                     style={{
@@ -254,7 +254,7 @@ class Options extends React.Component {
                 valName="imxpath"
                 val={this.state.imxpath}
                 doc={this.state.doc}
-                url={this.props.episode.original_url}
+                url={this.props.episode.base_url}
                 change={this.change}/>
             <InteractiveXpath 
                 key="nextxpath"
@@ -262,7 +262,7 @@ class Options extends React.Component {
                 valName="nextxpath"
                 val={this.state.nextxpath}
                 doc={this.state.doc}
-                url={this.props.episode.original_url}
+                url={this.props.episode.base_url}
                 change={this.change}/>
             <InteractiveXpath 
                 key="textxpath"
@@ -270,7 +270,7 @@ class Options extends React.Component {
                 valName="textxpath"
                 val={this.state.textxpath}
                 doc={this.state.doc}
-                url={this.props.episode.original_url}
+                url={this.props.episode.base_url}
                 change={this.change}/>
         </div>)
     }

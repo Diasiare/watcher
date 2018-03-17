@@ -34,7 +34,7 @@ const build_sequence = function(show) {
     return sequence;
 }
 
-const download_sequence =  function([show,sequence]) {
+const download_sequence =  function([show, sequence]) {
     return make_request([show,sequence])
     .then(download_images)
     .then(([show,sequence])=>{
@@ -193,11 +193,10 @@ const extract_aditional =  function(episode,show,sequence,image_index) {
 
 const download_images = function([show,sequence]) {
     return new Promise(function (resolve,reject){
-        var image_xpath = show.image_xpath;
         var doc = sequence.doc;
         var identifier = show.identifier;
         if (sequence.download_this) {
-            var images = xpath("("+image_xpath + ")/@src",doc)
+            var images = xpath("("+show.image_xpath + ")/@src",doc)
                 .map((rel_url)=>url.resolve(sequence.base_url,rel_url.value));
             let index = images.indexOf(show.last_episode_url)
             if (index > -1) {

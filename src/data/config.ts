@@ -3,6 +3,7 @@ import * as sqlite from 'sqlite' ;
 import {RawShow} from '../types/RawShow';
 import {Show} from '../types/Show';
 import {ShowData} from '../types/ShowData';
+import {Episode} from '../types/Episode' ;
 //const db = require('sqlite');
 const fs = require('fs');
 const path = require('path');
@@ -211,7 +212,7 @@ const start_show = function(identifier: string) : Promise<Show> {
 
 }
 
-const insert_new_episode = function (data) {
+const insert_new_episode = function (data : Episode) : Promise<Episode> {
     var identifier = data.identifier;
     var number = data.number;
     var image_url = data.url;
@@ -225,7 +226,7 @@ const insert_new_episode = function (data) {
     .then((show)=>{
         if (show.number < data.number) {
             show.number = data.number;
-            show.last_episode_url = data.image_url;
+            show.last_episode_url = data.url;
             show.base_url = data.base_url;
         }
     })
@@ -233,16 +234,16 @@ const insert_new_episode = function (data) {
     .return(data);
 }
 
-const get_storage_location = function () {
+const get_storage_location = function () : Promise<String> {
     return Promise.resolve(location);
 }
 
-const resolve_path = function (filename) {
+const resolve_path = function (filename : string) : Promise<string> {
     return get_storage_location()
     .then((location)=>path.resolve(location,filename));
 }
 
-const update_last_read = function(identifier,number,type) {
+const update_last_read = function(identifier : string, number : number, type : string) {
     if (type != "new" )
         return get_show(identifier)
         .then((show)=>{
@@ -261,55 +262,53 @@ const update_last_read = function(identifier,number,type) {
 
 
 
-const get_episode_data = function (show,episode) {
-    return db.get("SELECT * FROM episodes WHERE show=? AND number=? LIMIT 1", show , episode)
+const get_episode_data = function (identifier : string, episode_number : number) : Promise<Episode> {
+    return Promise.resolve(db.get("SELECT * FROM episodes WHERE show=? AND number=? LIMIT 1", identifier , episode_number))
         .then((resp)=>{return new Promise((r,e) => {
                 if (!resp) {
                     e(e);
                     return;
                 }
-                r({number:resp.number,
-                    identifier:resp.show,
-                    original_url:resp.page_url,
-                    data:JSON.parse(resp.aditional_data)});
-            });
+                let result : Episode = {
+                    identifier : resp.show,
+                    number : resp.number,
+                    url : resp.image_url,
+                    base_url : resp.page_url,
+                    data : JSON.parse(resp.aditional_data)
+               }
+               r(result);
         });
+    })
 }
 
-const get_episode_page_url = function (show,episode) {
-    return db.get("SELECT * FROM episodes WHERE show=? AND number=? LIMIT 1", show , episode)
-        .then((resp)=>{return new Promise((r,e) => {
-                if (!resp) {
-                    e(e);
-                    return;
-                }
-                r(resp.page_url);
-            });
-        });
+const get_episode_page_url = function (identifier : string, episode_number : number) : Promise<String>{
+    return get_episode_data(identifier, episode_number)
+        .then((episode)=>episode.base_url);
 }
-const get_first = function (identifier) {
+const get_first = function (identifier : string) : Promise<Episode> {
     return get_episode_data(identifier,1);
 }
 
-const get_last = function (identifier) {
+const get_last = function (identifier : string) : Promise<Episode>{
     return get_show(identifier).then((show)=>get_episode_data(identifier,show.number));
 }
 
-const get_next = function (identifier,episode) {
-    return get_episode_data(identifier,episode+1).catch((e)=>get_episode_data(identifier,episode)).catch(()=>undefined);
+const get_next = function (identifier : string, episode_number : number) : Promise<Episode> {
+    return get_episode_data(identifier,episode_number+1).catch((e)=>get_episode_data(identifier,episode_number)).catch(()=>undefined);
 }
 
 
-const get_prev = function (identifier,episode) {
-    return get_episode_data(identifier,episode-1).catch(()=>get_episode_data(identifier,episode)).catch(()=>undefined);
+const get_prev = function (identifier : string, episode_number : number) : Promise<Episode> {
+    return get_episode_data(identifier,episode_number-1).catch(()=>get_episode_data(identifier,episode_number)).catch(()=>undefined);
 }
 
-const get_last_unread = function(identifier,type) {
-    return db.get("SELECT show , number FROM last_read WHERE type=? AND show=?",
-        type,identifier).then((data)=>get_next(data.show,data.number));
+const get_last_unread = function(identifier : string, type : string) : Promise<Episode>{
+    return get_show_data(identifier)
+        .then((show_data)=>show_data[type])
+        .then((episode : number)=>get_next(identifier,episode));
 }
 
-const delete_show = function(identifier) {
+const delete_show = function(identifier : string) : Promise<string> {
     return get_show(identifier)
             .then((show)=>{
                 config.shows.delete(identifier);
@@ -325,7 +324,8 @@ const delete_show = function(identifier) {
             .return(identifier);
 }
 
-const restart_from = function(identifier, episode, new_url, next_xpath, image_xpath, text_xpath) {
+const restart_from = function(identifier : string, episode : number, new_url : string, next_xpath : string, 
+        image_xpath : string, text_xpath : string) : Promise<string> {
     return Promise.all([get_show(identifier),get_show_data(identifier)])
     .then(([show,data])=>{
         if (!show) {

@@ -1,8 +1,6 @@
 const $ = require('jquery');
 
 
-
-
 var preloads = {next:null,
                 prev:null,
                 last:null,
