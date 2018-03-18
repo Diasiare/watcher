@@ -7,19 +7,20 @@ const multer  = require('multer');
 const upload = multer();
 import {RawShow} from '../types/RawShow';
 import {Show} from '../types/Show';
+import {ShowData} from '../types/ShowData';
 
 
 var expressWs = require('express-ws');
 
-var app = null;
-const PORT = 8080;
+var app : any = null;
+const PORT : number = 8080;
 
-function heartbeat() {
+function heartbeat() : void{
   this.isAlive = true;
 }
 
 
-const ensure_started = function () : any {
+const ensure_started = function () : Promise<any> {
     return new Promise((r)=>{
         if (!app) {
             app = express();
@@ -56,18 +57,18 @@ const ensure_started = function () : any {
     });
 }
 
-const serve_shows = function (shows) {
+const serve_shows = function (shows : Show[]) : Promise<any> {
     return Promise.all([ensure_started(),db.resolve_path("shows")])
         .then(([app,dir])=>app.use("/shows",express.static(dir)));
 }
 
-const serve_static_resources = function () {
+const serve_static_resources = function () : Promise<any> {
     return ensure_started()
         .then((app)=>app.use(express.static("resources")));
 }
 
 
-const setup_data_calls = function () {
+const setup_data_calls = function () : Promise<any>{
     return ensure_started()
         .then((app)=>{
             /* Gets the episode that is in direction of the given episode
@@ -322,7 +323,7 @@ const setup_data_calls = function () {
         });
 }
 
-const perform_callbacks = function(identifier) {
+const perform_callbacks = function(identifier : string) : Promise<string> | string {
     if (app) {
         return Promise.all([db.get_show_data(identifier),db.get_show(identifier)])
             .then(([data,show])=>{
@@ -352,11 +353,9 @@ const perform_callbacks = function(identifier) {
     return identifier;
 }
 
-const get_shows_data = function() {
+const get_shows_data = function() : Promise<ShowData[]> {
     return db.get_shows().map((show : Show)=>{
         return db.get_show_data(show.identifier).then((data)=>{
-            data.name = show.name;
-            data.episode_count = show.number;
             if (data.logo) {
                 data.logo = build_resource_url(data.identifier,"logo.jpg");
             }
@@ -365,7 +364,7 @@ const get_shows_data = function() {
     })
 }
 
-const setup_default = function () {
+const setup_default = function () : void {
     app.use("/",function (req, res, next) {
         res.sendFile(path.join(__dirname,"../../resources/index.html"));
     })
@@ -384,14 +383,14 @@ const setup_default = function () {
     })
 }
 
-const start_all = function (shows) {
+const start_all = function (shows : Show[]) : Promise<void> {
     return serve_shows(shows)
         .then(serve_static_resources)
         .then(setup_data_calls)
         .then(setup_default);
 }
 
-const build_resource_url = function(...parts: string[]) {
+const build_resource_url = function(...parts: string[]) : string{
     let adress = ""
     if (parts.length >= 1) adress = adress +"/shows/" + parts[0];
     if (parts.length >= 2) adress = adress + "/" + parts[1];
