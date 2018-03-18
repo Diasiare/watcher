@@ -281,7 +281,7 @@ const get_episode_data = function (identifier : string, episode_number : number)
     })
 }
 
-const get_episode_page_url = function (identifier : string, episode_number : number) : Promise<String>{
+const get_episode_page_url = function (identifier : string, episode_number : number) : Promise<string>{
     return get_episode_data(identifier, episode_number)
         .then((episode)=>episode.base_url);
 }

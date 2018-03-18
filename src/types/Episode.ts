@@ -3,6 +3,8 @@ export interface Episode {
 	number : number,
 	url : string,
 	base_url : string,
+	filename? : string,
+	thumbnail_name? : string,
 	data? : {
 		title? : string,
 		text? :string[],

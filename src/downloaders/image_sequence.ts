@@ -11,14 +11,30 @@ const dom = require('xmldom').DOMParser;
 const path = require('path');
 const url = require('url');
 const Promise = require('bluebird');
+
+import {Show} from '../types/Show';
+import {Episode} from '../types/Episode';
 //Download a sequence of images
 
-const setup_download = function(show) {
-    return download_sequence([show,build_sequence(show)]);
+
+interface Sequence {
+    base_url : string,
+    restarts : number,
+    stop : boolean,
+    number : number,
+    download_this : boolean,
+    initial : boolean,
+    check_all_episodes: boolean,
+    doc : any,
+    show : Show 
 }
 
-const build_sequence = function(show) {
-    let sequence : any = {}
+const setup_download = function(show : Show) {
+    return download_sequence(build_sequence(show));
+}
+
+const build_sequence = function(show : Show) {
+    let sequence : Sequence = <any> {}
     sequence.restarts = 0;
     sequence.base_url = show.base_url;
     sequence.stop = false;
@@ -31,32 +47,33 @@ const build_sequence = function(show) {
         sequence.initial = false;
     }
     sequence.check_all_episodes = true;
+    sequence.show = show;
     return sequence;
 }
 
-const download_sequence =  function([show, sequence]) {
-    return make_request([show,sequence])
+const download_sequence =  function(sequence : Sequence) : Promise<Show> {
+    return make_request(sequence)
     .then(download_images)
-    .then(([show,sequence])=>{
-            if (!is_last(sequence,show)) {
-                console.log("CONTINUING " + show.number + " FOR " + show.identifier);
-                var link = xpath("("+show.next_xpath + ")/@href",sequence.doc);         
+    .then((sequence)=>{
+            if (!is_last(sequence)) {
+                console.log("CONTINUING " + sequence.show.number + " FOR " + sequence.show.identifier);
+                var link = xpath("("+sequence.show.next_xpath + ")/@href",sequence.doc);         
                 link = link[0].value;
                 sequence.base_url = url.resolve(sequence.base_url,link);
                 sequence.download_this = true;
-                sequence.number = show.number;
+                sequence.number = sequence.show.number;
                 return Promise.delay(50).then(()=>
-                    download_sequence([show,sequence]));
+                    download_sequence(sequence));
             } else {
-                console.log("STOPPING " + show.number + " FOR " + show.identifier);
+                console.log("STOPPING " + sequence.show.number + " FOR " + sequence.show.identifier);
                 sequence.download_this = false;
                 sequence.initial = false;
-                return show;
+                return sequence.show;
             }
     });
 }
 
-const make_request = function([show,sequence]) {
+const make_request = function(sequence : Sequence) {
     return new Promise(function (resolve,reject) {
         request( {
             url:sequence.base_url,
@@ -71,7 +88,7 @@ const make_request = function([show,sequence]) {
                 if (error.code && error.code == "ECONNRESET"){
                     if (sequence.restarts < 10) {
                         resolve(Promise.delay(50).then(()=>
-                            make_request([show,sequence])));
+                            make_request(sequence)));
                         return ;                
                     }
                 }
@@ -84,11 +101,11 @@ const make_request = function([show,sequence]) {
     })    
     .then(extract_body)
     .then((doc)=>sequence.doc=doc)
-    .return([show,sequence]);
+    .return(sequence);
 
 }
 
-const redownload = function(identifier,episode) {
+const redownload = function(identifier : string, episode : number) {
     return db.get_show(identifier)
         .then((show)=>{
             let sequence = build_sequence(show);
@@ -98,7 +115,7 @@ const redownload = function(identifier,episode) {
             return db.get_episode_page_url(identifier,episode)
                 .then((page_url)=>{
                     sequence.base_url = page_url
-                    return [show,sequence]
+                    return sequence
                 })
                 .then(make_request)
                 .then(download_images);
@@ -124,19 +141,19 @@ const strip_uri_rec = function(v,e) {
 }
 
 
-const extract_body = function(body) {
+const extract_body = function(body : string) {
     var document = parse5.parse(body);
     var xhtml = xmlser.serializeToString(document);
     var doc = new dom().parseFromString(xhtml);
     return strip_uri(doc);
 }
 
-const is_last = function(sequence,show){
-        var link = xpath("(" + show.next_xpath + ")/@href",sequence.doc);
-        return link.length == 0 || url.resolve(sequence.base_url,link[0].value) == sequence.base_url ;
+const is_last = function(sequence : Sequence){
+        var link = xpath("(" + sequence.show.next_xpath + ")/@href", sequence.doc);
+        return link.length == 0 || url.resolve(sequence.base_url, link[0].value) == sequence.base_url ;
 }
 
-const create_thumbnail = function(data) {
+const create_thumbnail = function(data : Episode) : Promise<Episode> | Episode {
     if (data.thumbnail_name) {
         return new Promise((r,error)=>{
                 gm(data.filename)
@@ -151,7 +168,7 @@ const create_thumbnail = function(data) {
 }
 
 //Download an image
-const download_image = function(data) {
+const download_image = function(data : Episode) : Promise<Episode> {
     console.log(data)
     return new Promise((r,error)=>{gm(request({
         url:data.url,
@@ -174,14 +191,14 @@ const download_image = function(data) {
     });
 }
 
-const extract_aditional =  function(episode,show,sequence,image_index) {
+const extract_aditional =  function(episode : Episode, sequence : Sequence, image_index : number) : Episode{
     let title = xpath("//title/text()",sequence.doc);
     episode.data = {};
     if (title.length > 0) episode.data.title = title[0].data;
-    let alt_text = xpath("("+show.image_xpath + ")/@title" , sequence.doc);
+    let alt_text = xpath("("+sequence.show.image_xpath + ")/@title" , sequence.doc);
     if (alt_text.length > image_index) episode.data.alt_text = alt_text[0].value;
-    if (show.text_xpath) {
-        let texts = xpath(show.text_xpath,sequence.doc);
+    if (sequence.show.text_xpath) {
+        let texts = xpath(sequence.show.text_xpath,sequence.doc);
         episode.data.text = texts.map((text)=>{
             return xmlser.serializeToString(text,true);
         });
@@ -191,41 +208,37 @@ const extract_aditional =  function(episode,show,sequence,image_index) {
 
 }
 
-const download_images = function([show,sequence]) {
-    return new Promise(function (resolve,reject){
+const download_images = function(sequence : Sequence) : Promise<Sequence> {
+    return new Promise((resolve,reject) =>{
         var doc = sequence.doc;
-        var identifier = show.identifier;
+        var identifier = sequence.show.identifier;
         if (sequence.download_this) {
-            var images = xpath("("+show.image_xpath + ")/@src",doc)
+            var images : string[] = xpath("("+ sequence.show.image_xpath + ")/@src",doc)
                 .map((rel_url)=>url.resolve(sequence.base_url,rel_url.value));
-            let index = images.indexOf(show.last_episode_url)
+            let index = images.indexOf(sequence.show.last_episode_url)
             if (index > -1) {
                 images.splice(index,1);
             }
             resolve(Promise.filter(images,(img)=>{
-                if(sequence.check_all_episodes) {
-                    return db.check_image_exists(show.identifier,img).then(b=>!b)
-                } else {
-                    return true;
-                }
-            }).map( function (image_url,index,length) {
+                return !sequence.check_all_episodes || db.check_image_exists(sequence.show.identifier,img).then(b=>!b)
+            }).map((image_url : string, index : number, length : number) => {
                 return new Promise ((resolve)=>{
                     var number = sequence.number+index+1;
-                    var filename = path.join(show.directory,number+".jpg");
-                    var thumbnail_name = path.join(show.thumbnail_dir,number+".jpg");
+                    var filename = path.join(sequence.show.directory,number+".jpg");
+                    var thumbnail_name = path.join(sequence.show.thumbnail_dir,number+".jpg");
                     resolve({url:image_url
                         ,filename:filename
                         ,thumbnail_name:thumbnail_name
                         ,number:number
-                        ,identifier:show.identifier
+                        ,identifier:sequence.show.identifier
                         ,base_url:sequence.base_url});
-                }).then((episode)=>extract_aditional(episode,show,sequence,index))
+                }).then((episode)=>extract_aditional(episode,sequence,index))
                 .then(download_image)
                 .then(db.insert_new_episode);
             })
-            .return([show,sequence]));
+            .return(sequence));
         } else {
-            resolve([show,sequence]);
+            resolve(sequence);
         }
     });
 }
