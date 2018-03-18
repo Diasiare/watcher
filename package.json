@@ -8,10 +8,15 @@
     "start": "node --max_old_space_size=400 dist/server.js",
     "test": "node dist/tests.js",
     "build": "(tsc --listFiles --listEmittedFiles || echo 'typescript has errors') && webpack",
-    "tscd" : "tsc -w" ,
-    "webd" : "webpack --watch --progress"
+    "tscd": "tsc -w",
+    "webd": "webpack --watch --progress"
   },
   "dependencies": {
+    "@creditkarma/thrift-client": "^0.6.2",
+    "@creditkarma/thrift-server-core": "^0.6.2",
+    "@creditkarma/thrift-server-express": "^0.6.2",
+    "@types/express-serve-static-core": "^4.11.1",
+    "@types/request": "^2.47.0",
     "ajv": "^5.5.2",
     "babel-polyfill": "^6.26.0",
     "bluebird": "^3.5.1",
@@ -43,6 +48,7 @@
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.19",
+    "@types/express": "^4.11.1",
     "@types/node": "^8.5.2",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",

@@ -1,20 +1,22 @@
 /**
 *Module for handling the watching and downloading of images
 **/
-const request = require('request');
-const fs = require('fs');
-const gm = require('gm').subClass({imageMagick: true});
-const xpath = require('xpath').useNamespaces({"x": "http://www.w3.org/1999/xhtml"});
-const parse5 = require('parse5');
-const xmlser = require('xmlserializer');
-const dom = require('xmldom').DOMParser;
-const path = require('path');
-const url = require('url');
-const Promise = require('bluebird');
 
-import {Show} from '../types/Show';
+import * as request from 'request';
+import * as magick from 'gm';
+import * as uninitalized_xpath from 'xpath';
+import * as parse5 from 'parse5';
+import * as xmlser from 'xmlserializer';
+import {DOMParser as dom}  from 'xmldom';
+import  * as path from 'path';
+import  * as url from 'url';
+import * as Promise from 'bluebird';
+import {ShowFields} from '../types/Show';
 import {Episode} from '../types/Episode';
 //Download a sequence of images
+
+const gm = magick.subClass({imageMagick: true});
+const xpath = uninitalized_xpath.useNamespaces({"x": "http://www.w3.org/1999/xhtml"});
 
 
 interface Sequence {
@@ -26,7 +28,7 @@ interface Sequence {
     initial : boolean,
     check_all_episodes: boolean,
     doc : any,
-    show : Show 
+    show : Show
 }
 
 const setup_download = function(show : Show) {
@@ -57,8 +59,7 @@ const download_sequence =  function(sequence : Sequence) : Promise<Show> {
     .then((sequence)=>{
             if (!is_last(sequence)) {
                 console.log("CONTINUING " + sequence.show.number + " FOR " + sequence.show.identifier);
-                var link = xpath("("+sequence.show.next_xpath + ")/@href",sequence.doc);         
-                link = link[0].value;
+                var link = (<Attr>xpath("("+sequence.show.next_xpath + ")/@href", sequence.doc)[0]).value;
                 sequence.base_url = url.resolve(sequence.base_url,link);
                 sequence.download_this = true;
                 sequence.number = sequence.show.number;
@@ -106,13 +107,14 @@ const make_request = function(sequence : Sequence) {
 }
 
 const redownload = function(identifier : string, episode : number) {
-    return db.get_show(identifier)
+    return Database.getInstance()
+        .then(db=>db.get_show(identifier))
         .then((show)=>{
             let sequence = build_sequence(show);
             sequence.number = episode-1;
             sequence.download_this = true;
             sequence.check_all_episodes = false;
-            return db.get_episode_page_url(identifier,episode)
+            return show.get_episode_page_url(episode)
                 .then((page_url)=>{
                     sequence.base_url = page_url
                     return sequence
@@ -149,7 +151,7 @@ const extract_body = function(body : string) {
 }
 
 const is_last = function(sequence : Sequence){
-        var link = xpath("(" + sequence.show.next_xpath + ")/@href", sequence.doc);
+        var link = <Attr[]> xpath("(" + sequence.show.next_xpath + ")/@href", sequence.doc);
         return link.length == 0 || url.resolve(sequence.base_url, link[0].value) == sequence.base_url ;
 }
 
@@ -192,10 +194,10 @@ const download_image = function(data : Episode) : Promise<Episode> {
 }
 
 const extract_aditional =  function(episode : Episode, sequence : Sequence, image_index : number) : Episode{
-    let title = xpath("//title/text()",sequence.doc);
+    let title = <any[]> xpath("//title/text()",sequence.doc);
     episode.data = {};
     if (title.length > 0) episode.data.title = title[0].data;
-    let alt_text = xpath("("+sequence.show.image_xpath + ")/@title" , sequence.doc);
+    let alt_text = <Attr[]> xpath("("+sequence.show.image_xpath + ")/@title" , sequence.doc);
     if (alt_text.length > image_index) episode.data.alt_text = alt_text[0].value;
     if (sequence.show.text_xpath) {
         let texts = xpath(sequence.show.text_xpath,sequence.doc);
@@ -214,27 +216,30 @@ const download_images = function(sequence : Sequence) : Promise<Sequence> {
         var identifier = sequence.show.identifier;
         if (sequence.download_this) {
             var images : string[] = xpath("("+ sequence.show.image_xpath + ")/@src",doc)
-                .map((rel_url)=>url.resolve(sequence.base_url,rel_url.value));
+                .map((rel_url : Attr)=>url.resolve(sequence.base_url,rel_url.value));
             let index = images.indexOf(sequence.show.last_episode_url)
             if (index > -1) {
                 images.splice(index,1);
             }
             resolve(Promise.filter(images,(img)=>{
-                return !sequence.check_all_episodes || db.check_image_exists(sequence.show.identifier,img).then(b=>!b)
+                return !sequence.check_all_episodes || Database.getInstance().then(db=>db.check_image_exists(sequence.show.identifier,img).then(b=>!b))
             }).map((image_url : string, index : number, length : number) => {
                 return new Promise ((resolve)=>{
-                    var number = sequence.number+index+1;
-                    var filename = path.join(sequence.show.directory,number+".jpg");
-                    var thumbnail_name = path.join(sequence.show.thumbnail_dir,number+".jpg");
-                    resolve({url:image_url
-                        ,filename:filename
-                        ,thumbnail_name:thumbnail_name
-                        ,number:number
-                        ,identifier:sequence.show.identifier
-                        ,base_url:sequence.base_url});
-                }).then((episode)=>extract_aditional(episode,sequence,index))
+                    let number = sequence.number+index+1;
+                    let filename = path.join(sequence.show.directory,number+".jpg");
+                    let thumbnail_name = path.join(sequence.show.thumbnail_dir,number+".jpg");
+                    let episode : Episode = {
+                        url: image_url
+                        , filename: filename
+                        , thumbnail_name: thumbnail_name
+                        , number: number
+                        , identifier: sequence.show.identifier
+                        , base_url: sequence.base_url
+                    }
+                    resolve(episode);
+                }).then((episode : Episode)=>extract_aditional(episode,sequence,index))
                 .then(download_image)
-                .then(db.insert_new_episode);
+                .then(sequence.show.insert_new_episode);
             })
             .return(sequence));
         } else {
@@ -251,4 +256,4 @@ export {
     create_thumbnail,
     redownload,
 };
-import * as db from './../data/config';
+import {Database, Show} from './../data/config';

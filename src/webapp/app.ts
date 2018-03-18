@@ -1,18 +1,20 @@
-const request = require('request')
 import * as Promise from 'bluebird' ;
-const express = require('express');
-const path = require('path');
-const bodyParser = require('body-parser');
-const multer  = require('multer');
+import * as express from 'express' ;
+import * as path from 'path' ;
+import * as bodyParser from 'body-parser' ;
+import * as multer from 'multer' ;
+import * as request from 'request' ;
+import * as tmpExpressWs from 'express-ws'
+
 const upload = multer();
-import {RawShow} from '../types/RawShow';
-import {Show} from '../types/Show';
+import {ShowFields} from '../types/Show';
 import {ShowData} from '../types/ShowData';
+import {Express} from 'express-serve-static-core';
 
 
-var expressWs = require('express-ws');
+var expressWs = tmpExpressWs;
 
-var app : any = null;
+var app : Express = null;
 const PORT : number = 8080;
 
 function heartbeat() : void{
@@ -57,8 +59,8 @@ const ensure_started = function () : Promise<any> {
     });
 }
 
-const serve_shows = function (shows : Show[]) : Promise<any> {
-    return Promise.all([ensure_started(),db.resolve_path("shows")])
+const serve_shows = function (shows : ShowFields[]) : Promise<any> {
+    return Promise.all([ensure_started(),Database.resolve_path("shows")])
         .then(([app,dir])=>app.use("/shows",express.static(dir)));
 }
 
@@ -88,13 +90,13 @@ const setup_data_calls = function () : Promise<any>{
 
                 }
                 let episode = parseInt(req.params.episode);
-                if (req.params.direction === "last") db.get_last(req.params.show).then(respond);
-                else if (req.params.direction === "first") db.get_first(req.params.show).then(respond);
-                else if (req.params.direction === "next") db.get_next(req.params.show,episode)
+                if (req.params.direction === "last") Database.getInstance().then(db=>db.get_show(req.params.show)).then(s=>s.get_last()).then(respond);
+                else if (req.params.direction === "first") Database.getInstance().then(db=>db.get_show(req.params.show)).then(s=>s.get_first()).then(respond);
+                else if (req.params.direction === "next") Database.getInstance().then(db=>db.get_show(req.params.show)).then(s=>s.get_next(episode))
                     .then(respond);
-                else if (req.params.direction === "prev") db.get_prev(req.params.show,episode)
+                else if (req.params.direction === "prev") Database.getInstance().then(db=>db.get_show(req.params.show)).then(s=>s.get_prev(episode))
                     .then(respond);
-                else if (req.params.direction === "current") db.get_episode_data(req.params.show,episode)
+                else if (req.params.direction === "current") Database.getInstance().then(db=>db.get_show(req.params.show)).then(s=>s.get_episode_data(episode))
                     .catch(()=>undefined)
                     .then(respond);
             });
@@ -121,8 +123,9 @@ const setup_data_calls = function () : Promise<any>{
                 res.set({
                     "Cache-Control":"no-cache, no-store, must-revalidate"
                 })
-                Promise.all([db.get_show_data(req.params.show),db.get_show(req.params.show)])
-                    .then(([data,show])=>{
+                Database.getInstance().then(db=>db.get_show(req.params.show))
+                    .then((show)=>show.get_show_data())
+                    .then((data)=>{
                     if (data.logo) {
                         data.logo = build_resource_url(data.identifier,"logo.jpg");
                     }
@@ -140,7 +143,8 @@ const setup_data_calls = function () : Promise<any>{
                     "Content-Disposition": 'attachment; filename="backup.json"',
                     "Content-Type" : "text/html"
                 })
-                db.get_pure_shows()
+                Database.getInstance()
+                    .then(db=>db.get_pure_shows())
                 .then((data)=>{
                     res.send(JSON.stringify(data));
                 }).done();
@@ -153,7 +157,7 @@ const setup_data_calls = function () : Promise<any>{
              */ 
             app.post('/data/backup.json',upload.single("backup"),(req,res)=>{
                 Promise.resolve(JSON.parse(req.file.buffer))
-                .map(db.add_new_show)
+                .map((show : RawShow)=>Database.getInstance().then(db=>db.add_new_show(show)))
                 .then(()=>res.json({
                     failed:false
                 }))
@@ -169,7 +173,8 @@ const setup_data_calls = function () : Promise<any>{
             return app;
         }).then((app)=>{
             app.post('/data/shows/:show/:episode/:type',(req,res)=>{
-                db.update_last_read(req.params.show,req.params.episode,req.params.type)
+                Database.getInstance().then(db=>db.get_show(req.params.show))
+                    .then(show=>show.update_last_read(req.params.episode,req.params.type))
                 .then(()=>perform_callbacks(req.params.show))
                 .done();
                 res.end();
@@ -209,8 +214,9 @@ const setup_data_calls = function () : Promise<any>{
             app.post('/data/shows/:show',(req,res)=>{
                 let data = req.body;
                 Promise.resolve(data)
-                .then(()=>db.restart_from(req.params.show,parseInt(data.episode),data.new_url,
-                    data.nextxpath, data.imxpath, data.textxpath))
+                .then(()=>Database.getInstance().then(db=>db.get_show(req.params.show))
+                    .then(show=>show.restart_from(parseInt(data.episode) , data.new_url,
+                    data.nextxpath, data.imxpath, data.textxpath)))
                 .then(()=>res.json({
                     identifier:data.identifier,
                     failed:false
@@ -233,7 +239,7 @@ const setup_data_calls = function () : Promise<any>{
             app.post('/data/shows',(req,res)=>{
                 let data = req.body;
                 Promise.resolve(data)
-                .then(db.add_new_show)
+                .then((data)=>Database.getInstance().then(db=>db.add_new_show(data)))
                 .then(()=>res.json({
                     identifier:data.identifier,
                     failed:false
@@ -278,7 +284,8 @@ const setup_data_calls = function () : Promise<any>{
              * Delete a show
              */
             app.delete('/data/shows/:show',(req,res)=>{
-                    db.delete_show(req.params.show)
+                    Database.getInstance().then(db=>db.get_show(req.params.show))
+                        .then(show=>show.delete_show())
                         .then(()=>res.json({failed:false}))         
                         .catch((e)=>{
                             console.error(e);
@@ -325,8 +332,9 @@ const setup_data_calls = function () : Promise<any>{
 
 const perform_callbacks = function(identifier : string) : Promise<string> | string {
     if (app) {
-        return Promise.all([db.get_show_data(identifier),db.get_show(identifier)])
-            .then(([data,show])=>{
+        return Database.getInstance().then(db=>db.get_show(identifier))
+            .then(show=>show.get_show_data()
+            .then((data)=>{
                 if (!show || !data.type) return null;
                 if (data) {
                     data.name = show.name;
@@ -348,14 +356,15 @@ const perform_callbacks = function(identifier : string) : Promise<string> | stri
                     }
                 }
                 return identifier;      
-            });
+            }));
     }
     return identifier;
 }
 
 const get_shows_data = function() : Promise<ShowData[]> {
-    return db.get_shows().map((show : Show)=>{
-        return db.get_show_data(show.identifier).then((data)=>{
+    return Database.getInstance().then(db=>db.get_shows())
+        .map((show : Show)=>{
+        return show.get_show_data().then((data)=>{
             if (data.logo) {
                 data.logo = build_resource_url(data.identifier,"logo.jpg");
             }
@@ -383,7 +392,7 @@ const setup_default = function () : void {
     })
 }
 
-const start_all = function (shows : Show[]) : Promise<void> {
+const start_all = function (shows : ShowFields[]) : Promise<void> {
     return serve_shows(shows)
         .then(serve_static_resources)
         .then(setup_data_calls)
@@ -406,5 +415,6 @@ export {
 }   
 
 
-import * as db from '../data/config' ;
+import {Database, Show} from '../data/config' ;
 import * as downloader from '../downloaders/image_sequence';
+import {RawShow} from "../types/RawShow";

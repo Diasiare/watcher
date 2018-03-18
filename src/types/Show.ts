@@ -1,6 +1,6 @@
 import {RawShow} from './RawShow';
 
-export interface Show extends RawShow {
+export interface ShowFields extends RawShow {
     interval: number;
     directory: string;
     thumbnail_dir: string;
