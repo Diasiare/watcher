@@ -13,85 +13,85 @@ import FlatButton from 'material-ui/FlatButton';
 import Paper from 'material-ui/Paper';
 
 
-class ShowPage  extends React.Component{
-    constructor(props){
+class ShowPage extends React.Component {
+    constructor(props) {
         super(props);
-        this.state={
-            show:null
+        this.state = {
+            show: null
         }
     }
 
     componentWillMount() {
-        data_loader.register_show_listener(this,"show",this.props.show);
+        data_loader.register_show_listener(this, "show", this.props.show);
     }
 
     componentWillUnmount() {
-        data_loader.remove_show_listener(this,this.props.show);
+        data_loader.remove_show_listener(this, this.props.show);
     }
 
-    componentWillReceiveProps(newprops){
+    componentWillReceiveProps(newprops) {
         if (this.props.show != newprops.show) {
-            data_loader.remove_show_listener(this,this.props.show);
-            data_loader.register_show_listener(this,"show",newprops.show);
+            data_loader.remove_show_listener(this, this.props.show);
+            data_loader.register_show_listener(this, "show", newprops.show);
         }
     }
 
     render() {
         if (!this.state.show) {
             return <div className="showPage columnFelx center" style={{
-                    textAlign:"center",
-                    width:resolve_width(this.props.width)
-                }}> 
-                <img src="/images/loading.gif" />
+                textAlign: "center",
+                width: resolve_width(this.props.width)
+            }}>
+                <img src="/images/loading.gif"/>
             </div>
         }
 
         let logo = null;
-        if(this.state.show.logo) {
+        if (this.state.show.logo) {
             logo = <Paper zDepth={1} key="logo" style={{
-                    marginRight:"5px",
-                    height:"108px",
-                    maxWidth:"70%",           
-                }}>
-                <img src={this.state.show.logo}  style={{
-                    height:"108px",
-                    maxWidth:"100%",
+                marginRight: "5px",
+                height: "108px",
+                maxWidth: "70%",
+            }}>
+                <img src={this.state.show.logo} style={{
+                    height: "108px",
+                    maxWidth: "100%",
                 }}/>
             </Paper>
-        } 
+        }
 
-        return <div className="showPage columnFelx center" style={{width:resolve_width(this.props.width)}}>
+        return <div className="showPage columnFelx center" style={{width: resolve_width(this.props.width)}}>
             <div key="title" style={{
-                width:"100%",
+                width: "100%",
                 textAlign: "left",
                 fontSize: "24px",
                 fontWeight: "bold",
                 margingLeft: "5px",
-                marginBottom:"3px"
+                marginBottom: "3px"
             }}
             >{this.state.show.name}</div>
             <div className="rowFlex" style={{
-                margin:"0px 2px",
-            }}>   
+                margin: "0px 2px",
+            }}>
                 {logo}
                 <div className="columnFelx" style={{
-                    width:"100%"
+                    width: "100%"
                 }}>
                     <NavButton id={this.props.show} type="new"/>
                     <NavButton id={this.props.show} type="reread"/>
                     <DeleteButton id={this.props.show} name={this.state.name}/>
                 </div>
             </div>
-            <div style={{marginTop:"10px"}}>
-                <p style={{marginLeft:"5px"}}>Episodes: {this.state.show.episode_count}</p>
+            <div style={{marginTop: "10px"}}>
+                <p style={{marginLeft: "5px"}}>Episodes: {this.state.show.episode_count}</p>
                 <Previews id={this.props.show} count={this.state.show.episode_count}/>
             </div>
-        </div>  
+        </div>
     }
 }
 
 const button_style = {
-    width:"100%"
+    width: "100%"
 }
 
 function NavButton(props) {
@@ -102,19 +102,19 @@ function NavButton(props) {
         label = "Reread";
     }
 
-    return  <RaisedButton icon={elem} labelPosition="before" label={label} style={button_style}
-        onTouchTap={(e)=>{
-            $.get("/data/shows/" + props.id,(data)=>{
-                nav("/read/" + props.id + "/" + data[props.type] + "/" + props.type);
-            });
-        }
-    }/>
+    return <RaisedButton icon={elem} labelPosition="before" label={label} style={button_style}
+                         onTouchTap={(e) => {
+                             $.get("/data/shows/" + props.id, (data) => {
+                                 nav("/read/" + props.id + "/" + data[props.type] + "/" + props.type);
+                             });
+                         }
+                         }/>
 }
 
-class DeleteButton  extends React.Component{
-    constructor(props){
+class DeleteButton extends React.Component {
+    constructor(props) {
         super(props);
-        this.state = {confirm:false};
+        this.state = {confirm: false};
     }
 
 
@@ -126,20 +126,20 @@ class DeleteButton  extends React.Component{
             title = "Confirm Deletion of " + this.props.name;
         }
 
-        let actions = [      
+        let actions = [
             <FlatButton
                 label="No"
                 primary={true}
                 keyboardFocused={true}
-                onClick={()=>this.setState({confirm:false})}/>,
+                onClick={() => this.setState({confirm: false})}/>,
             <FlatButton
                 label="Yes"
                 primary={true}
-                onClick={(e)=>
+                onClick={(e) =>
                     $.ajax({
-                        url:"/data/shows/" + this.props.id,
-                        type:'DELETE',
-                        success:(data)=>{
+                        url: "/data/shows/" + this.props.id,
+                        type: 'DELETE',
+                        success: (data) => {
                             if (!data.failed) {
                                 nav("/new");
                             }
@@ -148,90 +148,89 @@ class DeleteButton  extends React.Component{
                 }/>,
         ]
 
-        return <div>    
+        return <div>
             <RaisedButton labelPosition="before" label="Delete Show" icon={<Delete/>} style={button_style}
-                onTouchTap={(e)=>this.setState({confirm:true})}/>
+                          onTouchTap={(e) => this.setState({confirm: true})}/>
             <Dialog
-              title={title}
-              actions={actions}
-              modal={false}
-              open={this.state.confirm}
-              onRequestClose={()=>this.setState({confirm:false})}
+                title={title}
+                actions={actions}
+                modal={false}
+                open={this.state.confirm}
+                onRequestClose={() => this.setState({confirm: false})}
             >
-              {text}
+                {text}
             </Dialog>
-        </div>      
+        </div>
     }
 
 }
 
-class Previews  extends React.Component{
-    constructor(props){
+class Previews extends React.Component {
+    constructor(props) {
         super(props);
-        this.state={max:40}
+        this.state = {max: 40}
     }
 
-    componentWillMount(){
-        $(window).scroll((()=>{
-            if ($(window).scrollTop() >= $(document).height() - ($(window).height() + 5))  {
+    componentWillMount() {
+        $(window).scroll((() => {
+            if ($(window).scrollTop() >= $(document).height() - ($(window).height() + 5)) {
                 if (this.props.count > this.state.max) {
-                    this.setState({max:this.state.max+40});
-                }           
+                    this.setState({max: this.state.max + 40});
+                }
             }
-        }).bind(this));    
+        }).bind(this));
 
     }
 
-    componentWillUnmount(){
+    componentWillUnmount() {
         $(window).off("scroll");
     }
 
     render() {
         let eps = [];
-        for (let i=1;i<=this.props.count && i <=this.state.max;i++){
+        for (let i = 1; i <= this.props.count && i <= this.state.max; i++) {
             eps.push(<EpisodePreview num={i} key={i} id={this.props.id}/>)
         }
 
 
-
         return <div style={{
-            width:"100%",
-            display:"flex",
-            flexWrap:"wrap",
-            flexDirection:"row"
+            width: "100%",
+            display: "flex",
+            flexWrap: "wrap",
+            flexDirection: "row"
         }}>
-                {eps}
+            {eps}
         </div>
     }
 }
 
-class EpisodePreview  extends React.Component{
-    constructor(props){
+class EpisodePreview extends React.Component {
+    constructor(props) {
         super(props);
     }
 
     render() {
-        let src="/shows/" + this.props.id + "/thumbnails/" + this.props.num + ".jpg";
+        let src = "/shows/" + this.props.id + "/thumbnails/" + this.props.num + ".jpg";
 
-        return <Paper onTouchTap={(e)=>{
+        return <Paper onTouchTap={(e) => {
             nav("/read/" + this.props.id + "/" + this.props.num + "/reread")
         }} style={{
-            width:"102px",
-            height:"170px",
-            margin:"2px auto",
-            textAlign:"center",
-            overflow:"hidden",
-            cursor:"pointer",
+            width: "102px",
+            height: "170px",
+            margin: "2px auto",
+            textAlign: "center",
+            overflow: "hidden",
+            cursor: "pointer",
         }} zDepth={2}>
-                <p style={{margin:"0px"}}>{this.props.num}</p>
-                <img src={src} style={{
-                    marginLeft:"auto",
-                    marginRight:"auto",
-                    maxHeight:"150px",
-                    maxWidth:"100px"
-                }}/>
+            <p style={{margin: "0px"}}>{this.props.num}</p>
+            <img src={src} style={{
+                marginLeft: "auto",
+                marginRight: "auto",
+                maxHeight: "150px",
+                maxWidth: "100px"
+            }}/>
 
-            </Paper>
+        </Paper>
     }
 }
 

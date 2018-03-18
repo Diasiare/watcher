@@ -1,5 +1,3 @@
-
-
 var navf = null;
 
 function init(f) {
@@ -11,7 +9,7 @@ function navigate(location) {
 }
 
 module.exports = {
-    init:init,
-    navigate:navigate,
-    default:navigate
+    init: init,
+    navigate: navigate,
+    default: navigate
 }

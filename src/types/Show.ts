@@ -5,5 +5,5 @@ export interface ShowFields extends RawShow {
     directory: string;
     thumbnail_dir: string;
     number: number;
-    last_episode_url : string;
+    last_episode_url: string;
 }
