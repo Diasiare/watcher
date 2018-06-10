@@ -1,8 +1,8 @@
-const $ = require('jquery');
-const React = require('react');
-const ReactDOM = require('react-dom');
+import * as $ from 'jquery';
+import * as React from 'react';
+import * as ReactDOM from'react-dom';
 const data_loader = require("./show-data-loader");
-const nav = require("./navigate").navigate;
+import {navigate as nav} from "./navigate";
 const {is_mobile} = require("./helpers");
 import IconButton from 'material-ui/IconButton';
 import MenuItem from 'material-ui/MenuItem';
@@ -24,8 +24,20 @@ var navigate = null;
 
 const SelectableList = makeSelectable(List);
 
+
+interface MenuProps {
+    width : number,
+}
+
 class Menu extends React.Component {
-    constructor(props) {
+
+    state : {
+        open : boolean,
+    }
+
+    props : MenuProps;
+
+    constructor(props: MenuProps) {
         super(props);
         this.state = {open: false};
         this.set_open = this.set_open.bind(this);
@@ -56,8 +68,21 @@ class Menu extends React.Component {
 }
 
 
+
+interface ShortMenuProps { 
+    action : () => void,
+    width : number
+}
+
 class ShortMenu extends React.Component {
-    constructor(props) {
+
+    state : {
+        new_shows : any[],
+    }
+
+    props : ShortMenuProps;
+
+    constructor(props : ShortMenuProps) {
         super(props);
         this.state = {
             new_shows: []
@@ -72,10 +97,14 @@ class ShortMenu extends React.Component {
         data_loader.remove_listener(this);
     }
 
+    setSource() {
+        (document.getElementById('downloadFrame') as HTMLImageElement).src = "/data/backup.json";
+    }
+
     render() {
 
         let new_menu_item = <IconButton key="latest"
-                                        onTouchTap={() => navigate("/list/new")}
+                                        onClick={() => navigate("/list/new")}
                                         tooltip="New Episodes"
                                         tooltipPosition="bottom-right">
             <LastPage/>
@@ -92,12 +121,12 @@ class ShortMenu extends React.Component {
         }
 
         let items = [
-            <IconButton key="open" onTouchTap={this.props.action}
+            <IconButton key="open" onClick={this.props.action}
                         tooltip="Open Drawer"
                         tooltipPosition="bottom-right">
                 <Hamburger/>
             </IconButton>,
-            <IconButton key="new" onTouchTap={() => navigate("/new")}
+            <IconButton key="new" onClick={() => navigate("/new")}
                         tooltip="Add New Show"
                         tooltipPosition="bottom-right">
                 <New/>
@@ -108,13 +137,13 @@ class ShortMenu extends React.Component {
                       anchorOrigin={{horizontal: 'left', vertical: 'top'}}
                       targetOrigin={{horizontal: 'left', vertical: 'top'}}
             >
-                <MenuItem primaryText="All" onTouchTap={() => navigate("/list")}/>
-                <MenuItem primaryText="Webcomics" onTouchTap={() => navigate("/list/webcomic")}/>
-                <MenuItem primaryText="Manga" onTouchTap={() => navigate("/list/manga")}/>
+                <MenuItem primaryText="All" onClick={() => navigate("/list")}/>
+                <MenuItem primaryText="Webcomics" onClick={() => navigate("/list/webcomic")}/>
+                <MenuItem primaryText="Manga" onClick={() => navigate("/list/manga")}/>
                 <MenuItem primaryText="Backup" rightIcon={<ArrowDropRight/>} menuItems={[
-                    <MenuItem primaryText="Download" onTouchTap={() =>
-                        document.getElementById('downloadFrame').src = "/data/backup.json"}/>,
-                    <MenuItem primaryText="Uppload" onTouchTap={() =>
+                    <MenuItem primaryText="Download" onClick={this.setSource}/>,
+
+                    <MenuItem primaryText="Uppload" onClick={() =>
                         $("#backupSelect").click()
                     }/>,
                 ]}/>
@@ -152,9 +181,9 @@ function BackupHandlers(props) {
             <form id="backupForm">
                 <input type="file" id="backupSelect" name="fileName" onChange={(e) => {
                     e.preventDefault();
-                    let file = document.getElementById('backupSelect').files;
-                    if (file.length > 0) {
-                        file = file[0];
+                    let files = (document.getElementById('backupSelect') as HTMLInputElement).files;
+                    if (files.length > 0) {
+                        let file = files[0];
                         let formData = new FormData();
                         formData.append('backup', file, "backup.json");
                         let xhr = new XMLHttpRequest();
@@ -192,12 +221,17 @@ function MenuDrawer(props) {
 }
 
 class ShowListing extends React.Component {
-
+    props : {
+        show : any,
+        nestedLevel ?: number,
+        key : string
+    }
 
     render() {
         let s = this.props.show;
-        return <div onTouchTap={() => navigate("/read/" + s.identifier)}
-                    style={{
+        let props = {
+            onClick : () => navigate("/read/" + s.identifier) ,
+            style : {
                         paddingTop: "5px",
                         paddingBottom: "5px",
                         display: "flex",
@@ -206,7 +240,10 @@ class ShowListing extends React.Component {
                         flexDirection: "row",
                         flexWrap: "wrap",
                         cursor: "pointer"
-                    }}>
+             }
+        }
+        return <div {...props as {}}
+                    >
             <div style={{
                 textAlign: "left",
                 fontSize: "16px",
@@ -231,7 +268,7 @@ function NavButton(props) {
     let elem = <LastPage/>;
     if (props.type == "reread") elem = <Replay/>;
 
-    return <IconButton onTouchTap={(e) => {
+    return <IconButton onClick={(e) => {
         e.stopPropagation();
         $.get("/data/shows/" + props.id, (data) => {
             navigate("/read/" + props.id + "/" + data[props.type] + "/" + props.type);
@@ -241,8 +278,22 @@ function NavButton(props) {
     </IconButton>
 }
 
+
+interface SubMenuProps { 
+    name : string,
+}
+
 class SubMenu extends React.Component {
-    constructor(props) {
+
+
+    state : {
+        open : boolean,
+        shows : any[]
+    }
+
+    props : SubMenuProps;
+
+    constructor(props : SubMenuProps) {
         super(props);
         this.state = {
             shows: null,
@@ -270,14 +321,14 @@ class SubMenu extends React.Component {
                 {name}
             </ListItem>;
         } else if (!this.state.open) {
-            return <ListItem onTouchTap={this.change} rightIcon={<DownArrow/>}>
+            return <ListItem onClick={this.change} rightIcon={<DownArrow/>}>
                 {name}
             </ListItem>;
         }
 
         let sub_items = this.state.shows.map((show) => <ShowListing key={show.identifier} show={show}/>);
 
-        return <ListItem rightIcon={<UpArrow/>} onTouchTap={this.change} open={this.state.open} primaryText={name}
+        return <ListItem rightIcon={<UpArrow/>} onClick={this.change} open={this.state.open} primaryText={name}
                          nestedItems={sub_items}>
         </ListItem>;
     }

@@ -1,6 +1,6 @@
-const $ = require('jquery');
-const React = require('react');
-const ReactDOM = require('react-dom');
+import * as $ from 'jquery';
+import * as React from 'react';
+import * as ReactDOM from'react-dom';
 const nav = require("./navigate").navigate;
 import Paper from 'material-ui/Paper';
 import LastPage from 'material-ui/svg-icons/navigation/last-page';
@@ -8,7 +8,16 @@ import Replay from 'material-ui/svg-icons/av/replay';
 import IconButton from 'material-ui/IconButton';
 
 
-class ShowList extends React.Component {
+interface ShowListProps {
+    filter : string,
+    width: number,
+}
+
+class ShowList extends React.Component<ShowListProps> {
+    state : {
+        shows : any[],
+    }
+
     constructor(props) {
         super(props);
         this.state = {
@@ -36,22 +45,21 @@ class ShowList extends React.Component {
         }
 
 
-        let elems = [];
+        
         let shows = this.state.shows;
-
-        for (let i = 0; i < shows.length; i++) {
-            elems.push(<ShowElement show={shows[i]}
-                                    width={this.props.width}
-                                    key={shows[i].identifier}
-                                    new={this.props.filter == "new"}/>)
-        }
+        let elems : any = shows.map((show => 
+                <ShowElement show={show}
+                    width={this.props.width}
+                    key={show.identifier} 
+                    new = {this.props.filter === "new"}/>
+            ))
 
         if (elems.length == 0) {
-            elems = <p style={{
+            elems = [<p key="empty" style={{
                 margin: "10px auto 0px auto",
                 fontWeight: "bold",
                 fontSize: "16px"
-            }}>Nothing to see here, nothing matched the filter</p>
+            }}>Nothing to see here, nothing matched the filter</p>]
         }
 
         return <div className="center" style={{
@@ -68,15 +76,24 @@ class ShowList extends React.Component {
 const absolute = {
     width: "100%",
     height: "100%",
-    position: "absolute",
+    position: 'absolute' as 'absolute',
     top: "0",
     left: "0"
 }
 
-class ShowElement extends React.Component {
+interface ShowElementProps {
+    show : any,
+    width : number,
+    key : string,
+    new : boolean,
+}
+
+class ShowElement extends React.Component<ShowElementProps> {
+
     constructor(props) {
         super(props);
         this.primary_ontouch = this.primary_ontouch.bind(this);
+        this.state = {};
     }
 
     primary_ontouch() {
@@ -140,7 +157,7 @@ class ShowElement extends React.Component {
             position: "relative",
             margin: "5px",
             cursor: "pointer",
-        }} onTouchTap={this.primary_ontouch}>
+        }} onClick={this.primary_ontouch}>
             {elems}
         </Paper>
     }
@@ -150,7 +167,7 @@ function NavButton(props) {
     let elem = <LastPage/>;
     if (props.type == "reread") elem = <Replay/>;
 
-    return <IconButton onTouchTap={(e) => {
+    return <IconButton onClick={(e) => {
         e.stopPropagation();
         $.get("/data/shows/" + props.id, (data) => {
             nav("/read/" + props.id + "/" + data[props.type] + "/" + props.type);

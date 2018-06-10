@@ -4,21 +4,23 @@
       "sourceMap": true,
       "noImplicitAny": false,
       "module": "commonjs",
-      "target": "es6",
+      "target": "es2017",
       "jsx": "react",
       "allowJs": true
     },
     "include": [
-      "src/server.js",
+      "src/server.ts",
+      "src/client.tsx",
       "src/**/*.js",
-      "src/**/*.ts"
+      "src/**/*.ts",
+      "src/**/*.tsx"
     ],
     "exclude": [
       "node_modules"
     ],
     "lib": [
-      "es5",
-      "es6",
-      "dom"
+      "dom",
+      "es7",
+      "es6"
     ],
   }

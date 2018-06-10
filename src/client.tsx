@@ -1,11 +1,11 @@
-import injectTapEventPlugin from 'react-tap-event-plugin';
+import * as $ from 'jquery';
+import * as React from 'react';
+import * as ReactDOM from'react-dom';
+import {BrowserRouter as Router, Route, Switch, RouteComponentProps} from'react-router-dom';
+import * as ReactRouter from 'react-router';
+import *  as injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
-const $ = require('jquery');
-const React = require('react');
-const ReactDOM = require('react-dom');
-const ReactRouter = require('react-router');
-const {BrowserRouter:Router,Route,Switch} = require('react-router-dom');
-require("./css/index.css");
+require("./../css/index.css");
 const ImageDisplay = require("./front-end/ImageDisplay");
 const ShowList = require("./front-end/ShowList");
 const ShowPage = require("./front-end/ShowPage");
@@ -26,6 +26,9 @@ import {
 import {fade} from 'material-ui/utils/colorManipulator';
 import spacing from 'material-ui/styles/spacing';
 import { withRouter } from 'react-router-dom';
+
+
+declare var Notification: any;
 
 //Just saving this here so that we can override things later
 const theme = getMuiTheme({spacing: spacing,
@@ -48,11 +51,17 @@ const theme = getMuiTheme({spacing: spacing,
   },
 });
 
-class Main extends React.Component {
+class Main extends React.Component<RouteComponentProps<{}>>{
+
+  state : {
+    width: number,
+    height : number,
+  }
+
   constructor(props){
     super(props);
     this.path_change = this.path_change.bind(this);
-    this.state = { width: '0', height: '0' };
+    this.state = { width: 0, height: 0 };
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
   }
 

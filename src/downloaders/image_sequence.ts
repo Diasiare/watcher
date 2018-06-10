@@ -171,7 +171,6 @@ const create_thumbnail = function (data: Episode): Promise<Episode> | Episode {
 
 //Download an image
 const download_image = function (data: Episode): Promise<Episode> {
-    console.log(data)
     return new Promise((r, error) => {
         gm(request({
             url: data.url,

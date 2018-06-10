@@ -1,5 +1,4 @@
-const $ = require('jquery');
-
+import * as $ from 'jquery';
 
 var preloads = {
     next: null,
@@ -27,7 +26,7 @@ function update(type, identifier, number) {
         "json");
 }
 
-function get_data(type) {
+export function get_data(type) {
     return preloads[type];
 }
 
@@ -48,7 +47,7 @@ function perform_callback(types, o) {
     if (!($.isEmptyObject(update))) o.setState(update);
 }
 
-function register_callback(type, o, state) {
+export function register_callback(type, o, state) {
     if (!preloads.callbacks.has(o)) preloads.callbacks.set(o, {});
     let obj = preloads.callbacks.get(o);
     obj[type] = state;
@@ -57,14 +56,14 @@ function register_callback(type, o, state) {
     }
 }
 
-function remove_callback(type, o) {
+export function remove_callback(type, o) {
     let obj = preloads.callbacks.get(o)
     delete obj[type];
     if ($.isEmptyObject(obj)) preloads.callbacks.delete(o);
 
 }
 
-function change_episode(show, episode) {
+export function change_episode(show, episode) {
     if (show === preloads.current_show) {
         let types = ["current", "next", "prev", "first", "last"];
         for (let i = 0; i < types.length; i++) {
@@ -103,12 +102,4 @@ function change_episode(show, episode) {
         update("prev", show, episode);
         perform_callbacks(["prev", "next", "current"]);
     }
-}
-
-
-module.exports = {
-    register_callback: register_callback,
-    change_episode: change_episode,
-    remove_callback: remove_callback,
-    get_data: get_data
 }

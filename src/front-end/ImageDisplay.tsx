@@ -1,14 +1,15 @@
-const $ = require('jquery');
-const React = require('react');
-const ReactDOM = require('react-dom');
-const {Redirect, Link, Route} = require('react-router-dom');
-const loader = require("./image-preloader");
-const nav = require("./navigate").navigate;
+import * as $ from 'jquery';
+import * as React from 'react';
+import * as ReactDOM from'react-dom';
+import {Redirect, Link, Route} from'react-router-dom';
+import * as loader from "./image-preloader";
+import {navigate as nav} from "./navigate";
 import Paper from 'material-ui/Paper';
 import Replay from 'material-ui/svg-icons/av/replay';
 import IconButton from 'material-ui/IconButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
+import {FrontEndEpisode as Episode} from './../types/FrontEndEpisode';
 
 const {resolve_width, resolve_width_int} = require("./helpers");
 const {extract_body, InteractiveXpath} = require("./ShowAdder");
@@ -24,8 +25,27 @@ function get_url_for(show, episode, read_type) {
     return "/read/" + show + "/" + episode + "/" + read_type;
 }
 
+interface ImageDisplayProps {
+    type : string,
+    episode : string
+    show : string,
+    width : number
+}
+
 class ImageDisplay extends React.Component {
-    constructor(props) {
+    state : {
+            next: Episode,
+            prev: Episode,
+            current: Episode,
+            first: Episode,
+            last: Episode,
+            menu_open: boolean
+        };
+
+    props : ImageDisplayProps; 
+
+
+    public constructor(props : ImageDisplayProps) {
         super(props);
         this.on_key = this.on_key.bind(this);
         this.navigate = this.navigate.bind(this);
@@ -40,7 +60,7 @@ class ImageDisplay extends React.Component {
         };
     }
 
-    on_key(e) {
+    on_key (e) {
         if (e.keyCode === 39) {
             this.navigate("next");
         } else if (e.keyCode === 37) {
@@ -129,8 +149,26 @@ function OptionsButton(props) {
     </div>
 }
 
+interface OptionsProps {
+        width : number,
+        episode : Episode;
+}
+
 class Options extends React.Component {
-    constructor(props) {
+    show : any;
+
+    state : {
+        new_url: string,
+        imxpath: string,
+        nextxpath: string,
+        textxpath: string,
+        doc
+    }
+
+    props : OptionsProps;
+
+
+    constructor(props : OptionsProps) {
         super(props);
         this.show = show_loader.get_show_data(props.episode.identifier);
         if (this.show) {
@@ -139,6 +177,7 @@ class Options extends React.Component {
                 imxpath: this.show.image_xpath,
                 nextxpath: this.show.next_xpath,
                 textxpath: this.show.text_xpath,
+                doc : null,
             }
         } else {
             this.state = {
@@ -146,6 +185,7 @@ class Options extends React.Component {
                 imxpath: "",
                 nextxpath: "",
                 textxpath: "",
+                doc : null,
             }
         }
 
@@ -190,17 +230,17 @@ class Options extends React.Component {
         }
 
         if (this.props.episode.identifier != nextProps.episode.identifier) {
-            this.show = show_loader.get_show_data(props.episode.identifier);
+            this.show = show_loader.get_show_data(this.props.episode.identifier);
             if (this.show) {
                 this.setState({
-                    new_url: props.episode.base_url,
+                    new_url: this.props.episode.base_url,
                     imxpath: this.show.image_xpath,
                     nextxpath: this.show.next_xpath,
                     textxpath: this.show.text_xpath,
                 })
             } else {
                 this.setState({
-                    new_url: props.episode.base_url,
+                    new_url: this.props.episode.base_url,
                     imxpath: "",
                     nextxpath: "",
                     textxpath: "",
@@ -233,7 +273,7 @@ class Options extends React.Component {
                     style={{
                         margin: "0px 5px",
                     }}
-                    onTouchTap={() => window.open(this.props.episode.base_url)}/>
+                    onClick={() => window.open(this.props.episode.base_url)}/>
                 <TextField
                     key="new_url"
                     style={{
@@ -241,14 +281,14 @@ class Options extends React.Component {
                         flex: "1 1 auto"
                     }}
                     value={this.state.new_url}
-                    onChange={(e) => this.setState({new_url: e.target.value})}
+                    onChange={(e : any) => this.setState({new_url: e.target.value})}
                     hintText="New URL"/>
                 <RaisedButton
                     label="Restart"
                     style={{
                         margin: "0px 5px"
                     }}
-                    onTouchTap={this.restart}/>
+                    onClick={this.restart}/>
             </div>
             <InteractiveXpath
                 key="imxpath"
@@ -278,8 +318,15 @@ class Options extends React.Component {
     }
 }
 
+
+interface RedownloadProps {
+    data : Episode,
+}
+
 class Redownload extends React.Component {
-    constructor(props) {
+    props : RedownloadProps;
+
+    constructor(props : RedownloadProps) {
         super(props);
         this.trigger = this.trigger.bind(this);
     }
@@ -303,12 +350,20 @@ class Redownload extends React.Component {
 
         return <RaisedButton
             label="Redownload"
-            onTouchTap={this.trigger}/>
+            onClick={this.trigger}/>
     }
 }
 
+interface NavButtonProps {
+    type : string,
+    navigate : (string) => void,
+}
+
+
 class NavButton extends React.Component {
-    constructor(props) {
+    props : NavButtonProps;
+
+    constructor(props : NavButtonProps) {
         super(props);
     }
 
@@ -334,8 +389,16 @@ class NavButton extends React.Component {
 }
 
 
+interface ImageConatainerProps {
+        width : number;
+        navigate : (string) => void,
+        episode : Episode;
+    }
+
 class ImageContainer extends React.Component {
-    constructor(props) {
+    props : ImageConatainerProps;
+
+    constructor(props : ImageConatainerProps) {
         super(props);
     }
 

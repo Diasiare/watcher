@@ -38,11 +38,11 @@ function preload_data() {
                             && d.data.episode_count > 0
                             && d.data.new < d.data.episode_count
                             && last_notification_id !== d.identifier
-                            && Notification.permission === "granted") {
+                            && (<any>Notification).permission === "granted") {
                             if (notifications[d.identifier]) {
                                 notifications[d.identifier].close();
                             }
-                            let n = new Notification("Watcher: " + d.data.name, {
+                            let n = new Notification("Watcher: " + d.data.name, <any>{
                                 data: d,
                                 icon: window.location.protocol + "//"
                                 + window.location.host + "/shows/"
@@ -104,8 +104,8 @@ function run_callback(o) {
     o.setState(tmp);
 }
 
-function add_listener(o, status, ...rest) {
-    let tmp = {};
+function add_listener(o : React.Component, status : string, ...rest) {
+    let tmp : any= {};
     tmp.status = status;
     if (rest.length > 0) tmp.type = rest[0];
     listeners.set(o, tmp);
@@ -118,7 +118,7 @@ function remove_listener(o) {
     listeners.delete(o);
 }
 
-function register_show_listener(o, status, show) {
+function register_show_listener(o : React.Component, status : string, show : string) {
     let m = null;
     if (show_listeners.has(show)) {
         m = show_listeners.get(show);

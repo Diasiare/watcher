@@ -1,6 +1,6 @@
-const $ = require('jquery');
-const React = require('react');
-const ReactDOM = require('react-dom');
+import * as $ from 'jquery';
+import * as React from 'react';
+import * as ReactDOM from'react-dom';
 import DropDownMenu from 'material-ui/DropDownMenu';
 import MenuItem from 'material-ui/MenuItem';
 import RaisedButton from 'material-ui/RaisedButton';
@@ -57,9 +57,22 @@ function extract_body(body, url) {
     return strip_uri(doc, url);
 }
 
+interface InteractiveXpathProps { 
+    val : string,
+    valName : string,
+    text : string,
+    change : (name: string, value: string) => void,
+    doc : any,
+    url : string,
+}
 
-class InteractiveXpath extends React.Component {
-    constructor(props) {
+class InteractiveXpath extends React.Component<InteractiveXpathProps> {
+
+    state : {
+        show : boolean,
+    }
+
+    constructor(props : InteractiveXpathProps) {
         super(props);
         this.state = {
             show: true
@@ -78,7 +91,7 @@ class InteractiveXpath extends React.Component {
                     <TextField
                         value={this.props.val}
                         style={{width: "100%"}}
-                        onChange={(e) => this.props.change(this.props.valName, e.target.value)}
+                        onChange={(e : React.FormEvent<HTMLFormElement>) => this.props.change(this.props.valName, e.currentTarget.value)}
                         hintText={this.props.text}/>
                 </div>
             </div>)
@@ -88,9 +101,9 @@ class InteractiveXpath extends React.Component {
                     <TextField
                         value={this.props.val}
                         style={{width: "100%"}}
-                        onChange={(e) => this.props.change(this.props.valName, e.target.value)}
+                        onChange={(e : React.FormEvent<HTMLFormElement>) => this.props.change(this.props.valName, e.currentTarget.value)}
                         hintText={this.props.text}/>
-                    <IconButton onTouchTap={this.openClose}>
+                    <IconButton onClick={this.openClose}>
                         <DownArrow/>
                     </IconButton>
                 </div>
@@ -114,9 +127,9 @@ class InteractiveXpath extends React.Component {
                 <TextField
                     value={this.props.val}
                     style={{width: "100%"}}
-                    onChange={(e) => this.props.change(this.props.valName, e.target.value)}
+                    onChange={(e : React.FormEvent<HTMLFormElement>) => this.props.change(this.props.valName, e.currentTarget.value)}
                     hintText={this.props.text}/>
-                <IconButton onTouchTap={this.openClose}>
+                <IconButton onClick={this.openClose}>
                     <UpArrow/>
                 </IconButton>
             </div>
@@ -128,8 +141,20 @@ class InteractiveXpath extends React.Component {
     }
 }
 
-class InteractiveImage extends React.Component {
-    constructor(props) {
+interface InteractiveImageProps { 
+    val : string,
+    valName : string,
+    text : string,
+    change : (name: string, value: string) => void
+}
+
+class InteractiveImage extends React.Component<InteractiveImageProps> {
+    
+    state : {
+        show : boolean;
+    }
+
+    constructor(props : InteractiveImageProps) {
         super(props);
         this.state = {
             show: true
@@ -148,7 +173,7 @@ class InteractiveImage extends React.Component {
                     <TextField
                         value={this.props.val}
                         style={{width: "100%"}}
-                        onChange={(e) => this.props.change(this.props.valName, e.target.value)}
+                        onChange={(e : React.FormEvent<HTMLFormElement>) => this.props.change(this.props.valName, e.currentTarget.value)}
                         hintText={this.props.text}/>
                 </div>
             </div>)
@@ -158,9 +183,9 @@ class InteractiveImage extends React.Component {
                     <TextField
                         value={this.props.val}
                         style={{width: "100%"}}
-                        onChange={(e) => this.props.change(this.props.valName, e.target.value)}
+                        onChange={(e : React.FormEvent<HTMLFormElement>) => this.props.change(this.props.valName, e.currentTarget.value)}
                         hintText={this.props.text}/>
-                    <IconButton onTouchTap={this.openClose}>
+                    <IconButton onClick={this.openClose}>
                         <DownArrow/>
                     </IconButton>
                 </div>
@@ -172,9 +197,9 @@ class InteractiveImage extends React.Component {
                 <TextField
                     value={this.props.val}
                     style={{width: "100%"}}
-                    onChange={(e) => this.props.change(this.props.valName, e.target.value)}
+                    onChange={(e : React.FormEvent<HTMLFormElement>) => this.props.change(this.props.valName, e.currentTarget.value)}
                     hintText={this.props.text}/>
-                <IconButton onTouchTap={this.openClose}>
+                <IconButton onClick={this.openClose}>
                     <UpArrow/>
                 </IconButton>
             </div>
@@ -187,7 +212,26 @@ class InteractiveImage extends React.Component {
 }
 
 
-class ShowAdder extends React.Component {
+interface ShowAdderProps {
+    width : number,
+}
+
+class ShowAdder extends React.Component<ShowAdderProps> {
+
+    state : {
+            showType: number,
+            contentsValid: boolean,
+            identifier: string,
+            name: string,
+            baseUrl: string,
+            imxpath: string,
+            nextxpath:string,
+            textxpath: string,
+            logo:string,
+            manga_type: number,
+            doc: any
+    };
+
     constructor(props) {
         super(props);
         this.state = {
@@ -229,13 +273,13 @@ class ShowAdder extends React.Component {
         let valid = false;
         let s = this.state;
         valid = valid
-            || (s.showType == 2
+            || Boolean(s.showType == 2
                 && s.identifier
                 && s.name
                 && s.nextxpath
                 && s.imxpath
                 && s.baseUrl)
-            || (s.showType == 3
+            || Boolean(s.showType == 3
                 && s.identifier
                 && s.name
                 && s.baseUrl
@@ -252,7 +296,7 @@ class ShowAdder extends React.Component {
 
     create_show() {
         if (this.state.contentsValid) {
-            let data = {}
+            let data : any = {}
             let s = this.state;
             data.identifier = s.identifier;
             data.name = s.name;
@@ -304,7 +348,7 @@ class ShowAdder extends React.Component {
                     key="baseUrl"
                     value={this.state.baseUrl}
                     style={{width: "100%"}}
-                    onChange={(e) => this.change("baseUrl", e.target.value)}
+                    onChange={(e : React.FormEvent<HTMLFormElement>) => this.change("baseUrl", e.currentTarget.value)}
                     hintText="Start URL"/>
             );
         }
@@ -365,7 +409,7 @@ class ShowAdder extends React.Component {
                 <div>
                     <RaisedButton
                         label="Submit"
-                        onTouchTap={this.create_show}
+                        onClick={this.create_show}
                         disabled={!this.state.contentsValid}/>
                 </div>
             </div>
@@ -373,12 +417,12 @@ class ShowAdder extends React.Component {
                 <TextField
                     value={this.state.identifier}
                     style={{marginRight: "20px", flexGrow: 1}}
-                    onChange={(e) => this.change("identifier", e.target.value)}
+                    onChange={(e : React.FormEvent<HTMLFormElement>) => this.change("identifier", e.currentTarget.value)}
                     hintText="Identifier"/>
                 <TextField
                     value={this.state.name}
                     style={{flexGrow: 1}}
-                    onChange={(e) => this.change("name", e.target.value)}
+                    onChange={(e : React.FormEvent<HTMLFormElement>) => this.change("name", e.currentTarget.value)}
                     hintText="Name"/>
                 {r2_extra}
             </div>

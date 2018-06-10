@@ -1,6 +1,6 @@
-const $ = require('jquery');
-const React = require('react');
-const ReactDOM = require('react-dom');
+import * as $ from 'jquery';
+import * as React from 'react';
+import * as ReactDOM from'react-dom';
 const nav = require("./navigate").navigate;
 const data_loader = require("./show-data-loader");
 const {resolve_width} = require("./helpers");
@@ -13,11 +13,17 @@ import FlatButton from 'material-ui/FlatButton';
 import Paper from 'material-ui/Paper';
 
 
-class ShowPage extends React.Component {
+interface ShowPageProperties {
+    show : string,
+    width : number
+}
+
+class ShowPage extends React.Component<ShowPageProperties, {show : any, name : string}> {
     constructor(props) {
         super(props);
         this.state = {
-            show: null
+            show: null,
+            name: null
         }
     }
 
@@ -66,7 +72,7 @@ class ShowPage extends React.Component {
                 textAlign: "left",
                 fontSize: "24px",
                 fontWeight: "bold",
-                margingLeft: "5px",
+                marginLeft: "5px",
                 marginBottom: "3px"
             }}
             >{this.state.show.name}</div>
@@ -103,7 +109,7 @@ function NavButton(props) {
     }
 
     return <RaisedButton icon={elem} labelPosition="before" label={label} style={button_style}
-                         onTouchTap={(e) => {
+                         onClick={(e) => {
                              $.get("/data/shows/" + props.id, (data) => {
                                  nav("/read/" + props.id + "/" + data[props.type] + "/" + props.type);
                              });
@@ -111,7 +117,7 @@ function NavButton(props) {
                          }/>
 }
 
-class DeleteButton extends React.Component {
+class DeleteButton extends React.Component<{id : string, name : string}, {confirm : boolean}> {
     constructor(props) {
         super(props);
         this.state = {confirm: false};
@@ -150,7 +156,7 @@ class DeleteButton extends React.Component {
 
         return <div>
             <RaisedButton labelPosition="before" label="Delete Show" icon={<Delete/>} style={button_style}
-                          onTouchTap={(e) => this.setState({confirm: true})}/>
+                          onClick={(e) => this.setState({confirm: true})}/>
             <Dialog
                 title={title}
                 actions={actions}
@@ -165,21 +171,27 @@ class DeleteButton extends React.Component {
 
 }
 
-class Previews extends React.Component {
+class Previews extends React.Component<{count : number, id : string}, {max : number}> {
     constructor(props) {
         super(props);
         this.state = {max: 40}
+        this.changeSize = this.changeSize.bind(this);
+    }
+
+    changeSize() {
+        if ($(window).scrollTop() >= $(document).height() - ($(window).height() + 5)) {
+            if (this.props.count > this.state.max) {
+                this.setState({max: this.state.max + 40}, this.changeSize);
+            }
+        }
     }
 
     componentWillMount() {
-        $(window).scroll((() => {
-            if ($(window).scrollTop() >= $(document).height() - ($(window).height() + 5)) {
-                if (this.props.count > this.state.max) {
-                    this.setState({max: this.state.max + 40});
-                }
-            }
-        }).bind(this));
+        $(window).scroll(this.changeSize);
+    }
 
+    componentDidMount() {
+        this.changeSize();
     }
 
     componentWillUnmount() {
@@ -204,7 +216,7 @@ class Previews extends React.Component {
     }
 }
 
-class EpisodePreview extends React.Component {
+class EpisodePreview extends React.Component<{num : number, id : string}>{
     constructor(props) {
         super(props);
     }
@@ -212,7 +224,7 @@ class EpisodePreview extends React.Component {
     render() {
         let src = "/shows/" + this.props.id + "/thumbnails/" + this.props.num + ".jpg";
 
-        return <Paper onTouchTap={(e) => {
+        return <Paper onClick={(e) => {
             nav("/read/" + this.props.id + "/" + this.props.num + "/reread")
         }} style={{
             width: "102px",
