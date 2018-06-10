@@ -3,10 +3,10 @@ import * as fs from 'fs' ;
 import * as path from 'path' ;
 import * as shelljs from 'shelljs' ;
 import * as sqlite from 'sqlite' ;
-import {RawShow} from '../types/RawShow';
-import {ShowFields} from '../types/Show';
-import {ShowData} from '../types/ShowData';
-import {Episode} from '../types/Episode' ;
+import RawShow from '../types/RawShow';
+import ShowFields from '../types/Show';
+import ShowData from '../types/ShowData';
+import Episode from '../types/Episode' ;
 //const db = require('sqlite');
 const mkdir = Promise.promisify(fs.mkdir);
 

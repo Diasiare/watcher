@@ -11,8 +11,8 @@ import {DOMParser as dom} from 'xmldom';
 import * as path from 'path';
 import * as url from 'url';
 import * as Promise from 'bluebird';
-import {ShowFields} from '../types/Show';
-import {Episode} from '../types/Episode';
+import ShowFields from '../types/Show';
+import Episode from '../types/Episode';
 //Download a sequence of images
 
 const gm = magick.subClass({imageMagick: true});

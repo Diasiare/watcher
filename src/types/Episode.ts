@@ -1,4 +1,4 @@
-export interface Episode {
+export default interface Episode {
     identifier: string,
     number: number,
     url: string,

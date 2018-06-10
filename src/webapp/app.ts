@@ -6,15 +6,16 @@ import * as multer from 'multer' ;
 import * as request from 'request' ;
 import * as tmpExpressWs from 'express-ws'
 
+
+
 const upload = multer();
-import {ShowFields} from '../types/Show';
-import {ShowData} from '../types/ShowData';
-import {Express} from 'express-serve-static-core';
+import ShowFields from '../types/Show';
+import ShowData from '../types/ShowData';
 
 
 var expressWs = tmpExpressWs;
 
-var app: Express = null;
+var app = null;
 const PORT: number = 8080;
 
 function heartbeat(): void {
@@ -22,7 +23,7 @@ function heartbeat(): void {
 }
 
 
-const ensure_started = function (): Promise<any> {
+const ensure_started = function (): Promise<express.Express> {
     return new Promise((r) => {
         if (!app) {
             app = express();
@@ -70,7 +71,7 @@ const serve_static_resources = function (): Promise<any> {
 }
 
 
-const setup_data_calls = function (): Promise<any> {
+const setup_data_calls = function (): Promise<express.Express> {
     return ensure_started()
         .then((app) => {
             /* Gets the episode that is in direction of the given episode
@@ -80,25 +81,7 @@ const setup_data_calls = function (): Promise<any> {
                 res.set({
                     "Cache-Control": "no-cache, no-store, must-revalidate"
                 })
-                let respond = (data) => {
-                    if (data) {
-                        data.src = build_resource_url(data.identifier, data.number + ".jpg");
-                        res.json(data);
-                    } else {
-                        res.json({data: {}});
-                    }
-
-                }
-                let episode = parseInt(req.params.episode);
-                if (req.params.direction === "last") Database.getInstance().then(db => db.get_show(req.params.show)).then(s => s.get_last()).then(respond);
-                else if (req.params.direction === "first") Database.getInstance().then(db => db.get_show(req.params.show)).then(s => s.get_first()).then(respond);
-                else if (req.params.direction === "next") Database.getInstance().then(db => db.get_show(req.params.show)).then(s => s.get_next(episode))
-                    .then(respond);
-                else if (req.params.direction === "prev") Database.getInstance().then(db => db.get_show(req.params.show)).then(s => s.get_prev(episode))
-                    .then(respond);
-                else if (req.params.direction === "current") Database.getInstance().then(db => db.get_show(req.params.show)).then(s => s.get_episode_data(episode))
-                    .catch(() => undefined)
-                    .then(respond);
+                Link.getRelativeEpisode(req.params.show, parseInt(req.params.episode), req.params.direction).then((data) => res.json(data));
             });
             return app;
         }).then((app) => {
@@ -109,10 +92,7 @@ const setup_data_calls = function (): Promise<any> {
                 res.set({
                     "Cache-Control": "no-cache, no-store, must-revalidate"
                 })
-                get_shows_data()
-                    .then((data) => {
-                        res.json(data);
-                    }).done();
+                Link.getShowsData().then((data) => res.json(data)).done()
             });
             return app;
         }).then((app) => {
@@ -123,14 +103,7 @@ const setup_data_calls = function (): Promise<any> {
                 res.set({
                     "Cache-Control": "no-cache, no-store, must-revalidate"
                 })
-                Database.getInstance().then(db => db.get_show(req.params.show))
-                    .then((show) => show.get_show_data())
-                    .then((data) => {
-                        if (data.logo) {
-                            data.logo = build_resource_url(data.identifier, "logo.jpg");
-                        }
-                        res.json(data);
-                    });
+                Link.getShowData(req.params.show).then((data) => res.json(data)).done() 
             });
             return app;
         }).then((app) => {
@@ -143,8 +116,7 @@ const setup_data_calls = function (): Promise<any> {
                     "Content-Disposition": 'attachment; filename="backup.json"',
                     "Content-Type": "text/html"
                 })
-                Database.getInstance()
-                    .then(db => db.get_pure_shows())
+                Link.getBackup()
                     .then((data) => {
                         res.send(JSON.stringify(data));
                     }).done();
@@ -156,12 +128,12 @@ const setup_data_calls = function (): Promise<any> {
              * re adds every show in the JSON file sent by the user
              */
             app.post('/data/backup.json', upload.single("backup"), (req, res) => {
-                Promise.resolve(JSON.parse(req.file.buffer))
-                    .map((show: RawShow) => Database.getInstance().then(db => db.add_new_show(show)))
+                Promise.resolve(JSON.parse(req['file'].buffer))
+                    .then(Link.loadBackup)
+                    .then(() => perform_callbacks)
                     .then(() => res.json({
                         failed: false
                     }))
-                    .then(perform_callbacks)
                     .catch((e) => {
                         res.json({
                             failed: true,
@@ -173,8 +145,7 @@ const setup_data_calls = function (): Promise<any> {
             return app;
         }).then((app) => {
             app.post('/data/shows/:show/:episode/:type', (req, res) => {
-                Database.getInstance().then(db => db.get_show(req.params.show))
-                    .then(show => show.update_last_read(req.params.episode, req.params.type))
+                Link.updateLastRead(req.params.show, req.params.episode, req.params.type)
                     .then(() => perform_callbacks(req.params.show))
                     .done();
                 res.end();
@@ -188,7 +159,7 @@ const setup_data_calls = function (): Promise<any> {
              * hover text and text
              */
             app.post('/data/shows/:show/:episode', (req, res) => {
-                downloader.redownload(req.params.show, parseInt(req.params.episode))
+                Link.redownload(req.params.show, parseInt(req.params.episode))
                     .then(() => res.json({
                         failed: false
                     }))
@@ -213,10 +184,8 @@ const setup_data_calls = function (): Promise<any> {
              */
             app.post('/data/shows/:show', (req, res) => {
                 let data = req.body;
-                Promise.resolve(data)
-                    .then(() => Database.getInstance().then(db => db.get_show(req.params.show))
-                        .then(show => show.restart_from(parseInt(data.episode), data.new_url,
-                            data.nextxpath, data.imxpath, data.textxpath)))
+                Link.restartShow(req.params.show, data.episode, data.new_url,
+                            data.nextxpath, data.imxpath, data.textxpath)
                     .then(() => res.json({
                         identifier: data.identifier,
                         failed: false
@@ -237,13 +206,9 @@ const setup_data_calls = function (): Promise<any> {
              */
             //TODO: Validate the data here
             app.post('/data/shows', (req, res) => {
-                let data = req.body;
-                Promise.resolve(data)
-                    .then((data) => Database.getInstance().then(db => db.add_new_show(data)))
-                    .then(() => res.json({
-                        identifier: data.identifier,
-                        failed: false
-                    }))
+                let data : RawShow = req.body;
+                Link.newShow(data)
+                    .then((data) => res.json(data))
                     .then(() => perform_callbacks(data.identifier))
                     .catch((e) => {
                         res.json({
@@ -262,21 +227,9 @@ const setup_data_calls = function (): Promise<any> {
              * but nessesary for creating the interactive XPATH elements
              */
             app.get('/function/get', (req, res) => {
-                request({
-                    url: req.query.url,
-                    encoding: "utf-8",
-                    method: 'GET',
-                    headers: {
-                        'User-Agent': "request",
-                    },
-                    gzip: true
-                }, function (error, response, body) {
-                    if (error) {
-                        res.send("");
-                        return;
-                    }
-                    res.send(body);
-                })
+                Link.getWebPage(req.query.url)
+                .then((body) => res.send(body))
+                .catch(() => res.send(""));
             });
             return app;
         }).then((app) => {
@@ -284,8 +237,7 @@ const setup_data_calls = function (): Promise<any> {
              * Delete a show
              */
             app.delete('/data/shows/:show', (req, res) => {
-                Database.getInstance().then(db => db.get_show(req.params.show))
-                    .then(show => show.delete_show())
+                Link.deleteShow(req.params.show)
                     .then(() => res.json({failed: false}))
                     .catch((e) => {
                         console.error(e);
@@ -367,18 +319,6 @@ const perform_callbacks = function (identifier: string): Promise<string> | strin
     return identifier;
 }
 
-const get_shows_data = function (): Promise<ShowData[]> {
-    return Database.getInstance().then(db => db.get_shows())
-        .map((show: Show) => {
-            return show.get_show_data().then((data) => {
-                if (data.logo) {
-                    data.logo = build_resource_url(data.identifier, "logo.jpg");
-                }
-                return data;
-            })
-        })
-}
-
 const setup_default = function (): void {
     app.use("/", function (req, res, next) {
         res.sendFile(path.join(__dirname, "../../resources/index.html"));
@@ -410,7 +350,6 @@ const build_resource_url = function (...parts: string[]): string {
     if (parts.length >= 1) adress = adress + "/shows/" + parts[0];
     if (parts.length >= 2) adress = adress + "/" + parts[1];
     return adress;
-
 }
 
 export {
@@ -423,4 +362,6 @@ export {
 
 import {Database, Show} from '../data/config' ;
 import * as downloader from '../downloaders/image_sequence';
-import {RawShow} from "../types/RawShow";
+import RawShow from "../types/RawShow";
+import Link from '../link/BackLink';
+const get_shows_data = Link.getShowsData;

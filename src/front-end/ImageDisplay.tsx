@@ -9,7 +9,7 @@ import Replay from 'material-ui/svg-icons/av/replay';
 import IconButton from 'material-ui/IconButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
-import {FrontEndEpisode as Episode} from './../types/FrontEndEpisode';
+import Episode from './../types/FrontEndEpisode';
 
 const {resolve_width, resolve_width_int} = require("./helpers");
 const {extract_body, InteractiveXpath} = require("./ShowAdder");

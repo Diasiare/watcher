@@ -1,4 +1,4 @@
-export interface ShowData {
+export default interface ShowData {
     identifier: string,
     type: string,
     logo: string,

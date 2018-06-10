@@ -1,4 +1,4 @@
-export interface FrontEndEpisode {
+export default interface FrontEndEpisode {
     identifier: string,
     number: number,
     original_url: string,

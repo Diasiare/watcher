@@ -1,4 +1,4 @@
-export interface RawShow {
+export default interface RawShow {
     identifier: string;
     name: string;
     type: string;

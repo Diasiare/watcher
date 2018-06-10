@@ -31,12 +31,12 @@ const add_watcher = function (show: Show): Promise<Show> {
         .then(start_watcher);
 }
 
-const stop_watcher = function (show: Show): Show {
+const stop_watcher = function (show: Show): Promise<Show> {
     if (show.identifier in current_watchers) {
         clearInterval(current_watchers[show.identifier].t);
         current_watchers[show.identifier].p.cancel();
     }
-    return show;
+    return Promise.resolve(show);
 }
 
 const start_watchers = function (shows: Show[]): Promise<Show[]> {
