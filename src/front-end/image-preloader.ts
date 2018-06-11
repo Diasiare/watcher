@@ -1,4 +1,5 @@
 import * as $ from 'jquery';
+import Link from '../link/FrontLink';
 
 var preloads = {
     next: null,
@@ -14,16 +15,15 @@ var preloads = {
 function update(type, identifier, number) {
     if (preloads[type] === false) return;
     preloads[type] = false;
-    $.get("/data/shows/" + identifier + "/" + number + "/" + type, null,
-        function (data) {
+    Link.getRelativeEpisode(identifier, number, type)
+        .then((data) => {
             if (preloads.current_show == identifier) {
                 data.img = new Image();
                 data.img.src = data.src;
                 preloads[type] = data;
                 perform_callbacks([type]);
             }
-        },
-        "json");
+        }).catch((e) => console.log(e.message));
 }
 
 export function get_data(type) {

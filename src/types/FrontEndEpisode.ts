@@ -4,6 +4,7 @@ export default interface FrontEndEpisode {
     original_url: string,
     base_url: string,
     src : string,
+    img ?: HTMLImageElement,
     data?: {
         title?: string,
         text?: string[],

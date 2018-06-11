@@ -1,4 +1,4 @@
-const $ = require("jquery");
+import * as $ from 'jquery';
 const nav = require("./navigate").navigate;
 var listeners = new Map();
 var show_listeners = new Map();

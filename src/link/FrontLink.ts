@@ -1,32 +1,104 @@
 import * as Promise from 'bluebird';
+import * as $ from 'jquery';
 import ShowData from '../types/ShowData';
 import Show from '../types/Show';
 import RawShow from '../types/RawShow';
 import Link from './Link';
+import FrontEndEpisode from '../types/FrontEndEpisode';
 
 class FrontLink implements Link {
 	
-	getRelativeEpisode(show : string, episode : number, direction : string) : Promise<any> ;
+	private static doRequest(method : string, settings : any) : Promise<any> {
+		settings.method = method;
+		return new Promise((resolve, reject) => {
+			$.ajax(settings)
+				.fail((xhr , status, error) => reject(new Error(method +  " " + settings.url + "  " + error)))
+				.done((data) => resolve(data));
+		})
+	}
 
-	getShowsData() : Promise<ShowData[]>;
+	getRelativeEpisode(show : string, episode : number, direction : string) : Promise<FrontEndEpisode> {
+		return FrontLink.doRequest("GET" ,{ 
+			url :"/data/shows/" + show + "/" + episode + "/" + direction,
+			dataType : "json"
+		});
+		
+	}
 
-	getShowData(identifier : string) : Promise<ShowData> ;
+	getShowsData() : Promise<ShowData[]> {
+		return FrontLink.doRequest("GET", { 
+			url :"/data/shows/",
+			dataType : "json"
+		});
+	}
 
-	getBackup() : Promise<RawShow[]> ;
+	getShowData(identifier : string) : Promise<ShowData> {
+		return FrontLink.doRequest("GET", { 
+			url :"/data/shows/" + identifier,
+			dataType : "json"
+		});
+	}
 
-	loadBackup(backup : RawShow[]) : Promise<Show[]>;
+	getBackup() : Promise<RawShow[]> {
+		return FrontLink.doRequest("GET", { 
+			url :'/data/backup.json',
+			dataType : "json"
+		});
+	}
 
-	updateLastRead(identifier : string, episode : number, type : string) : Promise<any>;
+	loadBackup(backup : RawShow[]) : Promise<Show[]>{
+		return FrontLink.doRequest("POST", { 
+			url :'/data/backup.json',
+			data : {backup : backup},
+			dataType : "json"
+		});
+	}
 
-	redownload(identifier : string, episode : number) : Promise<any>;
+	updateLastRead(identifier : string, episode : number, type : string) : Promise<any>{
+		return FrontLink.doRequest("POST", { 
+			url :"/data/shows/" + identifier + "/" + episode + "/" + type
+		});
+	}
 
-	restartShow(identifier : string, episode : number , new_url : string, nextxpath: string , imxpath : string, textxpath : string) : Promise<any> ;
+	redownload(identifier : string, episode : number) : Promise<any>{
+		return FrontLink.doRequest("POST", { 
+			url :"/data/shows/" + identifier + "/" + episode
+		});
+	}
 
-	newShow(showData : RawShow) : Promise<Show>;
+	restartShow(identifier : string, episode : number , new_url : string, nextxpath: string , imxpath : string, textxpath : string) : Promise<any> {
+		return FrontLink.doRequest("POST", {
+			url : "/data/shows/" + identifier,
+			data : {
+				episode: episode,
+            	new_url: new_url,
+            	imxpath: imxpath,
+            	nextxpath: nextxpath,
+           	    textxpath: textxpath,
+			}
+		});
+	}
 
-	getWebPage(url : string) : Promise<string>;
+	newShow(showData : RawShow) : Promise<Show>{
+		return FrontLink.doRequest("POST", { 
+			url :'/data/shows',
+			data : showData,
+			dataType : "json"
+		});
+	}
 
-	deleteShow(identifier : string) : Promise<any>;
+	getWebPage(url : string) : Promise<string>{
+		return FrontLink.doRequest("GET", { 
+			url : "/function/get",
+			data : {url: url}
+		});
+	}
+
+	deleteShow(identifier : string) : Promise<any>{
+		return FrontLink.doRequest("DELETE", { 
+			url : "/data/shows/" + identifier
+		});
+	}
 }
 
 const link : Link = new FrontLink() 

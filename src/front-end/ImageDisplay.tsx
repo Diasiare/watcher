@@ -10,6 +10,8 @@ import IconButton from 'material-ui/IconButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
 import Episode from './../types/FrontEndEpisode';
+import Flink from '../link/FrontLink';
+
 
 const {resolve_width, resolve_width_int} = require("./helpers");
 const {extract_body, InteractiveXpath} = require("./ShowAdder");
@@ -17,7 +19,7 @@ const show_loader = require("./show-data-loader");
 
 
 function updateLastRead(show, number, type) {
-    $.post("/data/shows/" + show + "/" + number + "/" + type);
+    Flink.updateLastRead(show, number, type);
 }
 
 
@@ -194,25 +196,16 @@ class Options extends React.Component {
     }
 
     restart() {
-        $.post("/data/shows/" + this.props.episode.identifier, {
-            episode: this.props.episode.number,
-            new_url: this.state.new_url,
-            imxpath: this.state.imxpath == this.show.image_xpath ? "" : this.state.imxpath,
-            nextxpath: this.state.nextxpath == this.show.next_xpath ? "" : this.state.nextxpath,
-            textxpath: this.state.textxpath == this.show.text_xpath ? "" : this.state.textxpath,
-        }, (data) => {
-            if (!data.failed) {
-                location.reload();
-            } else {
-                let s = "Failed to restart!\n\n";
-                s += data.error;
-                alert(s);
-            }
-        });
+        Flink.restartShow(this.props.episode.identifier, this.props.episode.number, this.state.new_url,
+            this.state.nextxpath == this.show.next_xpath ? "" : this.state.nextxpath,
+            this.state.imxpath == this.show.image_xpath ? "" : this.state.imxpath,
+            this.state.textxpath == this.show.text_xpath ? "" : this.state.textxpath)
+            .then(() => location.reload())
+            .catch((e) => alert(e.message));
     }
 
     componentWillMount() {
-        $.get("/function/get", {url: this.state.new_url}, (data) => {
+        Flink.getWebPage(this.state.new_url).then((data) => {
             if (data) {
                 this.setState({doc: extract_body(data, this.props.episode.base_url)});
             }
@@ -222,10 +215,8 @@ class Options extends React.Component {
     componentWillReceiveProps(nextProps) {
         if (this.props.episode.base_url != nextProps.episode.base_url) {
             this.setState({new_url: nextProps.episode.base_url});
-            $.get("/function/get", {url: nextProps.episode.base_url}, (data) => {
-                if (data) {
-                    this.setState({doc: extract_body(data, nextProps.episode.base_url)});
-                }
+            Flink.getWebPage(nextProps.episode.base_url).then((data) => {
+                if (data) this.setState({doc: extract_body(data, nextProps.episode.base_url)})
             })
         }
 
@@ -332,15 +323,9 @@ class Redownload extends React.Component {
     }
 
     trigger() {
-        $.post("/data/shows/" + this.props.data.identifier + "/" + this.props.data.number, null, (data) => {
-            if (!data.failed) {
-                location.reload();
-            } else {
-                let s = "Failed to redownload!\n\n";
-                s += data.error;
-                alert(s);
-            }
-        });
+        Flink.redownload(this.props.data.identifier, this.props.data.number)
+            .then(() => location.reload())
+            .catch((e) => alert(e.message));
     }
 
     render() {

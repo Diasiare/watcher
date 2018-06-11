@@ -16,12 +16,15 @@ Fix the hangup crashes on the Websockets - DONE
 Add an indicator for new episodes - DONE
 Responsive Design - DONE
 Add show updating abilities - DONE
+Standardize interface between front-end and back-end - DONE
+Add input validation to backend
+Add ability to delete episodes
+Add unit tests
 Document the backend
 Document the frontend
-Use typescript where possible
 Move the titles in the show list to the bottom of the element
 Fix error where deleting show doesn't quite work, front end does not change
 Add ability to download torrents to backend
-Serve video based shows
-Configure automatic deployment using bitbucket pipelines
+Plex integration
 Auto generate human readable identifiers
+Move to a document store for the DB

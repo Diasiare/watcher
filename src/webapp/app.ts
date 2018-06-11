@@ -81,7 +81,10 @@ const setup_data_calls = function (): Promise<express.Express> {
                 res.set({
                     "Cache-Control": "no-cache, no-store, must-revalidate"
                 })
-                Link.getRelativeEpisode(req.params.show, parseInt(req.params.episode), req.params.direction).then((data) => res.json(data));
+                Link.getRelativeEpisode(req.params.show, parseInt(req.params.episode), req.params.direction).then((data) => res.json(data)).catch((e) => {
+                        console.error(e);
+                        res.status(500).send(e.message);
+                    });;
             });
             return app;
         }).then((app) => {
@@ -92,7 +95,10 @@ const setup_data_calls = function (): Promise<express.Express> {
                 res.set({
                     "Cache-Control": "no-cache, no-store, must-revalidate"
                 })
-                Link.getShowsData().then((data) => res.json(data)).done()
+                Link.getShowsData().then((data) => res.json(data)).catch((e) => {
+                        console.error(e);
+                        res.status(500).send(e.message);
+                    });
             });
             return app;
         }).then((app) => {
@@ -103,7 +109,10 @@ const setup_data_calls = function (): Promise<express.Express> {
                 res.set({
                     "Cache-Control": "no-cache, no-store, must-revalidate"
                 })
-                Link.getShowData(req.params.show).then((data) => res.json(data)).done() 
+                Link.getShowData(req.params.show).then((data) => res.json(data)).catch((e) => {
+                        console.error(e);
+                        res.status(500).send(e.message);
+                    });
             });
             return app;
         }).then((app) => {
@@ -119,7 +128,10 @@ const setup_data_calls = function (): Promise<express.Express> {
                 Link.getBackup()
                     .then((data) => {
                         res.send(JSON.stringify(data));
-                    }).done();
+                    }).catch((e) => {
+                        console.error(e);
+                        res.status(500).send(e.message);
+                    });
             });
             return app;
         }).then((app) => {
@@ -127,19 +139,15 @@ const setup_data_calls = function (): Promise<express.Express> {
              * 
              * re adds every show in the JSON file sent by the user
              */
-            app.post('/data/backup.json', upload.single("backup"), (req, res) => {
-                Promise.resolve(JSON.parse(req['file'].buffer))
-                    .then(Link.loadBackup)
-                    .then(() => perform_callbacks)
-                    .then(() => res.json({
-                        failed: false
-                    }))
+            app.post('/data/backup.json', (req, res) => {
+                let data = req.body.backup;
+                console.log(data)
+                Link.loadBackup(data)
+                    .map(() => perform_callbacks)
+                    .then(() => res.end())
                     .catch((e) => {
-                        res.json({
-                            failed: true,
-                            error: e
-                        });
                         console.error(e);
+                        res.status(500).send(e.message);
                     });
             });
             return app;
@@ -160,15 +168,10 @@ const setup_data_calls = function (): Promise<express.Express> {
              */
             app.post('/data/shows/:show/:episode', (req, res) => {
                 Link.redownload(req.params.show, parseInt(req.params.episode))
-                    .then(() => res.json({
-                        failed: false
-                    }))
+                    .then(() => res.end())
                     .catch((e) => {
-                        res.json({
-                            failed: true,
-                            error: e
-                        });
                         console.error(e);
+                        res.status(500).send(e.message);
                     });
             });
             return app;
@@ -186,17 +189,11 @@ const setup_data_calls = function (): Promise<express.Express> {
                 let data = req.body;
                 Link.restartShow(req.params.show, data.episode, data.new_url,
                             data.nextxpath, data.imxpath, data.textxpath)
-                    .then(() => res.json({
-                        identifier: data.identifier,
-                        failed: false
-                    }))
+                    .then(() => res.end())
                     .then(() => perform_callbacks(req.params.show))
                     .catch((e) => {
-                        res.json({
-                            failed: true,
-                            error: e
-                        });
                         console.error(e);
+                        res.status(500).send(e.message);
                     });
             });
             return app;
@@ -211,11 +208,8 @@ const setup_data_calls = function (): Promise<express.Express> {
                     .then((data) => res.json(data))
                     .then(() => perform_callbacks(data.identifier))
                     .catch((e) => {
-                        res.json({
-                            failed: true,
-                            error: e
-                        });
                         console.error(e);
+                        res.status(500).send(e.message);
                     });
             });
             return app;
@@ -238,10 +232,10 @@ const setup_data_calls = function (): Promise<express.Express> {
              */
             app.delete('/data/shows/:show', (req, res) => {
                 Link.deleteShow(req.params.show)
-                    .then(() => res.json({failed: false}))
+                    .then(() => res.end())
                     .catch((e) => {
                         console.error(e);
-                        res.json({failed: true, error: e});
+                        res.status(500).send(e.message);
                     })
                     .then(() => perform_callbacks(req.params.show));
             })

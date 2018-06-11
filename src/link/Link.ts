@@ -2,10 +2,11 @@ import * as Promise from 'bluebird';
 import ShowData from '../types/ShowData';
 import Show from '../types/Show';
 import RawShow from '../types/RawShow';
+import FrontEndEpisode from '../types/FrontEndEpisode';
 
 export default interface Link {
 
-	getRelativeEpisode(show : string, episode : number, direction : string) : Promise<any> ;
+	getRelativeEpisode(show : string, episode : number, direction : string) : Promise<FrontEndEpisode> ;
 
 	getShowsData() : Promise<ShowData[]>;
 

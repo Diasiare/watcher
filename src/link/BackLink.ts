@@ -29,7 +29,7 @@ class BackLink implements Link {
 
 		return p.catch(() => undefined).then((data) => {
 			if (data) {
-				data.src = BackLink.build_resource_url(show, episode + ".jpg");
+				data.src = BackLink.build_resource_url(show, data.number + ".jpg");
 				return data;
 			} else {
 				return data;

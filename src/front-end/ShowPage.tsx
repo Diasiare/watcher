@@ -11,6 +11,7 @@ import Dialog from 'material-ui/Dialog';
 import RaisedButton from 'material-ui/RaisedButton';
 import FlatButton from 'material-ui/FlatButton';
 import Paper from 'material-ui/Paper';
+import Link from '../link/FrontLink';
 
 
 interface ShowPageProperties {
@@ -110,7 +111,7 @@ function NavButton(props) {
 
     return <RaisedButton icon={elem} labelPosition="before" label={label} style={button_style}
                          onClick={(e) => {
-                             $.get("/data/shows/" + props.id, (data) => {
+                             Link.getShowData(props.id).then((data) => {
                                  nav("/read/" + props.id + "/" + data[props.type] + "/" + props.type);
                              });
                          }

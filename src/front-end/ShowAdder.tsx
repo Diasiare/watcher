@@ -1,4 +1,3 @@
-import * as $ from 'jquery';
 import * as React from 'react';
 import * as ReactDOM from'react-dom';
 import DropDownMenu from 'material-ui/DropDownMenu';
@@ -8,6 +7,7 @@ import TextField from 'material-ui/TextField';
 import DownArrow from 'material-ui/svg-icons/navigation/expand-more';
 import UpArrow from 'material-ui/svg-icons/navigation/expand-less';
 import IconButton from 'material-ui/IconButton';
+import Link from '../link/FrontLink';
 
 const xpath = require('xpath').useNamespaces({"x": "http://www.w3.org/1999/xhtml"});
 const parse5 = require('parse5');
@@ -258,7 +258,7 @@ class ShowAdder extends React.Component<ShowAdderProps> {
 
     change(s, v) {
         if (s == "baseUrl") {
-            $.get("/function/get", {url: v}, (data) => {
+            Link.getWebPage(v).then((data) => {
                 if (data) {
                     this.setState({doc: extract_body(data, v)});
                 }
@@ -315,16 +315,8 @@ class ShowAdder extends React.Component<ShowAdderProps> {
                 data.image_xpath = manga_sources[s.manga_type].image_xpath;
             }
 
-            $.post("/data/shows", data, (data) => {
-                if (!data.failed) {
-                    nav("/read/" + data.identifier);
-                } else {
-                    let s = "Failed to create new show!\n\n";
-                    s += data.error;
-                    alert(s);
-                }
-            });
-
+            Link.newShow(data).then((data) => nav("/read/" + data.identifier))
+                .catch((e) => alert(e.message));
         }
     }
 

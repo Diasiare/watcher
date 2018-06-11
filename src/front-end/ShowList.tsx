@@ -6,6 +6,7 @@ import Paper from 'material-ui/Paper';
 import LastPage from 'material-ui/svg-icons/navigation/last-page';
 import Replay from 'material-ui/svg-icons/av/replay';
 import IconButton from 'material-ui/IconButton';
+import Link from '../link/FrontLink';
 
 
 interface ShowListProps {
@@ -98,7 +99,7 @@ class ShowElement extends React.Component<ShowElementProps> {
 
     primary_ontouch() {
         if (this.props.new) {
-            $.get("/data/shows/" + this.props.show.identifier, (data) => {
+            Link.getShowData(this.props.show.identifier).then((data) => {
                 nav("/read/" + this.props.show.identifier + "/" + Math.min(data["new"] + 1, this.props.show.episode_count) + "/new");
             });
         } else {
@@ -169,7 +170,7 @@ function NavButton(props) {
 
     return <IconButton onClick={(e) => {
         e.stopPropagation();
-        $.get("/data/shows/" + props.id, (data) => {
+        Link.getShowData(props.id).then((data) => {
             nav("/read/" + props.id + "/" + data[props.type] + "/" + props.type);
         });
     }}>

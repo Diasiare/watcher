@@ -19,6 +19,9 @@ import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui
 import Drawer from 'material-ui/Drawer';
 import IconMenu from 'material-ui/IconMenu';
 import Badge from 'material-ui/Badge';
+import RawShow from '../types/RawShow';
+import Link from '../link/FrontLink';
+
 
 var navigate = null;
 
@@ -98,7 +101,22 @@ class ShortMenu extends React.Component {
     }
 
     setSource() {
-        (document.getElementById('downloadFrame') as HTMLImageElement).src = "/data/backup.json";
+        Link.getBackup().then((data) => {
+            var a = document.createElement("a");
+            let file = new Blob([JSON.stringify(data)], {type: "json"});
+            let url = URL.createObjectURL(file);
+            console.log(url);
+            a.href = url;
+            a.download = "backup.json";
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function() {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);  
+            }, 0); 
+        })
+        
+
     }
 
     render() {
@@ -176,7 +194,6 @@ class ShortMenu extends React.Component {
 
 function BackupHandlers(props) {
     return <div style={{display: "none"}}>
-        <iframe id="downloadFrame" style={{display: "none"}}></iframe>
         <div style={{display: "none"}}>
             <form id="backupForm">
                 <input type="file" id="backupSelect" name="fileName" onChange={(e) => {
@@ -184,18 +201,13 @@ function BackupHandlers(props) {
                     let files = (document.getElementById('backupSelect') as HTMLInputElement).files;
                     if (files.length > 0) {
                         let file = files[0];
-                        let formData = new FormData();
-                        formData.append('backup', file, "backup.json");
-                        let xhr = new XMLHttpRequest();
-                        xhr.open('POST', '/data/backup.json', true);
-                        xhr.onload = function () {
-                            if (xhr.status === 200) {
-                                navigate("/list");
-                            } else {
-                                alert('An error occurred!');
-                            }
-                        };
-                        xhr.send(formData);
+                        let reader = new FileReader();
+                        reader.onload = (e) => {
+                            let data : RawShow[] = JSON.parse(e.target.result);
+                            console.log(data);
+                            Link.loadBackup(data).then(()=>navigate("/list")).catch((e) => console.log('Error loding backup: ' + e));
+                        }
+                        reader.readAsText(file);
                     }
                 }
                 }/>
@@ -270,7 +282,8 @@ function NavButton(props) {
 
     return <IconButton onClick={(e) => {
         e.stopPropagation();
-        $.get("/data/shows/" + props.id, (data) => {
+        Link.getShowData(props.id)
+        .then((data) => {
             navigate("/read/" + props.id + "/" + data[props.type] + "/" + props.type);
         });
     }}>
