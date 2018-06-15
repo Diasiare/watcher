@@ -113,6 +113,13 @@ class FrontLink implements Link {
 			return data;
 		});
 	}
+
+	deleteEpisode(identifier : string, episode : number) : Promise<void>{
+		return FrontLink.doRequest("DELETE", { 
+			url : "/data/shows/" + identifier + "/" + episode
+		});
+	}
+
 }
 
 const link : Link = new FrontLink() 

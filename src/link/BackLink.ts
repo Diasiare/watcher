@@ -111,6 +111,11 @@ class BackLink implements Link {
 		return Database.getInstance().then(db => db.get_show(identifier))
                     .then(show => show.delete_show());
 	}
+
+	deleteEpisode(identifier : string, episode : number) : Promise<void> {
+		return Database.getInstance().then(db => db.get_show(identifier))
+            .then(show => show.deleteEpiosde(episode));
+	}
 }
 
 const link : Link = new BackLink() 

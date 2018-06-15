@@ -99,7 +99,7 @@ export class Database {
         });
     }
 
-    private static get_storage_location = (): Promise<String> => {
+    private static get_storage_location = (): Promise<string> => {
         return Promise.resolve(Database.location);
     }
 
@@ -430,12 +430,10 @@ export class Show implements ShowFields {
             .return(data);
     }
 
-    public get_episode_data = (episode_number: number): Promise<Episode> => {
-        return Database.getInstance().then(db => db.db.get("SELECT * FROM episodes WHERE show=? AND number=? LIMIT 1", this.identifier, episode_number))
-            .then((resp) => {
-                return new Promise((r, e) => {
-                    if (!resp) {
-                        e(e);
+    private episodePostParse(resp) : Promise<Episode>{
+            return new Promise((r, e) => {
+                    if (!resp || !resp.show) {
+                        e(new Error("Query failed - Could not find episode"));
                         return;
                     }
                     let result: Episode = {
@@ -443,11 +441,18 @@ export class Show implements ShowFields {
                         number: resp.number,
                         url: resp.image_url,
                         base_url: resp.page_url,
+                        thumbnail_name: "shows/" + resp.show + "/thumbnails/" + resp.number + ".jpg",
+                        filename : "shows/" + resp.show + "/" + resp.number + ".jpg",
                         data: JSON.parse(resp.aditional_data)
                     }
                     r(result);
-                });
-            })
+         });
+        
+    }
+
+    public get_episode_data = (episode_number: number): Promise<Episode> => {
+        return Database.getInstance().then(db => db.db.get("SELECT * FROM episodes WHERE show=? AND number=? LIMIT 1", this.identifier, episode_number))
+            .then((resp) => this.episodePostParse(resp))
     }
 
     public get_episode_page_url = (episode_number: number): Promise<string> => {
@@ -455,26 +460,38 @@ export class Show implements ShowFields {
             .then((episode) => episode.base_url);
     }
     public get_first = (): Promise<Episode> => {
-        return this.get_episode_data(1);
+        return Database.getInstance().then(db => db.db.get("SELECT *, MIN(number) FROM episodes WHERE show=?", this.identifier))
+            .then((resp) => this.episodePostParse(resp));
     }
 
     public get_last = (): Promise<Episode> => {
-        return this.get_episode_data(this.number);
+        return Database.getInstance().then(db => db.db.get("SELECT *, MAX(number) FROM episodes WHERE show=?", this.identifier))
+            .then((resp) => this.episodePostParse(resp));
+
     }
 
     public get_next = (episode_number: number): Promise<Episode> => {
-        return this.get_episode_data(episode_number + 1).catch((e) => this.get_episode_data(episode_number)).catch(() => undefined);
+        return Database.getInstance().then(db => db.db.get("SELECT *, MIN(number) FROM episodes WHERE show=? AND number > ?", this.identifier, episode_number))
+            .then((resp) => this.episodePostParse(resp)).catch((e) => this.get_episode_data(episode_number)).catch(() => undefined);
     }
 
 
     public get_prev = (episode_number: number): Promise<Episode> => {
-        return this.get_episode_data(episode_number - 1).catch(() => this.get_episode_data(episode_number)).catch(() => undefined);
+        return Database.getInstance().then(db => db.db.get("SELECT *, MAX(number) FROM episodes WHERE show=? AND number < ?", this.identifier, episode_number))
+            .then((resp) => this.episodePostParse(resp)).catch((e) => this.get_episode_data(episode_number)).catch(() => undefined);
     }
 
     public get_last_unread = (type: string): Promise<Episode> => {
         return this.get_show_data()
             .then((show_data) => show_data[type])
             .then((episode: number) => this.get_next(episode));
+    }
+
+    public deleteEpiosde(index : number) : Promise<any> {
+        return this.get_episode_data(index).then((episode) => [
+                Database.getInstance().then(db => db.db.get("DELETE FROM episodes WHERE show=? AND number=?", this.identifier, index)),
+                Promise.all([Database.resolve_path(episode.filename), Database.resolve_path(episode.thumbnail_name)]).map((file : string) => shelljs.rm(file))
+            ]).all();
     }
 
 }

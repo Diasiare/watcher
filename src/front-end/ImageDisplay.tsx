@@ -42,6 +42,7 @@ class ImageDisplay extends React.Component {
         this.on_key = this.on_key.bind(this);
         this.navigate = this.navigate.bind(this);
         this.flip_menu = this.flip_menu.bind(this);
+        this.delete_current = this.delete_current.bind(this);
         this.state = {
             current: null,
             menu_open: false
@@ -53,9 +54,18 @@ class ImageDisplay extends React.Component {
             this.navigate("next");
         } else if (e.keyCode === 37) {
             this.navigate("prev");
-        } else {
+        } else if (e.keyCode === 46) {
+            this.delete_current();
+        }else {
             return;
         }
+    }
+
+    delete_current() {
+        let episode = this.state.current.number;
+        let show = this.props.show;
+        Flink.deleteEpisode(show, episode)
+        .then(() => EpisodeNavigator.navigate("next"));
     }
 
     flip_menu() {
@@ -95,7 +105,7 @@ class ImageDisplay extends React.Component {
                                    width={this.props.width}
                                    navigate={this.navigate} key="container"/>);
         elems.push(<NavElements navigate={this.navigate}
-                                width={this.props.width} flip_menu={this.flip_menu} key="nav"/>);
+                                width={this.props.width} flip_menu={this.flip_menu} delete_current={this.delete_current} key="nav"/>);
 
         if (this.state.menu_open) {
             elems.push(<Options episode={this.state.current} width={this.props.width}
@@ -126,11 +136,17 @@ function NavElements(props) {
         <NavButton type="first" navigate={props.navigate}/>
         <NavButton type="prev" navigate={props.navigate}/>
         <OptionsButton flip_menu={props.flip_menu}/>
+        <DeleteEpisodeButton delete_current={props.delete_current}/>
         <NavButton type="next" navigate={props.navigate}/>
         <NavButton type="last" navigate={props.navigate}/>
     </div>
 }
 
+function DeleteEpisodeButton(props) {
+    return <div className="navButton flex_center" style={{textAlign: "center"}} onClick={props.delete_current}>
+        <img className="navImage" src="/images/delete.png"/>
+    </div>
+}
 
 function OptionsButton(props) {
     return <div className="navButton flex_center" style={{textAlign: "center"}} onClick={props.flip_menu}>
@@ -144,7 +160,7 @@ interface OptionsProps {
 }
 
 class Options extends React.Component {
-    show : any;
+    private show : ShowData = null;
 
     state : {
         new_url: string,
@@ -161,9 +177,9 @@ class Options extends React.Component {
         super(props);
         this.state = {
                 new_url : this.props.episode.base_url,
-                imxpath: this.show.image_xpath,
-                nextxpath: this.show.next_xpath,
-                textxpath: this.show.text_xpath,
+                imxpath: "",
+                nextxpath: "",
+                textxpath: "",
                 doc : null,
         }
 
@@ -181,6 +197,7 @@ class Options extends React.Component {
     }
 
     updateShow(show : ShowData) {
+        this.show = show;
         if (show) {
             this.setState({
                 imxpath: show.image_xpath,

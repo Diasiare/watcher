@@ -28,4 +28,5 @@ export default interface Link {
 
 	deleteShow(identifier : string) : Promise<any>;
 
+	deleteEpisode(identifier : string, episode : number) : Promise<void>;
 }

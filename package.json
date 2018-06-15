@@ -10,7 +10,7 @@
     "build": "(tsc --listFiles --listEmittedFiles || echo 'typescript has errors') && webpack",
     "tscd": "tsc -w",
     "webd": "webpack --watch --progress",
-    "try" : "npm run build && npm start"
+    "try": "npm run build && npm start"
   },
   "dependencies": {
     "@types/body-parser": "^1.17.0",
@@ -23,6 +23,7 @@
     "@types/react-router": "^4.0.26",
     "@types/react-router-dom": "^4.2.7",
     "@types/request": "^2.47.0",
+    "@types/shelljs": "^0.8.0",
     "ajv": "^5.5.2",
     "babel-polyfill": "^6.26.0",
     "bluebird": "^3.5.1",

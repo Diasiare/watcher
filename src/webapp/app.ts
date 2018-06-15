@@ -211,7 +211,20 @@ const setup_data_calls = function (): Promise<express.Express> {
                     });
             })
             return app;
-        });
+        }).then((app) => {
+            /*
+             * Delete an episode
+             */
+            app.delete('/data/shows/:show/:episode', (req, res) => {
+                Link.deleteEpisode(req.params.show, req.params.episode)
+                    .then(() => res.end())
+                    .catch((e) => {
+                        console.error(e);
+                        res.status(500).send(e.message);
+                    });
+            })
+            return app;
+        });;
 }
 
 const setup_default = function (): void {

@@ -52,6 +52,7 @@ class EpisodeNavigator {
                 return;
             }
             if (oldIdentifier != show.identifier || this.type != oldType) {
+                oldType = this.type;
                 this.preloads = new Map();
                 EpisodeNavigator.DIRECTIONS.forEach((direction) => this.update(direction));
             } else {
