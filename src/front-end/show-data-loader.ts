@@ -6,7 +6,7 @@ const notifications = {};
 var last_notification_id = null;
 
 class ShowDataCache {
-    private static TIME_BETWEEN_UPDATES : number = 5 * 1000;
+    private static TIME_BETWEEN_UPDATES : number = 60 * 1000;
     private listeners : Map<string, (data : ShowData[]) => void>= new Map();
     private show_listeners : Map<string, Map<string, (data : ShowData) => void>> = new Map();
     private data : Map<string, ShowData> = new Map()
