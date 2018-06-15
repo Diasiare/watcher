@@ -13,7 +13,6 @@ const navigate = require("./front-end/navigate");
 const {is_mobile} = require("./front-end/helpers");
 const Menu = require("./front-end/Menu");
 const {ShowAdder} = require("./front-end/ShowAdder");
-const loader = require("./front-end/image-preloader");
 import show_loader from "./front-end/show-data-loader";
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
@@ -26,6 +25,20 @@ import {
 import {fade} from 'material-ui/utils/colorManipulator';
 import spacing from 'material-ui/styles/spacing';
 import { withRouter } from 'react-router-dom';
+
+
+show_loader.registerAllShowsCallback("Title", (shows) => {
+  if (shows) {
+    let title = "Watcher";
+    let new_episodes = shows.filter((show) => show.episode_count != show.new).length;
+    if (new_episodes != 0) {
+      title += " (" + new_episodes + ")";
+    }
+    if (document.title != title) {
+      document.title = title;
+    }
+  }
+});
 
 
 declare var Notification: any;
