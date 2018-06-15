@@ -30,7 +30,6 @@
     "css-loader": "^0.28.7",
     "deep-equal": "^1.0.1",
     "express": "^4.16.2",
-    "express-ws": "~3.0.0",
     "gm": "^1.23.0",
     "jquery": "^3.2.1",
     "material-ui": "^0.18.7",
