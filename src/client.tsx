@@ -30,7 +30,7 @@ import { withRouter } from 'react-router-dom';
 show_loader.registerAllShowsCallback("Title", (shows) => {
   if (shows) {
     let title = "Watcher";
-    let new_episodes = shows.filter((show) => show.episode_count != show.new).length;
+    let new_episodes = shows.filter((show) => show.episode_count > show.new && show.new > 0).length;
     if (new_episodes != 0) {
       title += " (" + new_episodes + ")";
     }
