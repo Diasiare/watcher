@@ -2,7 +2,7 @@ import * as $ from 'jquery';
 import * as React from 'react';
 import * as ReactDOM from'react-dom';
 import {Redirect, Link, Route} from'react-router-dom';
-import * as loader from "./image-preloader";
+import EpisodeNavigator from "./image-preloader";
 import {navigate as nav} from "./navigate";
 import Paper from 'material-ui/Paper';
 import Replay from 'material-ui/svg-icons/av/replay';
@@ -11,17 +11,12 @@ import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
 import Episode from './../types/FrontEndEpisode';
 import Flink from '../link/FrontLink';
+import ShowData from '../types/ShowData';
 
 
 const {resolve_width, resolve_width_int} = require("./helpers");
 const {extract_body, InteractiveXpath} = require("./ShowAdder");
-const show_loader = require("./show-data-loader");
-
-
-function updateLastRead(show, number, type) {
-    Flink.updateLastRead(show, number, type);
-}
-
+import ShowCache from "./show-data-loader";
 
 function get_url_for(show, episode, read_type) {
     return "/read/" + show + "/" + episode + "/" + read_type;
@@ -29,18 +24,13 @@ function get_url_for(show, episode, read_type) {
 
 interface ImageDisplayProps {
     type : string,
-    episode : string
     show : string,
     width : number
 }
 
 class ImageDisplay extends React.Component {
     state : {
-            next: Episode,
-            prev: Episode,
             current: Episode,
-            first: Episode,
-            last: Episode,
             menu_open: boolean
         };
 
@@ -53,11 +43,7 @@ class ImageDisplay extends React.Component {
         this.navigate = this.navigate.bind(this);
         this.flip_menu = this.flip_menu.bind(this);
         this.state = {
-            next: null,
-            prev: null,
             current: null,
-            first: null,
-            last: null,
             menu_open: false
         };
     }
@@ -76,26 +62,28 @@ class ImageDisplay extends React.Component {
         this.setState({menu_open: !this.state.menu_open});
     }
 
-    navigate(type) {
-        if (this.state[type]) {
-            let episode = this.state[type];
-            updateLastRead(episode.identifier, episode.number, this.props.type);
-            $('html, body').animate({scrollTop: 0}, 'fast');
-            nav(get_url_for(episode.identifier, episode.number, this.props.type));
-        }
+    navigate(direction : string) {
+        EpisodeNavigator.navigate(direction);
     }
 
     componentWillMount() {
         $(document).on("keydown", this.on_key);
-        ["next", "prev", "current", "first", "last"].forEach((e) =>
-            loader.register_callback(e, this, e));
-        loader.change_episode(this.props.show, this.props.episode);
-        updateLastRead(this.props.show, this.props.episode, this.props.type);
+        EpisodeNavigator.changeShow(this.props.show, this.props.type);
+        EpisodeNavigator.registerCallback("ImageDisplay", (episode) => {
+            console.log("Setting current " + episode);
+            this.setState({current : episode}); 
+            $('html, body').animate({scrollTop: 0}, 'fast')
+        });
+    }
+
+    componentWillReceiveProps(newProps : ImageDisplayProps) {
+        if (this.props.show != newProps.show || this.props.type != newProps.type) {
+            EpisodeNavigator.changeShow(newProps.show, newProps.type);
+        }
     }
 
     componentWillUnmount() {
-        ["next", "prev", "current", "first", "last"].forEach((e) =>
-            loader.remove_callback(e, this));
+        EpisodeNavigator.removeCallback("ImageDisplay");
         $(document).off("keydown", this.on_key);
     }
 
@@ -103,11 +91,11 @@ class ImageDisplay extends React.Component {
     render() {
         let elems = []
 
-        let info = this.state.current.data;
+        let info = this.state.current ? this.state.current.data : null;
         elems.push(<ImageContainer episode={this.state.current}
                                    width={this.props.width}
                                    navigate={this.navigate} key="container"/>);
-        elems.push(<NavElements navigate={this.navigate} data={this.state.current}
+        elems.push(<NavElements navigate={this.navigate}
                                 width={this.props.width} flip_menu={this.flip_menu} key="nav"/>);
 
         if (this.state.menu_open) {
@@ -172,27 +160,16 @@ class Options extends React.Component {
 
     constructor(props : OptionsProps) {
         super(props);
-        this.show = show_loader.get_show_data(props.episode.identifier);
-        if (this.show) {
-            this.state = {
-                new_url: props.episode.base_url,
+        this.state = {
+                new_url : this.props.episode.base_url,
                 imxpath: this.show.image_xpath,
                 nextxpath: this.show.next_xpath,
                 textxpath: this.show.text_xpath,
                 doc : null,
-            }
-        } else {
-            this.state = {
-                new_url: props.episode.original_url,
-                imxpath: "",
-                nextxpath: "",
-                textxpath: "",
-                doc : null,
-            }
         }
 
         this.restart = this.restart.bind(this);
-        this.change = this.change.bind(this);
+        this.updateShow = this.updateShow.bind(this);
     }
 
     restart() {
@@ -204,12 +181,29 @@ class Options extends React.Component {
             .catch((e) => alert(e.message));
     }
 
+    updateShow(show : ShowData) {
+        if (show) {
+            this.setState({
+                imxpath: show.image_xpath,
+                nextxpath: show.next_xpath,
+                textxpath: show.text_xpath,
+            })
+        } else {
+            this.setState({
+                imxpath: "",
+                nextxpath: "",
+                textxpath: "",
+            })
+        }
+    }
+
     componentWillMount() {
         Flink.getWebPage(this.state.new_url).then((data) => {
             if (data) {
                 this.setState({doc: extract_body(data, this.props.episode.base_url)});
             }
         })
+        ShowCache.registerSingleShowCallback(this.props.episode.identifier, "ImageDisplay.Options", this.updateShow);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -221,31 +215,14 @@ class Options extends React.Component {
         }
 
         if (this.props.episode.identifier != nextProps.episode.identifier) {
-            this.show = show_loader.get_show_data(this.props.episode.identifier);
-            if (this.show) {
-                this.setState({
-                    new_url: this.props.episode.base_url,
-                    imxpath: this.show.image_xpath,
-                    nextxpath: this.show.next_xpath,
-                    textxpath: this.show.text_xpath,
-                })
-            } else {
-                this.setState({
-                    new_url: this.props.episode.base_url,
-                    imxpath: "",
-                    nextxpath: "",
-                    textxpath: "",
-                })
-            }
+            ShowCache.removeSingleShowCallback("ImageDisplay.Options");
+            ShowCache.registerSingleShowCallback(nextProps.episode.identifier, "ImageDisplay.Options", this.updateShow);
         }
     }
 
-    change(s, v) {
-        let tmp = {};
-        tmp[s] = v;
-        this.setState(tmp);
+    componentWillUnmount() {
+        ShowCache.removeSingleShowCallback("ImageDisplay.Options");
     }
-
 
     render() {
         return (<div style={{
@@ -288,7 +265,7 @@ class Options extends React.Component {
                 val={this.state.imxpath}
                 doc={this.state.doc}
                 url={this.props.episode.base_url}
-                change={this.change}/>
+                change={(name, value) => this.setState({imxpath : value})}/>
             <InteractiveXpath
                 key="nextxpath"
                 text="Next Xpath"
@@ -296,7 +273,7 @@ class Options extends React.Component {
                 val={this.state.nextxpath}
                 doc={this.state.doc}
                 url={this.props.episode.base_url}
-                change={this.change}/>
+                change={(name, value) => this.setState({nextxpath : value})}/>
             <InteractiveXpath
                 key="textxpath"
                 text="Text Xpath"
@@ -304,7 +281,7 @@ class Options extends React.Component {
                 val={this.state.textxpath}
                 doc={this.state.doc}
                 url={this.props.episode.base_url}
-                change={this.change}/>
+                change={(name, value) => this.setState({textxpath : value})}/>
         </div>)
     }
 }

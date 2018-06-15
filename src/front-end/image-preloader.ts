@@ -1,105 +1,96 @@
-import * as $ from 'jquery';
 import Link from '../link/FrontLink';
-
-var preloads = {
-    next: null,
-    prev: null,
-    last: null,
-    first: null,
-    current: null,
-    current_show: null,
-    callbacks: new Map()
-}
+import ShowCach from './show-data-loader';
+import Episode from '../types/FrontEndEpisode';
+import ShowData from '../types/ShowData';
+import * as Promise from 'bluebird';
 
 
-function update(type, identifier, number) {
-    if (preloads[type] === false) return;
-    preloads[type] = false;
-    Link.getRelativeEpisode(identifier, number, type)
+
+class EpisodeNavigator {
+    private static DIRECTIONS : string[] = ["next","prev","current","last","first"]
+
+    private preloads : Map<string,Episode> = new Map();
+    private current_show: ShowData = null;
+    private type : string = null;
+    private callbacks: Map<string, (episode : Episode) => void> = new Map();
+    
+    
+    private update(direction : string) : Promise<Episode> {
+        let current = this.preloads.get("current");
+
+        return Link.getRelativeEpisode(this.current_show.identifier, current ? current.number : this.current_show[this.type], direction)
         .then((data) => {
-            if (preloads.current_show == identifier) {
-                data.img = new Image();
-                data.img.src = data.src;
-                preloads[type] = data;
-                perform_callbacks([type]);
-            }
-        }).catch((e) => console.log(e.message));
-}
-
-export function get_data(type) {
-    return preloads[type];
-}
-
-function perform_callbacks(types) {
-    for (let key of preloads.callbacks.keys()) {
-        perform_callback(types, key)
-    }
-}
-
-function perform_callback(types, o) {
-    let obj = preloads.callbacks.get(o);
-    let update = {};
-    types.forEach((type) => {
-        if (type in obj) {
-            update[obj[type]] = preloads[type];
-        }
-    });
-    if (!($.isEmptyObject(update))) o.setState(update);
-}
-
-export function register_callback(type, o, state) {
-    if (!preloads.callbacks.has(o)) preloads.callbacks.set(o, {});
-    let obj = preloads.callbacks.get(o);
-    obj[type] = state;
-    if (preloads[type]) {
-        perform_callback([type], o);
-    }
-}
-
-export function remove_callback(type, o) {
-    let obj = preloads.callbacks.get(o)
-    delete obj[type];
-    if ($.isEmptyObject(obj)) preloads.callbacks.delete(o);
-
-}
-
-export function change_episode(show, episode) {
-    if (show === preloads.current_show) {
-        let types = ["current", "next", "prev", "first", "last"];
-        for (let i = 0; i < types.length; i++) {
-            let loaded = types[i];
-            if (preloads[loaded] && preloads[loaded].number == episode) {
-                if (loaded === "next") {
-                    preloads.prev = preloads.current;
-                    preloads.current = preloads.next;
-                    update(loaded, show, episode);
-                } else if (loaded === "prev") {
-                    preloads.next = preloads.current;
-                    preloads.current = preloads.prev;
-                    update(loaded, show, episode);
-                } else if (loaded === "first" || loaded === "last") {
-                    preloads.current = preloads[loaded];
-                    update("next", show, episode);
-                    update("prev", show, episode);
+                if (this.current_show && this.current_show.identifier == data.identifier) {
+                    data.img = new Image();
+                    data.img.src = data.src;
+                    this.setEpisode(direction, data);
                 }
-                perform_callbacks(["prev", "next", "current"]);
+                return data;
+        }).catch((e) => {
+            console.log(e);
+            throw e;
+            
+        });
+    }
+
+    private setEpisode(direction : string, episode : Episode) {
+        this.preloads.set(direction, episode);
+        if (direction == "current") {
+            this.callbacks.forEach((callback) => callback(episode));
+        }    
+    }
+
+
+    public changeShow(identifier : string, type : string) : void {
+        let oldType = this.type;
+        this.type = type;
+        this.callbacks.forEach((callback) => callback(null));
+        ShowCach.removeSingleShowCallback("ImagePreloader");
+        ShowCach.registerSingleShowCallback(identifier, "ImagePreloader", (show) => {
+            let oldIdentifier = this.current_show ? this.current_show.identifier : null;
+            this.current_show = show;
+            if (!show) {
                 return;
             }
+            if (oldIdentifier != show.identifier || this.type != oldType) {
+                this.preloads = new Map();
+                EpisodeNavigator.DIRECTIONS.forEach((direction) => this.update(direction));
+            } else {
+                let last : Episode = this.preloads.get("last")
+                if (last && last.number != show.episode_count) {
+                    this.update("last");
+                }
+            }
+        });
+    }
+
+    private setCurrent(episode : Episode) : void{
+        if (episode) {
+            this.setEpisode("current", episode);
+            EpisodeNavigator.DIRECTIONS.slice(0,2).forEach((dir) => this.update(dir));
+            Link.updateLastRead(this.current_show.identifier, episode.number, this.type);
         }
     }
 
-    if (show !== preloads.current_show) {
-        preloads.current_show = show;
-        update("last", show, episode);
-        update("first", show, episode);
-        update("current", show, episode);
-        update("next", show, episode);
-        update("prev", show, episode);
-        perform_callbacks(["prev", "next", "current", "first", "last"]);
-    } else {
-        update("current", show, episode);
-        update("next", show, episode);
-        update("prev", show, episode);
-        perform_callbacks(["prev", "next", "current"]);
+    public navigate(direction : string) : void {
+        if (this.preloads.get(direction)) {
+            this.setCurrent(this.preloads.get(direction));
+            Link.updateLastRead(this.current_show.identifier, this.preloads.get(direction).number, this.type)
+        } else {
+            this.update(direction).then((episode) => this.setCurrent(episode));
+        }
     }
+
+    public registerCallback(key : string, callback : (current : Episode) => void) : void {
+        this.callbacks.set(key, callback);
+        callback(this.preloads.get("current"));
+    }
+
+    public removeCallback(key : string) : void {
+        this.callbacks.delete(key);
+    }
+
 }
+
+export default new EpisodeNavigator();
+

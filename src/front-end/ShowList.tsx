@@ -2,11 +2,13 @@ import * as $ from 'jquery';
 import * as React from 'react';
 import * as ReactDOM from'react-dom';
 const nav = require("./navigate").navigate;
+import ShowData from '../types/ShowData';
 import Paper from 'material-ui/Paper';
 import LastPage from 'material-ui/svg-icons/navigation/last-page';
 import Replay from 'material-ui/svg-icons/av/replay';
 import IconButton from 'material-ui/IconButton';
 import Link from '../link/FrontLink';
+import ShowCache from "./show-data-loader";
 
 
 interface ShowListProps {
@@ -16,7 +18,7 @@ interface ShowListProps {
 
 class ShowList extends React.Component<ShowListProps> {
     state : {
-        shows : any[],
+        shows : ShowData[],
     }
 
     constructor(props) {
@@ -27,15 +29,25 @@ class ShowList extends React.Component<ShowListProps> {
     }
 
     componentWillMount() {
-        if (this.props.filter) {
-            data_loader.register_listener(this, "shows", this.props.filter);
-        } else {
-            data_loader.register_listener(this, "shows");
-        }
+        ShowCache.registerAllShowsCallback("ShowList", (shows) => {
+            if (this.props.filter && this.props.filter != "new") {
+                this.setState({
+                    shows : shows.filter((show) => show.type == this.props.filter)
+                })
+            } else if (this.props.filter && this.props.filter == "new") {
+                this.setState({
+                    shows : shows.filter((show) => show.new != 0 && show.episode_count != show.new)
+                })
+            } else {
+                this.setState({
+                    shows : shows
+                });
+            }
+        });
     }
 
     componentWillUnmount() {
-        data_loader.remove_listener(this);
+        ShowCache.removeAllShowsCallback("ShowList");
     }
 
     render() {
@@ -99,9 +111,7 @@ class ShowElement extends React.Component<ShowElementProps> {
 
     primary_ontouch() {
         if (this.props.new) {
-            Link.getShowData(this.props.show.identifier).then((data) => {
-                nav("/read/" + this.props.show.identifier + "/" + Math.min(data["new"] + 1, this.props.show.episode_count) + "/new");
-            });
+            nav("/read/" + this.props.show.identifier + "/new");
         } else {
             nav("/read/" + this.props.show.identifier)
         }
@@ -181,6 +191,4 @@ function NavButton(props) {
 
 module.exports = ShowList;
 
-
-const data_loader = require("./show-data-loader");
 const {resolve_width, resolve_width_int} = require("./helpers");

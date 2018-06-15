@@ -9,10 +9,12 @@
     "test": "node dist/tests.js",
     "build": "(tsc --listFiles --listEmittedFiles || echo 'typescript has errors') && webpack",
     "tscd": "tsc -w",
-    "webd": "webpack --watch --progress"
+    "webd": "webpack --watch --progress",
+    "try" : "npm run build && npm start"
   },
   "dependencies": {
     "@types/body-parser": "^1.17.0",
+    "@types/deep-equal": "^1.0.1",
     "@types/express-serve-static-core": "^4.11.1",
     "@types/jquery": "^3.3.2",
     "@types/material-ui": "^0.20.8",
@@ -26,6 +28,7 @@
     "bluebird": "^3.5.1",
     "body-parser": "^1.18.2",
     "css-loader": "^0.28.7",
+    "deep-equal": "^1.0.1",
     "express": "^4.16.2",
     "express-ws": "~3.0.0",
     "gm": "^1.23.0",

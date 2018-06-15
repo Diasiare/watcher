@@ -2,8 +2,9 @@ import * as $ from 'jquery';
 import * as React from 'react';
 import * as ReactDOM from'react-dom';
 const nav = require("./navigate").navigate;
-const data_loader = require("./show-data-loader");
+import ShowCache from "./show-data-loader";
 const {resolve_width} = require("./helpers");
+import ShowData from '../types/ShowData';
 import LastPage from 'material-ui/svg-icons/navigation/last-page';
 import Replay from 'material-ui/svg-icons/av/replay';
 import Delete from 'material-ui/svg-icons/action/delete-forever';
@@ -19,27 +20,36 @@ interface ShowPageProperties {
     width : number
 }
 
-class ShowPage extends React.Component<ShowPageProperties, {show : any, name : string}> {
+class ShowPage extends React.Component<ShowPageProperties, {show : ShowData, name : string}> {
     constructor(props) {
         super(props);
         this.state = {
             show: null,
             name: null
         }
+        this.updateShow = this.updateShow.bind(this);
+    }
+
+    updateShow(show : ShowData) {
+        if (show && this.props.show == show.identifier) {
+            this.setState({
+                show : show
+            });
+        }
     }
 
     componentWillMount() {
-        data_loader.register_show_listener(this, "show", this.props.show);
+        ShowCache.registerSingleShowCallback(this.props.show ,"ShowPage", this.updateShow);
     }
 
     componentWillUnmount() {
-        data_loader.remove_show_listener(this, this.props.show);
+        ShowCache.removeSingleShowCallback("ShowPage");
     }
 
     componentWillReceiveProps(newprops) {
         if (this.props.show != newprops.show) {
-            data_loader.remove_show_listener(this, this.props.show);
-            data_loader.register_show_listener(this, "show", newprops.show);
+            ShowCache.removeSingleShowCallback("ShowPage");
+            ShowCache.registerSingleShowCallback(this.props.show ,"ShowPage", this.updateShow);
         }
     }
 
@@ -111,11 +121,8 @@ function NavButton(props) {
 
     return <RaisedButton icon={elem} labelPosition="before" label={label} style={button_style}
                          onClick={(e) => {
-                             Link.getShowData(props.id).then((data) => {
-                                 nav("/read/" + props.id + "/" + data[props.type] + "/" + props.type);
-                             });
-                         }
-                         }/>
+                            nav("/read/" + props.id +  "/" + props.type);
+                        }}/>
 }
 
 class DeleteButton extends React.Component<{id : string, name : string}, {confirm : boolean}> {

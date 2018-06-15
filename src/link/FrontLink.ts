@@ -51,10 +51,18 @@ class FrontLink implements Link {
 			url :'/data/backup.json',
 			data : {backup : backup},
 			dataType : "json"
+		}).then((data) => {
+			ShowCache.fetchAll();
+			return data;
 		});
 	}
 
 	updateLastRead(identifier : string, episode : number, type : string) : Promise<any>{
+		ShowCache.updateShow(identifier, (show) => {
+			show[type] = type == "new" ? Math.max(episode, show.new) : episode;
+			return show;
+		})
+
 		return FrontLink.doRequest("POST", { 
 			url :"/data/shows/" + identifier + "/" + episode + "/" + type
 		});
@@ -84,6 +92,9 @@ class FrontLink implements Link {
 			url :'/data/shows',
 			data : showData,
 			dataType : "json"
+		}).then((data) => {
+			ShowCache.fetchAll();
+			return data;
 		});
 	}
 
@@ -97,9 +108,14 @@ class FrontLink implements Link {
 	deleteShow(identifier : string) : Promise<any>{
 		return FrontLink.doRequest("DELETE", { 
 			url : "/data/shows/" + identifier
+		}).then((data) => {
+			ShowCache.updateShow(identifier, () => null);
+			return data;
 		});
 	}
 }
 
 const link : Link = new FrontLink() 
 export default link as Link;
+
+import ShowCache from "../front-end/show-data-loader";

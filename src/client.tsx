@@ -14,7 +14,7 @@ const {is_mobile} = require("./front-end/helpers");
 const Menu = require("./front-end/Menu");
 const {ShowAdder} = require("./front-end/ShowAdder");
 const loader = require("./front-end/image-preloader");
-const show_loader = require("./front-end/show-data-loader");
+import show_loader from "./front-end/show-data-loader";
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import {
@@ -69,7 +69,6 @@ class Main extends React.Component<RouteComponentProps<{}>>{
     this.props.history.listen(this.path_change)
     this.path_change(this.props.location);
     navigate.init(this.props.history.push);
-    show_loader.preload_data();
     window.addEventListener('resize', this.updateWindowDimensions);
   }
   
@@ -79,10 +78,6 @@ class Main extends React.Component<RouteComponentProps<{}>>{
 
   path_change(location) {
     let parts = location.pathname.split("/");
-    parts.splice(0,1);
-    if (parts.length == 4 && parts[0] == "read") {
-      loader.change_episode(parts[1],parts[2]); 
-    }
   }
 
   updateWindowDimensions() {
@@ -104,10 +99,9 @@ class Main extends React.Component<RouteComponentProps<{}>>{
         return <div style={style}>
                 <Menu width={width}/>
                 <Switch>
-                    <Route path="/read/:show/:episode/:type" render={({match})=>{
+                    <Route path="/read/:show/:type" render={({match})=>{
                      return <ImageDisplay width={width} 
                         show={match.params.show} 
-                        episode={match.params.episode} 
                         type={match.params.type}/>
                     }}/>
                     <Route path="/read/:show" render={({match})=>{

@@ -1,170 +1,105 @@
 import * as $ from 'jquery';
-const nav = require("./navigate").navigate;
-var listeners = new Map();
-var show_listeners = new Map();
-var socket = null;
-var data = null;
+const equal =  require('deep-equal');
+import ShowData from '../types/ShowData';
+
 const notifications = {};
 var last_notification_id = null;
 
-function preload_data() {
-    if (!socket) {
-        let loc = window.location, new_uri;
-        if (loc.protocol === "https:") {
-            new_uri = "wss:";
-        } else {
-            new_uri = "ws:";
-        }
-        new_uri += "//" + loc.host;
-        new_uri += "/socket/shows";
+class ShowDataCache {
+    private static TIME_BETWEEN_UPDATES : number = 60 * 1000;
+    private listeners : Map<string, (data : ShowData[]) => void>= new Map();
+    private show_listeners : Map<string, Map<string, (data : ShowData) => void>> = new Map();
+    private data : Map<string, ShowData> = new Map()
 
-        try {
-            socket = new WebSocket(new_uri);
-            socket.addEventListener("message", (event) => {
-                let d = JSON.parse(event.data);
-                if (d.type == "all") {
-                    let tmp = {};
-                    d.data.forEach((show) => tmp[show.identifier] = show);
-                    data = tmp;
-                    run_callbacks();
-                } else if (d.type == "single") {
-                    if (!data) {
-                        data = {};
-                    }
-                    if (d.data) {
-                        //Do not push noteifications for the same show twice in a row
-                        if ((!data[d.identifier]
-                                || data[d.identifier].episode_count < d.data.episode_count)
-                            && d.data.episode_count > 0
-                            && d.data.new < d.data.episode_count
-                            && last_notification_id !== d.identifier
-                            && (<any>Notification).permission === "granted") {
-                            if (notifications[d.identifier]) {
-                                notifications[d.identifier].close();
-                            }
-                            let n = new Notification("Watcher: " + d.data.name, <any>{
-                                data: d,
-                                icon: window.location.protocol + "//"
-                                + window.location.host + "/shows/"
-                                + d.data.identifier + "/thumbnails/"
-                                + d.data.episode_count + ".jpg",
-                                body: "" + d.data.name + " episode " + d.data.episode_count + " is out!",
-                            });
-                            n.onclick = (e) => {
-                                nav("/read/" + d.data.identifier + "/" + (data[d.data.identifier].new) + "/new");
-                            };
-                            notifications[d.identifier] = n;
-                            last_notification_id = d.identifier;
-                        }
-                        data[d.data.identifier] = d.data;
-                    } else {
-                        delete data[d.identifier];
-                    }
-                    run_callbacks()
+    public constructor() {
+        Link.getShowsData().each((show : ShowData) => this.data.set(show.identifier, show))
+            .then((shows : ShowData[]) => this.doAllShowsCallbacks(shows))
+            .each((show : ShowData) => this.doSingleShowCallback(show));
+
+         setInterval(() => this.fetchAll(),  ShowDataCache.TIME_BETWEEN_UPDATES);
+    }
+
+    public fetchAll() : void {
+        Link.getShowsData().then((shows) => {
+            let oldShows = this.data;
+
+            this.data = new Map();
+            shows.forEach((show) => {
+                this.data.set(show.identifier, show)
+                if (!equal(show, oldShows.get(show.identifier))) {
+                    this.doSingleShowCallback(show);
                 }
-
-            })
-            socket.addEventListener("close", (event) => {
-                socket = null;
-                preload_data();
-            })
-        } catch (e) {
-            setTimeout(preload_data, 60 * 1000);//Wait for one minute if the server closes the conection
-        }
-    }
-}
-
-function run_callbacks() {
-    for (let key of listeners.keys()) {
-        run_callback(key);
-    }
-    for (let key of show_listeners.keys()) {
-        for (let k2 of show_listeners.get(key).keys()) {
-            run_show_callback(key, k2);
-        }
-    }
-}
-
-function run_callback(o) {
-    let tmp = {};
-    let {status, type} = listeners.get(o);
-    let items = Object.keys(data).map((k) => data[k]);
-    if (type) {
-        if (type == "new") {
-            items = items.filter((show) => {
-                return show.new && show.episode_count && show.new < show.episode_count;
             });
+
+            oldShows.forEach((show, identifier) => {
+                if (!this.data.has(identifier)) {
+                    this.removeShow(identifier);
+                }
+            })
+
+            this.doAllShowsCallbacks(shows);
+        })
+    }
+
+    private doAllShowsCallbacks(shows : ShowData[]) : ShowData[] {
+        this.listeners.forEach((callback) => callback(shows));
+        return shows;
+    }
+
+    private doSingleShowCallback(show : ShowData) : ShowData {
+        let listeners = this.show_listeners.get(show.identifier);
+        if (listeners) {          
+            listeners.forEach((callback) => callback(show));
+        }
+        return show
+    }
+
+    private removeShow(identifier : string) : void {
+        this.data.delete(identifier);
+        this.show_listeners.get(identifier)
+            .forEach((callback) => callback(null));
+        this.show_listeners.delete(identifier);
+    }
+
+    public registerAllShowsCallback(key : string, callback : (data : ShowData[]) => void) {
+        this.listeners.set(key, callback);
+        callback(Array.from(this.data.values()));
+    }
+
+    public registerSingleShowCallback(identifier : string, key : string, callback : (data : ShowData) => void) {
+        let listenersForShow : Map<string, (data : ShowData) => void> = this.show_listeners.get(identifier);
+
+        if (!listenersForShow) {
+            listenersForShow = new Map();
+            this.show_listeners.set(identifier, listenersForShow)
+        }
+        listenersForShow.set(key, callback);
+        callback(this.data.get(identifier));
+    }
+
+    public removeAllShowsCallback(key : string) {
+        this.listeners.delete(key);
+    }
+
+    public removeSingleShowCallback(key : string) {
+        this.show_listeners.forEach((listeners) => listeners.delete(key));
+    }
+
+    public updateShow(identifier : string, updater : (data : ShowData) => ShowData) {
+        let newShowData = updater(JSON.parse(JSON.stringify(this.data.get(identifier))));
+        if (newShowData) {
+            this.data.set(identifier, newShowData);
+            this.doAllShowsCallbacks(Array.from(this.data.values()));
+            this.doSingleShowCallback(newShowData);            
         } else {
-            items = items.filter((show) => {
-                return show.type && show.type == type;
-            });
+            this.removeShow(identifier);
         }
-    }
-    tmp[status] = items;
-    o.setState(tmp);
-}
 
-function add_listener(o : React.Component, status : string, ...rest) {
-    let tmp : any= {};
-    tmp.status = status;
-    if (rest.length > 0) tmp.type = rest[0];
-    listeners.set(o, tmp);
-    if (data) {
-        run_callback(o);
     }
 }
 
-function remove_listener(o) {
-    listeners.delete(o);
-}
+import Link from '../link/FrontLink';
+const cashe : ShowDataCache = new ShowDataCache();
 
-function register_show_listener(o : React.Component, status : string, show : string) {
-    let m = null;
-    if (show_listeners.has(show)) {
-        m = show_listeners.get(show);
-    } else {
-        m = new Map();
-        show_listeners.set(show, m);
-    }
-    m.set(o, status);
-    if (data) {
-        run_show_callback(show, o);
-    }
-}
-
-function remove_show_listener(o, show) {
-    let m = show_listeners.get(show);
-    if (m) {
-        m.delete(o);
-    }
-}
-
-
-function run_show_callback(identifier, o) {
-    let m = show_listeners.get(identifier);
-    if (m) {
-        let status = m.get(o);
-        if (status && data) {
-            let tmp = {};
-            tmp[status] = data[identifier];
-            o.setState(tmp);
-        }
-    }
-}
-
-function get_show_data(identifier) {
-    return data[identifier];
-}
-
-module.exports = {
-    preload_data: preload_data,
-    register_listener: add_listener,
-    remove_listener: remove_listener,
-    register_show_listener: register_show_listener,
-    remove_show_listener: remove_show_listener,
-    get_show_data: get_show_data,
-}
-
-
-
+export default cashe;
 

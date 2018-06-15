@@ -1,7 +1,7 @@
 import * as $ from 'jquery';
 import * as React from 'react';
 import * as ReactDOM from'react-dom';
-const data_loader = require("./show-data-loader");
+import ShowCache from "./show-data-loader";
 import {navigate as nav} from "./navigate";
 const {is_mobile} = require("./helpers");
 import IconButton from 'material-ui/IconButton';
@@ -93,11 +93,13 @@ class ShortMenu extends React.Component {
     }
 
     componentWillMount() {
-        data_loader.register_listener(this, "new_shows", "new");
+        ShowCache.registerAllShowsCallback("ShortMenu", (shows) => this.setState({
+            new_shows : shows.filter((show) => show.new != show.episode_count && show.new != 0)
+        }));
     }
 
     componentWillUnmount() {
-        data_loader.remove_listener(this);
+        ShowCache.removeAllShowsCallback("ShortMenu");
     }
 
     setSource() {
@@ -282,10 +284,7 @@ function NavButton(props) {
 
     return <IconButton onClick={(e) => {
         e.stopPropagation();
-        Link.getShowData(props.id)
-        .then((data) => {
-            navigate("/read/" + props.id + "/" + data[props.type] + "/" + props.type);
-        });
+        navigate("/read/" + props.id + "/" + props.type);
     }}>
         {elem}
     </IconButton>
@@ -316,11 +315,13 @@ class SubMenu extends React.Component {
     }
 
     componentWillMount() {
-        data_loader.register_listener(this, "shows", this.props.name);
+        ShowCache.registerAllShowsCallback("SubMenu:" + this.props.name, (shows) => this.setState({
+            shows : shows.filter((show) => show.type == this.props.name)
+        }));
     }
 
     componentWillUnmount() {
-        data_loader.remove_listener(this);
+        ShowCache.removeAllShowsCallback("SubMenu:" + this.props.name);
     }
 
     change() {
