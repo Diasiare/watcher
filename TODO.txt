@@ -19,8 +19,8 @@ Add show updating abilities - DONE
 Standardize interface between front-end and back-end - DONE
 Fix error where deleting show doesn't quite work, front end does not change - DONE
 change structure so that multiple devices do not compete for the page lock - DONE
+Add ability to delete episodes - DONE
 Add input validation to backend (ts-dynamic-type-checker?)
-Add ability to delete episodes
 Add unit tests
 Document the backend
 Document the frontend
