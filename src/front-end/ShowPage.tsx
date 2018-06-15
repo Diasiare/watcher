@@ -233,7 +233,7 @@ class EpisodePreview extends React.Component<{num : number, id : string}>{
         let src = "/shows/" + this.props.id + "/thumbnails/" + this.props.num + ".jpg";
 
         return <Paper onClick={(e) => {
-            nav("/read/" + this.props.id + "/" + this.props.num + "/reread")
+            Link.updateLastRead(this.props.id, this.props.num, "reread").then(() => nav("/read/" + this.props.id +  "/reread"));
         }} style={{
             width: "102px",
             height: "170px",

@@ -70,7 +70,6 @@ class ImageDisplay extends React.Component {
         $(document).on("keydown", this.on_key);
         EpisodeNavigator.changeShow(this.props.show, this.props.type);
         EpisodeNavigator.registerCallback("ImageDisplay", (episode) => {
-            console.log("Setting current " + episode);
             this.setState({current : episode}); 
             $('html, body').animate({scrollTop: 0}, 'fast')
         });

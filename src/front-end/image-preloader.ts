@@ -17,7 +17,6 @@ class EpisodeNavigator {
     
     private update(direction : string) : Promise<Episode> {
         let current = this.preloads.get("current");
-
         return Link.getRelativeEpisode(this.current_show.identifier, current ? current.number : this.current_show[this.type], direction)
         .then((data) => {
                 if (this.current_show && this.current_show.identifier == data.identifier) {
@@ -64,7 +63,12 @@ class EpisodeNavigator {
         });
     }
 
-    private setCurrent(episode : Episode) : void{
+    private unload() : void {
+        ShowCach.removeSingleShowCallback("ImagePreloader");
+        this.current_show = null;
+    }
+
+    private setCurrent(episode : Episode) : void {
         if (episode) {
             this.setEpisode("current", episode);
             EpisodeNavigator.DIRECTIONS.slice(0,2).forEach((dir) => this.update(dir));
@@ -73,12 +77,7 @@ class EpisodeNavigator {
     }
 
     public navigate(direction : string) : void {
-        if (this.preloads.get(direction)) {
-            this.setCurrent(this.preloads.get(direction));
-            Link.updateLastRead(this.current_show.identifier, this.preloads.get(direction).number, this.type)
-        } else {
-            this.update(direction).then((episode) => this.setCurrent(episode));
-        }
+        this.setCurrent(this.preloads.get(direction));
     }
 
     public registerCallback(key : string, callback : (current : Episode) => void) : void {
@@ -88,6 +87,9 @@ class EpisodeNavigator {
 
     public removeCallback(key : string) : void {
         this.callbacks.delete(key);
+        if (this.callbacks.size == 0) {
+            this.unload();
+        }
     }
 
 }

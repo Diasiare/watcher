@@ -95,7 +95,7 @@ const absolute = {
 }
 
 interface ShowElementProps {
-    show : any,
+    show : ShowData,
     width : number,
     key : string,
     new : boolean,
@@ -111,7 +111,9 @@ class ShowElement extends React.Component<ShowElementProps> {
 
     primary_ontouch() {
         if (this.props.new) {
-            nav("/read/" + this.props.show.identifier + "/new");
+            Link.getRelativeEpisode(this.props.show.identifier, this.props.show.new, "next")
+            .then((episode) => Link.updateLastRead(this.props.show.identifier, episode.number, "new"))
+            .then(() => nav("/read/" + this.props.show.identifier + "/new"));
         } else {
             nav("/read/" + this.props.show.identifier)
         }
@@ -180,9 +182,7 @@ function NavButton(props) {
 
     return <IconButton onClick={(e) => {
         e.stopPropagation();
-        Link.getShowData(props.id).then((data) => {
-            nav("/read/" + props.id + "/" + data[props.type] + "/" + props.type);
-        });
+        nav("/read/" + props.id + "/" + props.type);
     }}>
         {elem}
     </IconButton>

@@ -251,7 +251,6 @@ export class Database {
                         .catch(() => null)
                         .then(() => this.insert_new_show(show))
                         .then(() => this.start_show(show.identifier))
-                        .then(() => app.perform_callbacks(show.identifier))
                         .then(() => this.get_show(show.identifier));
                 }
             })
@@ -428,7 +427,6 @@ export class Show implements ShowFields {
                     this.base_url = data.base_url;
                 }
             })
-            .then(() => app.perform_callbacks(this.identifier))
             .return(data);
     }
 
@@ -483,4 +481,3 @@ export class Show implements ShowFields {
 
 const manager = require('./../downloaders/manager');
 const imdown = require('./../downloaders/image_sequence');
-const app = require('./../webapp/app');

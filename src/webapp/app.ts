@@ -4,48 +4,24 @@ import * as path from 'path' ;
 import * as bodyParser from 'body-parser' ;
 import * as multer from 'multer' ;
 import * as request from 'request' ;
-import * as tmpExpressWs from 'express-ws'
 
 
 
 const upload = multer();
 import ShowFields from '../types/Show';
 import ShowData from '../types/ShowData';
+import {Database, Show} from '../data/config' ;
+import ILink from '../link/Link';
 
-
-var expressWs = tmpExpressWs;
+var Link : ILink = null;
 
 var app = null;
 const PORT: number = 8080;
-
-function heartbeat(): void {
-    this.isAlive = true;
-}
-
 
 const ensure_started = function (): Promise<express.Express> {
     return new Promise((r) => {
         if (!app) {
             app = express();
-            expressWs = expressWs(app);
-            expressWs.getWss().on("error", (err, req, res) => {
-                console.log(err);
-                res.end();
-            });
-            expressWs.getWss().on('connection', function connection(ws) {
-                ws.isAlive = true;
-                ws.on('pong', heartbeat);
-            });
-            setInterval(function ping() {
-                expressWs.getWss().clients.forEach(function each(ws) {
-                    if (ws.isAlive === false) return ws.terminate();
-
-                    ws.isAlive = false;
-                    ws.ping('', false, true);
-                });
-            }, 30000);
-
-
             app.get('/', function (req, res) {
                 res.redirect('/list');
             });
@@ -143,7 +119,6 @@ const setup_data_calls = function (): Promise<express.Express> {
                 let data = req.body.backup;
                 console.log(data)
                 Link.loadBackup(data)
-                    .map(() => perform_callbacks)
                     .then(() => res.end())
                     .catch((e) => {
                         console.error(e);
@@ -154,7 +129,6 @@ const setup_data_calls = function (): Promise<express.Express> {
         }).then((app) => {
             app.post('/data/shows/:show/:episode/:type', (req, res) => {
                 Link.updateLastRead(req.params.show, req.params.episode, req.params.type)
-                    .then(() => perform_callbacks(req.params.show))
                     .done();
                 res.end();
             });
@@ -190,7 +164,6 @@ const setup_data_calls = function (): Promise<express.Express> {
                 Link.restartShow(req.params.show, data.episode, data.new_url,
                             data.nextxpath, data.imxpath, data.textxpath)
                     .then(() => res.end())
-                    .then(() => perform_callbacks(req.params.show))
                     .catch((e) => {
                         console.error(e);
                         res.status(500).send(e.message);
@@ -206,7 +179,6 @@ const setup_data_calls = function (): Promise<express.Express> {
                 let data : RawShow = req.body;
                 Link.newShow(data)
                     .then((data) => res.json(data))
-                    .then(() => perform_callbacks(data.identifier))
                     .catch((e) => {
                         console.error(e);
                         res.status(500).send(e.message);
@@ -236,81 +208,10 @@ const setup_data_calls = function (): Promise<express.Express> {
                     .catch((e) => {
                         console.error(e);
                         res.status(500).send(e.message);
-                    })
-                    .then(() => perform_callbacks(req.params.show));
+                    });
             })
             return app;
-        }).then((app) => {
-            /*
-             * Websocket implementation, regardless of message we send back
-             * all shows, sending specific shows is only done as a result of
-             * backend updates
-             */
-            app.ws('/socket/shows', (ws, req) => {
-
-                get_shows_data()
-                    .then((data) => {
-                        try {
-                            ws.send(JSON.stringify({
-                                data: data,
-                                type: "all"
-                            }));
-                        } catch (e) {
-                            console.error(e);
-                        }
-                    })
-                ws.on("message", () => {
-                    get_shows_data()
-                        .then((data) => {
-                            try {
-                                ws.send(JSON.stringify({
-                                    data: data,
-                                    type: "all"
-                                }));
-                            } catch (e) {
-                                console.error(e);
-                            }
-                        })
-                })
-                ws.on("error", (e) => {
-                    console.error(e);
-                })
-            });
-            return app;
         });
-}
-
-const perform_callbacks = function (identifier: string): Promise<string> | string {
-    if (app) {
-        return Database.getInstance().then(db => db.get_show(identifier))
-            .then(show => show.get_show_data()
-                .then((data) => {
-                    if (!show || !data.type) return null;
-                    if (data) {
-                        data.name = show.name;
-                        data.episode_count = show.number;
-                    }
-                    if (data && data.logo) {
-                        data.logo = build_resource_url(data.identifier, "logo.jpg");
-                    }
-                    return data;
-                })
-                .then((data) => {
-                    for (let ws of expressWs.getWss().clients) {
-                        try {
-                            ws.send(JSON.stringify({
-                                data: data,
-                                type: "single",
-                                id: identifier
-                            }));
-                        } catch (e) {
-                            console.error(e);
-                        }
-                    }
-                    return identifier;
-                }));
-    }
-    return identifier;
 }
 
 const setup_default = function (): void {
@@ -332,7 +233,8 @@ const setup_default = function (): void {
     })
 }
 
-const start_all = function (shows: ShowFields[]): Promise<void> {
+const start_all = function (shows: ShowFields[], link : ILink): Promise<void> {
+    Link = link;
     return serve_shows(shows)
         .then(serve_static_resources)
         .then(setup_data_calls)
@@ -350,12 +252,7 @@ export {
     serve_shows,
     serve_static_resources,
     start_all,
-    perform_callbacks
 }
 
-
-import {Database, Show} from '../data/config' ;
-import * as downloader from '../downloaders/image_sequence';
 import RawShow from "../types/RawShow";
-import Link from '../link/BackLink';
-const get_shows_data = Link.getShowsData;
+

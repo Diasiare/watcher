@@ -4,6 +4,7 @@ import * as Promise from 'bluebird' ;
 import {Database} from './data/config';
 import * as manager from './downloaders/manager';
 import * as app from './webapp/app';
+import Link from './link/BackLink';
 
 
 const db_name = "database.sqlite"
@@ -16,7 +17,7 @@ let start = function (db_name) {
             .then(()=>Database.getInstance()
                 .then((db)=>Promise.resolve()
                     .then(db.get_shows)
-                    .then(app.start_all)
+                    .then((shows) => app.start_all(shows, Link))
                     .then(db.get_shows)
                     .then(manager.start_watchers)
                 )
