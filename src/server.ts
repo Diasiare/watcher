@@ -1,7 +1,7 @@
 
 
 import * as Promise from 'bluebird' ;
-import {Database} from './data/config';
+import {Database} from './data/Database';
 import * as manager from './downloaders/manager';
 import * as app from './webapp/app';
 import Link from './link/BackLink';

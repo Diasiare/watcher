@@ -8,7 +8,7 @@ import LastPage from 'material-ui/svg-icons/navigation/last-page';
 import Replay from 'material-ui/svg-icons/av/replay';
 import IconButton from 'material-ui/IconButton';
 import Link from '../link/FrontLink';
-import ShowCache from "./show-data-loader";
+import ShowCache from "./ShowDataCache";
 
 
 interface ShowListProps {

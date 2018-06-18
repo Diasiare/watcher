@@ -10,7 +10,7 @@ import * as request from 'request' ;
 const upload = multer();
 import ShowFields from '../types/Show';
 import ShowData from '../types/ShowData';
-import {Database, Show} from '../data/config' ;
+import {Database, Show} from '../data/Database' ;
 import ILink from '../link/Link';
 
 var Link : ILink = null;

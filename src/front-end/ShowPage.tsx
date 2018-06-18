@@ -2,7 +2,7 @@ import * as $ from 'jquery';
 import * as React from 'react';
 import * as ReactDOM from'react-dom';
 const nav = require("./navigate").navigate;
-import ShowCache from "./show-data-loader";
+import ShowCache from "./ShowDataCache";
 const {resolve_width} = require("./helpers");
 import ShowData from '../types/ShowData';
 import LastPage from 'material-ui/svg-icons/navigation/last-page';

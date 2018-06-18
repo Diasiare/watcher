@@ -1,5 +1,5 @@
 import Link from '../link/FrontLink';
-import ShowCach from './show-data-loader';
+import ShowCach from './ShowDataCache';
 import Episode from '../types/FrontEndEpisode';
 import ShowData from '../types/ShowData';
 import * as Promise from 'bluebird';

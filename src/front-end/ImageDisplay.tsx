@@ -2,7 +2,7 @@ import * as $ from 'jquery';
 import * as React from 'react';
 import * as ReactDOM from'react-dom';
 import {Redirect, Link, Route} from'react-router-dom';
-import EpisodeNavigator from "./image-preloader";
+import EpisodeNavigator from "./EpisodeNavigator";
 import {navigate as nav} from "./navigate";
 import Paper from 'material-ui/Paper';
 import Replay from 'material-ui/svg-icons/av/replay';
@@ -16,7 +16,7 @@ import ShowData from '../types/ShowData';
 
 const {resolve_width, resolve_width_int} = require("./helpers");
 const {extract_body, InteractiveXpath} = require("./ShowAdder");
-import ShowCache from "./show-data-loader";
+import ShowCache from "./ShowDataCache";
 
 function get_url_for(show, episode, read_type) {
     return "/read/" + show + "/" + episode + "/" + read_type;

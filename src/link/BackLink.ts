@@ -1,5 +1,5 @@
 import Link from './Link';
-import {Database, Show} from '../data/config' ;
+import {Database, Show} from '../data/Database' ;
 import FrontEndEpisode from '../types/FrontEndEpisode';
 import RawShow from '../types/RawShow'
 import * as Promise from 'bluebird';

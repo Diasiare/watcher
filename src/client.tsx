@@ -13,7 +13,7 @@ const navigate = require("./front-end/navigate");
 const {is_mobile} = require("./front-end/helpers");
 const Menu = require("./front-end/Menu");
 const {ShowAdder} = require("./front-end/ShowAdder");
-import show_loader from "./front-end/show-data-loader";
+import show_loader from "./front-end/ShowDataCache";
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import {

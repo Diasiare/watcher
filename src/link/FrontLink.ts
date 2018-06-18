@@ -125,4 +125,4 @@ class FrontLink implements Link {
 const link : Link = new FrontLink() 
 export default link as Link;
 
-import ShowCache from "../front-end/show-data-loader";
+import ShowCache from "../front-end/ShowDataCache";

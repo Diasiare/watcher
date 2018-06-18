@@ -256,4 +256,4 @@ export {
     create_thumbnail,
     redownload,
 };
-import {Database, Show} from './../data/config';
+import {Database, Show} from '../data/Database';

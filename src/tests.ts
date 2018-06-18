@@ -2,8 +2,8 @@
 //Basically I'll just be copying the JIT tests that I've written into here
 
 import * as image_sequence from './downloaders/image_sequence';
-import {Database} from './data/config';
-import * as config from './data/config';
+import {Database} from './data/Database';
+import * as config from './data/Database';
 import * as app from './webapp/app';
 import * as fs from 'fs';
 import * as Promise from 'bluebird' ;

@@ -1,7 +1,7 @@
 import * as $ from 'jquery';
 import * as React from 'react';
 import * as ReactDOM from'react-dom';
-import ShowCache from "./show-data-loader";
+import ShowCache from "./ShowDataCache";
 import {navigate as nav} from "./navigate";
 const {is_mobile} = require("./helpers");
 import IconButton from 'material-ui/IconButton';

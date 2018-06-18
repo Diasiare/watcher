@@ -53,4 +53,4 @@ export {
 };
 
 import * as imdown from './image_sequence';
-import {Show} from "../data/config";
+import {Show} from "../data/Database";
