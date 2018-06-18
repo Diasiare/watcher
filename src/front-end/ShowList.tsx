@@ -1,7 +1,5 @@
-import * as $ from 'jquery';
 import * as React from 'react';
-import * as ReactDOM from'react-dom';
-const nav = require("./navigate").navigate;
+import {navigate as nav} from "./navigate";
 import ShowData from '../types/ShowData';
 import Paper from 'material-ui/Paper';
 import LastPage from 'material-ui/svg-icons/navigation/last-page';
@@ -12,11 +10,11 @@ import ShowCache from "./ShowDataCache";
 
 
 interface ShowListProps {
-    filter : string,
+    filter ?: string,
     width: number,
 }
 
-class ShowList extends React.Component<ShowListProps> {
+export class ShowList extends React.Component<ShowListProps> {
     state : {
         shows : ShowData[],
     }
@@ -187,8 +185,5 @@ function NavButton(props) {
         {elem}
     </IconButton>
 }
-
-
-module.exports = ShowList;
 
 const {resolve_width, resolve_width_int} = require("./helpers");

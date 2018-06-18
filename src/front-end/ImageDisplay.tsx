@@ -1,12 +1,7 @@
 import * as $ from 'jquery';
 import * as React from 'react';
-import * as ReactDOM from'react-dom';
-import {Redirect, Link, Route} from'react-router-dom';
 import EpisodeNavigator from "./EpisodeNavigator";
-import {navigate as nav} from "./navigate";
 import Paper from 'material-ui/Paper';
-import Replay from 'material-ui/svg-icons/av/replay';
-import IconButton from 'material-ui/IconButton';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
 import Episode from './../types/FrontEndEpisode';
@@ -14,8 +9,8 @@ import Flink from '../link/FrontLink';
 import ShowData from '../types/ShowData';
 
 
-const {resolve_width, resolve_width_int} = require("./helpers");
-const {extract_body, InteractiveXpath} = require("./ShowAdder");
+import {resolve_width, resolve_width_int} from "./helpers";
+import  {extract_body, InteractiveXpath} from "./ShowAdder";
 import ShowCache from "./ShowDataCache";
 
 function get_url_for(show, episode, read_type) {
@@ -28,7 +23,7 @@ interface ImageDisplayProps {
     width : number
 }
 
-class ImageDisplay extends React.Component {
+export class ImageDisplay extends React.Component {
     state : {
             current: Episode,
             menu_open: boolean
@@ -440,6 +435,3 @@ function Description(props) {
                   dangerouslySetInnerHTML={{__html: props.text}}>
     </Paper>
 }
-
-
-module.exports = ImageDisplay

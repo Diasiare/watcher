@@ -1,6 +1,5 @@
 import * as $ from 'jquery';
 import * as React from 'react';
-import * as ReactDOM from'react-dom';
 import ShowCache from "./ShowDataCache";
 import {navigate as nav} from "./navigate";
 const {is_mobile} = require("./helpers");
@@ -15,7 +14,7 @@ import New from 'material-ui/svg-icons/content/add-circle';
 import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import ArrowDropRight from 'material-ui/svg-icons/navigation-arrow-drop-right';
 import {List, ListItem, makeSelectable} from 'material-ui/List';
-import {Toolbar, ToolbarGroup, ToolbarSeparator, ToolbarTitle} from 'material-ui/Toolbar';
+import {Toolbar} from 'material-ui/Toolbar';
 import Drawer from 'material-ui/Drawer';
 import IconMenu from 'material-ui/IconMenu';
 import Badge from 'material-ui/Badge';
@@ -32,7 +31,7 @@ interface MenuProps {
     width : number,
 }
 
-class Menu extends React.Component {
+export class Menu extends React.Component {
 
     state : {
         open : boolean,
@@ -347,5 +346,3 @@ class SubMenu extends React.Component {
         </ListItem>;
     }
 }
-
-module.exports = Menu;

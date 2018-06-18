@@ -1,9 +1,8 @@
 import * as $ from 'jquery';
 import * as React from 'react';
-import * as ReactDOM from'react-dom';
-const nav = require("./navigate").navigate;
+import {navigate as nav} from "./navigate";
 import ShowCache from "./ShowDataCache";
-const {resolve_width} = require("./helpers");
+import {resolve_width}  from "./helpers";
 import ShowData from '../types/ShowData';
 import LastPage from 'material-ui/svg-icons/navigation/last-page';
 import Replay from 'material-ui/svg-icons/av/replay';
@@ -20,7 +19,7 @@ interface ShowPageProperties {
     width : number
 }
 
-class ShowPage extends React.Component<ShowPageProperties, {show : ShowData, name : string}> {
+export class ShowPage extends React.Component<ShowPageProperties, {show : ShowData, name : string}> {
     constructor(props) {
         super(props);
         this.state = {
@@ -253,6 +252,3 @@ class EpisodePreview extends React.Component<{num : number, id : string}>{
         </Paper>
     }
 }
-
-
-module.exports = ShowPage;

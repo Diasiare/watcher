@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as ReactDOM from'react-dom';
 import DropDownMenu from 'material-ui/DropDownMenu';
 import MenuItem from 'material-ui/MenuItem';
 import RaisedButton from 'material-ui/RaisedButton';
@@ -10,12 +9,12 @@ import IconButton from 'material-ui/IconButton';
 import Link from '../link/FrontLink';
 
 const xpath = require('xpath').useNamespaces({"x": "http://www.w3.org/1999/xhtml"});
-const parse5 = require('parse5');
-const xmlser = require('xmlserializer');
-const dom = require('xmldom').DOMParser;
-const url = require('url');
-const nav = require("./navigate").navigate;
-const {resolve_width} = require("./helpers");
+import * as parse5 from 'parse5';
+import * as xmlser from 'xmlserializer';
+import {DOMParser as dom} from 'xmldom';
+import * as url from 'url';
+import {navigate as nav} from "./navigate";
+import {resolve_width} from "./helpers";
 
 const manga_sources = [{
     name: "Mangareader"
@@ -35,7 +34,7 @@ function strip_uri(doc, urld) {
         if ('namespaceURI' in e) e.namespaceURI = null;
         if ('name' in e && (e.name == "src" || e.name == "href")) {
             e.value = url.resolve(urld, e.value);
-            e.nodeValue = url.resolve(urld, e.nodeValue, urld);
+            e.nodeValue = url.resolve(urld, e.nodeValue);
         }
         for (var p in e) {
             if (!v.has(e[p]) &&
@@ -50,7 +49,7 @@ function strip_uri(doc, urld) {
 }
 
 
-function extract_body(body, url) {
+export function extract_body(body, url) {
     var document = parse5.parse(body);
     var xhtml = xmlser.serializeToString(document);
     var doc = new dom().parseFromString(xhtml);
@@ -66,7 +65,7 @@ interface InteractiveXpathProps {
     url : string,
 }
 
-class InteractiveXpath extends React.Component<InteractiveXpathProps> {
+export class InteractiveXpath extends React.Component<InteractiveXpathProps> {
 
     state : {
         show : boolean,
@@ -148,7 +147,7 @@ interface InteractiveImageProps {
     change : (name: string, value: string) => void
 }
 
-class InteractiveImage extends React.Component<InteractiveImageProps> {
+export class InteractiveImage extends React.Component<InteractiveImageProps> {
     
     state : {
         show : boolean;
@@ -216,7 +215,7 @@ interface ShowAdderProps {
     width : number,
 }
 
-class ShowAdder extends React.Component<ShowAdderProps> {
+export class ShowAdder extends React.Component<ShowAdderProps> {
 
     state : {
             showType: number,
@@ -424,11 +423,4 @@ class ShowAdder extends React.Component<ShowAdderProps> {
         </div>;
     }
 
-}
-
-
-module.exports = {
-    ShowAdder: ShowAdder,
-    extract_body: extract_body,
-    InteractiveXpath: InteractiveXpath,
 }

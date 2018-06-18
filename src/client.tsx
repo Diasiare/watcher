@@ -1,18 +1,16 @@
-import * as $ from 'jquery';
 import * as React from 'react';
 import * as ReactDOM from'react-dom';
 import {BrowserRouter as Router, Route, Switch, RouteComponentProps} from'react-router-dom';
-import * as ReactRouter from 'react-router';
 import *  as injectTapEventPlugin from 'react-tap-event-plugin';
 injectTapEventPlugin();
 require("./../css/index.css");
-const ImageDisplay = require("./front-end/ImageDisplay");
-const ShowList = require("./front-end/ShowList");
-const ShowPage = require("./front-end/ShowPage");
-const navigate = require("./front-end/navigate");
-const {is_mobile} = require("./front-end/helpers");
-const Menu = require("./front-end/Menu");
-const {ShowAdder} = require("./front-end/ShowAdder");
+import {ImageDisplay} from "./front-end/ImageDisplay";
+import {ShowList} from "./front-end/ShowList";
+import {ShowPage} from "./front-end/ShowPage";
+import * as navigate from "./front-end/navigate";
+import {is_mobile} from "./front-end/helpers";
+import {Menu} from "./front-end/Menu";
+import {ShowAdder} from "./front-end/ShowAdder";
 import show_loader from "./front-end/ShowDataCache";
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
@@ -126,7 +124,7 @@ class Main extends React.Component<RouteComponentProps<{}>>{
                     <Route path="/list/" render={()=>{
                       return <ShowList key="none" width={width}/>
                     }}/>
-                    <Route path="/new" render={({history})=> <ShowAdder history={history} width={width}/>}/>
+                    <Route path="/new" render={({history})=> <ShowAdder width={width}/>}/>
               </Switch>
         </div>
   }

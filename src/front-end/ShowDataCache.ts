@@ -1,9 +1,5 @@
-import * as $ from 'jquery';
-const equal =  require('deep-equal');
+import equal =  require('deep-equal');
 import ShowData from '../types/ShowData';
-
-const notifications = {};
-var last_notification_id = null;
 
 class ShowDataCache {
     private static TIME_BETWEEN_UPDATES : number = 60 * 1000;

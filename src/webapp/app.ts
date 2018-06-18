@@ -2,15 +2,9 @@ import * as Promise from 'bluebird' ;
 import * as express from 'express' ;
 import * as path from 'path' ;
 import * as bodyParser from 'body-parser' ;
-import * as multer from 'multer' ;
-import * as request from 'request' ;
 
-
-
-const upload = multer();
 import ShowFields from '../types/Show';
-import ShowData from '../types/ShowData';
-import {Database, Show} from '../data/Database' ;
+import {Database} from '../data/Database' ;
 import ILink from '../link/Link';
 
 var Link : ILink = null;
