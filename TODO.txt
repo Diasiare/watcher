@@ -34,3 +34,4 @@ refactor direction to be an enum
 refactor new and reread to be an enum
 Split image_downloader into Resource selector, downloader, and navigator
 Use puppeteer or simmilar to enable scraping JS enabled pages
+Consolidate all navigation calls into a single class
