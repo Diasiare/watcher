@@ -15,7 +15,11 @@ function allocatePage() : Promise<puppeteer.Page> {
         browser = Promise.resolve(
             puppeteer.launch({
                 headless : true,
-            }));
+            }).catch(e => puppeteer.launch({
+                headless : true,
+                executablePath: '/usr/bin/chromium-browser'
+            }))
+        );
     } 
 
     if (activeCount >= 10) {
