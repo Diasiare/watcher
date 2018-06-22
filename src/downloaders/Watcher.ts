@@ -9,6 +9,7 @@ import Resource from "./Resource";
 import DownloaderFactory from "./DownloaderFactory";
 import Episode from "../types/Episode";
 import ResourceExtractorFactory from "./ResourceExtractorFactory";
+const debug = require('debug')('watcher-watcher')
 
 Promise.config({
     cancellation: true
@@ -53,7 +54,10 @@ export class Watcher {
             let resourceExtractor : ResourceExtractor = ResourceExtractorFactory.getResourceExtractor(this.show);
 
             return this.cycleLoop(navigator, resourceExtractor)(page)
-                .catch((e) => console.log("STOPING " + this.show.name + " AT EPISODE " + this.show.number + " DUE TO ", e))
+                .catch((e) => {
+                    debug("STOPPING DUE TO ", e);
+                    console.log("STOPING " + this.show.name + " AT EPISODE " + this.show.number);
+                })
                 .then();
         });
     }
