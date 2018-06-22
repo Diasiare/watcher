@@ -46,7 +46,7 @@ class BasicNavigator implements Navigator {
                 })
                 .catch(() => {
                     debug("Navigating via click for ", this.show.name)
-                    return element.click()
+                    return Promise.resolve(element.click()).delay(500);
                 })
             )
             .then(() => page.bringToFront()).then(() => {

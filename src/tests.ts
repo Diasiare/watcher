@@ -9,6 +9,7 @@ import * as Promise from "bluebird";
 import Episode from "./types/Episode";
 import Resource from "./downloaders/Resource";
 import { Watcher } from "./downloaders/Watcher";
+import { Show } from "./data/Database";
 
 let watcher : Watcher = null;
 function getWatcher() {
@@ -51,15 +52,15 @@ function getWatcher() {
     console.log("started")
 
     let show : any = <any>{
-        "identifier":"sin",
-        "name":"Sin Fest",
-        "base_url":"http://www.sinfest.net/view.php?date=2018-06-21",
-        "logo":"http://www.sinfest.net/images/bright_sinfest.gif",
-        "next_xpath":"//a[img[@src='../images/next.gif']]",
-        "image_xpath":"//tbody[@class='style5']//img",
+        "identifier":"oglaf",
+        "name":"Oglaf",
+        "base_url":"http://oglaf.dreamhosters.com/doctor-hexagon/",
+        "logo":"https://static.comicvine.com/uploads/scale_medium/13/136525/5114639-oglaf.png",
+        "next_xpath":"(//a[./div[@id='nx']]|//a[./div[@id='ns']]|//button[@id='confirm'])",
+        "image_xpath":"//img[@id='strip']",
         "type":"webcomic",
         interval: 30 * 60 * 1000,
-        number : 0,
+        number : 1,
         directory : "./testTarget",
         thumbnail_dir : "./testTarget/thumb",
         check_image_exists : () => Promise.resolve(false)
@@ -70,6 +71,9 @@ function getWatcher() {
         show.number = episode.number;
         return Promise.resolve();
     }
+
+    show.get_episode_page_url = () => Promise.resolve(show.base_url);
+
 
     watcher = new Watcher(() => Promise.resolve(browser.newPage()).disposer(page => {
         browser.close()
