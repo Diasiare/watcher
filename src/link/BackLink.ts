@@ -3,9 +3,8 @@ import {Database, Show} from '../data/Database' ;
 import FrontEndEpisode from '../types/FrontEndEpisode';
 import RawShow from '../types/RawShow'
 import * as Promise from 'bluebird';
-import * as Downloader from '../downloaders/image_sequence';
 import * as request from 'request' ;
-
+const debug = require('debug')('watcher-back-link')
 
 
 class BackLink implements Link {
@@ -65,6 +64,7 @@ class BackLink implements Link {
 	}
 
 	loadBackup(backup : RawShow[]) {
+		debug("Loading Backup", backup);
 		return Promise.resolve(backup)
 				.map((show : RawShow) => Database.getInstance().then(db => db.add_new_show(show)));
 	}
@@ -75,7 +75,7 @@ class BackLink implements Link {
 	}
 
 	redownload(identifier : string, episode : number) {
-		return Downloader.redownload(identifier, episode);
+		return Promise.reject(new Error("Redownload currently not supported"));
 	}
 
 	restartShow(identifier : string, episode : number , new_url : string, nextxpath: string , imxpath : string, textxpath : string) : Promise<any> {

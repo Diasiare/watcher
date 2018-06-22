@@ -8,15 +8,20 @@ import ResourceExtractor from "./ResourceExtractor";
 import Resource from "./Resource";
 import DownloaderFactory from "./DownloaderFactory";
 import Episode from "../types/Episode";
+import ResourceExtractorFactory from "./ResourceExtractorFactory";
 
+Promise.config({
+    cancellation: true
+});
 
 export class Watcher {
-    pageProvider : () => Promise<Page>;
+    pageProvider : () => Promise.Disposer<Page>;
     show : Show;
     currentRun : Promise<void>;
-    interval : NodeJS.Timer;
+    interval : Promise<void>;
+    currentRunStarted : false;
 
-    constructor(pageProvider : () => Promise<Page>, show : Show) {
+    constructor(pageProvider : () => Promise.Disposer<Page>, show : Show) {
         this.pageProvider = pageProvider;
         this.show = show;
 
@@ -27,10 +32,10 @@ export class Watcher {
         return (page) => navigator.next(page)
             .then((page) => resourceExtractor.extract(page))
             .map(([episode, resources] : [Episode, Resource[]]) => 
-                Promise.all(resources.map((resource) => DownloaderFactory.getDownloader(resource).download()))
-                .reduce((ep , f : (ep : Episode) => Episode) => f(episode), episode)                
+                Promise.reduce(resources, (episode ,resource) => DownloaderFactory.getDownloader(resource).download(episode, this.show), episode)            
             )
             .map((episode : Episode) => this.show.insert_new_episode(episode))
+            .then(() => console.log("CONTINUING " + this.show.name + " AT EPISODE " + this.show.number))
             .then(() => page);
     }
 
@@ -40,24 +45,25 @@ export class Watcher {
         return (page : Page) => f(f)(page);
     }
 
-    private cycle() : Promise<void> {
-        return this.currentRun =  this.pageProvider().then((page) => {
+    private cycle() : void {
+        if (this.currentRun) this.currentRun.cancel();
+        this.currentRun =  Promise.using(this.pageProvider(), (page) => {
+            this.interval = Promise.delay(this.show.interval).then(this.cycle);
             let navigator : Navigator = NavigatorFactory.getNavigator(this.show);
-            let resourceExtractor : ResourceExtractor = null;
+            let resourceExtractor : ResourceExtractor = ResourceExtractorFactory.getResourceExtractor(this.show);
 
             return this.cycleLoop(navigator, resourceExtractor)(page)
-                .then(() => Promise.resolve(page.close()));
+                .catch((e) => console.log("STOPING " + this.show.name + " AT EPISODE " + this.show.number + " DUE TO ", e))
+                .then();
         });
     }
 
-    public start() {
-        this.cycle().then(() => {
-            this.interval = setInterval(this.cycle, this.show.interval);
-        })
+    public start() : void{
+        this.cycle();
     }
 
-    public stop() {
-        clearInterval(this.interval);
+    public stop() : void {
+        this.interval.cancel();
         this.currentRun.cancel();
     }
 }

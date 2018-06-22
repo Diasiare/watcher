@@ -3,3 +3,4 @@ node_modules/*
 resources/bundle.js
 .idea/*
 dist/*
+testTarget/*

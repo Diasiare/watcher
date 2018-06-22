@@ -7,6 +7,7 @@ import RawShow from '../types/RawShow';
 import ShowFields from '../types/Show';
 import ShowData from '../types/ShowData';
 import Episode from '../types/Episode' ;
+import {downloadImage} from "../downloaders/ImageUtil";
 //const db = require('sqlite');
 const mkdir = Promise.promisify(fs.mkdir);
 
@@ -122,10 +123,7 @@ export class Database {
             .catch(console.error)
             .then(() => {
                 if (show.logo && !fs.existsSync(path.join(show.directory, "logo.jpg"))) {
-                    return imdown.download_image({
-                        url: show.logo,
-                        filename: path.join(show.directory, "logo.jpg")
-                    })
+                    return downloadImage(show.logo, show.directory, "logo")
                         .catch((e) => {
                             delete show.logo;
                         })
@@ -259,13 +257,6 @@ export class Database {
     public deregister_show = (identifier: string): Database => {
         this.config.shows.delete(identifier);
         return this;
-    }
-
-    public check_image_exists = (identifier: string, image_url: string): Promise<boolean> => {
-        return Promise.resolve(this.db.get("SELECT number FROM episodes WHERE show=$show AND image_url=$image_url LIMIT 1", {
-            $show: identifier,
-            $image_url: image_url
-        })).then((s) => !!s);
     }
 }
 
@@ -494,7 +485,13 @@ export class Show implements ShowFields {
             ]).all();
     }
 
+    public check_image_exists = (image_url: string): Promise<boolean> => {
+        return Database.getInstance().then(db => db.db.get("SELECT image_url FROM episodes WHERE show=$show AND image_url=$image_url LIMIT 1", {
+            $show: this.identifier,
+            $image_url: image_url
+        })).then((s) => !!s);
+    }
+
 }
 
 const manager = require('./../downloaders/manager');
-const imdown = require('./../downloaders/image_sequence');

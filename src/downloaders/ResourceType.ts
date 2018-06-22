@@ -1,6 +1,8 @@
 enum ResourceType {
     IMAGE,
-    DESCRIPTION
+    DESCRIPTION,
+    TITLE,
+    ALT_TEXT
 }
 
 export default ResourceType;
