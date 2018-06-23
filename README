@@ -1,8 +1,9 @@
 Watcher is a content agregator built in node, originally to track a large number of webcomics,
 	and to facilitate the reading of them in a seamless (no latency) fassion. It is built
-	to be deployed on a raspberry PI inside a secure network. As such there is no authentication
-	and very little care is taken to readuce the amount of traffic, favoring simplicity instead
+	to be deployed on a raspberry PI inside a secure network. As such there is no authentication.
 
-External dependencies: Sqlite3, imagemagick
+External dependencies: imagemagick
+On some system it might also be usefull to install chromium-browser using the local package manager
+	in that case watcher expects it to be found at /usr/bin/chromium-browser
 
 Uses the WATCHER_LOCATION enviroment variable to decide where to store files

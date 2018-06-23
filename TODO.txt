@@ -21,6 +21,9 @@ Fix error where deleting show doesn't quite work, front end does not change - DO
 change structure so that multiple devices do not compete for the page lock - DONE
 Add ability to delete episodes - DONE
 Modify title when new episodes exist - DONE
+Split image_downloader into Resource selector, downloader, and navigator -DONE
+Use puppeteer or simmilar to enable scraping JS enabled pages - DONE
+Consolidate all navigation calls into a single class - DONE
 Add input validation to backend (ts-dynamic-type-checker?)
 Add unit tests
 Document the backend
@@ -32,6 +35,4 @@ Auto generate human readable identifiers
 Move to a document store for the DB
 refactor direction to be an enum
 refactor new and reread to be an enum
-Split image_downloader into Resource selector, downloader, and navigator
-Use puppeteer or simmilar to enable scraping JS enabled pages
-Consolidate all navigation calls into a single class
+Remove all CSS

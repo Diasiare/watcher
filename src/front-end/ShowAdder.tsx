@@ -13,7 +13,7 @@ import * as parse5 from 'parse5';
 import * as xmlser from 'xmlserializer';
 import {DOMParser as dom} from 'xmldom';
 import * as url from 'url';
-import {navigate as nav} from "./navigate";
+import navigate from "./Navigator";
 import {resolve_width} from "./helpers";
 
 const manga_sources = [{
@@ -314,7 +314,7 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
                 data.image_xpath = manga_sources[s.manga_type].image_xpath;
             }
 
-            Link.newShow(data).then((data) => nav("/read/" + data.identifier))
+            Link.newShow(data).then((data) => navigate.showPage(data.identifier))
                 .catch((e) => alert(e.message));
         }
     }

@@ -1,7 +1,7 @@
 import * as $ from 'jquery';
 import * as React from 'react';
 import ShowCache from "./ShowDataCache";
-import {navigate as nav} from "./navigate";
+import navigator , {Navigator} from "./Navigator";
 const {is_mobile} = require("./helpers");
 import IconButton from 'material-ui/IconButton';
 import MenuItem from 'material-ui/MenuItem';
@@ -22,7 +22,7 @@ import RawShow from '../types/RawShow';
 import Link from '../link/FrontLink';
 
 
-var navigate = null;
+var navigate : Navigator = null;
 
 const SelectableList = makeSelectable(List);
 
@@ -47,10 +47,7 @@ export class Menu extends React.Component {
     }
 
     componentWillMount() {
-        navigate = ((location) => {
-            this.setState({open: false});
-            nav(location);
-        }).bind(this);
+        navigate = navigator.decorate(() => this.setState({open: false}));
     }
 
     set_open(open) {
@@ -123,7 +120,7 @@ class ShortMenu extends React.Component {
     render() {
 
         let new_menu_item = <IconButton key="latest"
-                                        onClick={() => navigate("/list/new")}
+                                        onClick={() => navigate.list("new")}
                                         tooltip="New Episodes"
                                         tooltipPosition="bottom-right">
             <LastPage/>
@@ -145,7 +142,7 @@ class ShortMenu extends React.Component {
                         tooltipPosition="bottom-right">
                 <Hamburger/>
             </IconButton>,
-            <IconButton key="new" onClick={() => navigate("/new")}
+            <IconButton key="new" onClick={() => navigate.newShow()}
                         tooltip="Add New Show"
                         tooltipPosition="bottom-right">
                 <New/>
@@ -156,9 +153,9 @@ class ShortMenu extends React.Component {
                       anchorOrigin={{horizontal: 'left', vertical: 'top'}}
                       targetOrigin={{horizontal: 'left', vertical: 'top'}}
             >
-                <MenuItem primaryText="All" onClick={() => navigate("/list")}/>
-                <MenuItem primaryText="Webcomics" onClick={() => navigate("/list/webcomic")}/>
-                <MenuItem primaryText="Manga" onClick={() => navigate("/list/manga")}/>
+                <MenuItem primaryText="All" onClick={() => navigate.list()}/>
+                <MenuItem primaryText="Webcomics" onClick={() => navigate.list("webcomic")}/>
+                <MenuItem primaryText="Manga" onClick={() => navigate.list("manga")}/>
                 <MenuItem primaryText="Backup" rightIcon={<ArrowDropRight/>} menuItems={[
                     <MenuItem primaryText="Download" onClick={this.setSource}/>,
 
@@ -206,7 +203,7 @@ function BackupHandlers(props) {
                         reader.onload = (e) => {
                             let data : RawShow[] = JSON.parse(e.target.result);
                             console.log(data);
-                            Link.loadBackup(data).then(()=>navigate("/list")).catch((e) => console.log('Error loding backup: ' + e));
+                            Link.loadBackup(data).then(()=>navigate.list()).catch((e) => console.log('Error loding backup: ' + e));
                         }
                         reader.readAsText(file);
                     }
@@ -243,7 +240,7 @@ class ShowListing extends React.Component {
     render() {
         let s = this.props.show;
         let props = {
-            onClick : () => navigate("/read/" + s.identifier) ,
+            onClick : () => navigate.showPage(s.identifier) ,
             style : {
                         paddingTop: "5px",
                         paddingBottom: "5px",
@@ -283,7 +280,7 @@ function NavButton(props) {
 
     return <IconButton onClick={(e) => {
         e.stopPropagation();
-        navigate("/read/" + props.id + "/" + props.type);
+        navigate.read(props.id, props.type);
     }}>
         {elem}
     </IconButton>

@@ -1,6 +1,6 @@
 import * as $ from 'jquery';
 import * as React from 'react';
-import {navigate as nav} from "./navigate";
+import navigate from "./Navigator";
 import ShowCache from "./ShowDataCache";
 import {resolve_width}  from "./helpers";
 import ShowData from '../types/ShowData';
@@ -120,7 +120,7 @@ function NavButton(props) {
 
     return <RaisedButton icon={elem} labelPosition="before" label={label} style={button_style}
                          onClick={(e) => {
-                            nav("/read/" + props.id +  "/" + props.type);
+                            navigate.read(props.id, props.type);
                         }}/>
 }
 
@@ -154,7 +154,7 @@ class DeleteButton extends React.Component<{id : string, name : string}, {confir
                         type: 'DELETE',
                         success: (data) => {
                             if (!data.failed) {
-                                nav("/new");
+                                navigate.newShow();
                             }
                         }
                     })
@@ -232,7 +232,7 @@ class EpisodePreview extends React.Component<{num : number, id : string}>{
         let src = "/shows/" + this.props.id + "/thumbnails/" + this.props.num + ".jpg";
 
         return <Paper onClick={(e) => {
-            Link.updateLastRead(this.props.id, this.props.num, "reread").then(() => nav("/read/" + this.props.id +  "/reread"));
+            Link.updateLastRead(this.props.id, this.props.num, "reread").then(() => navigate.read(this.props.id, "reread"));
         }} style={{
             width: "102px",
             height: "170px",

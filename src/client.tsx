@@ -7,7 +7,7 @@ require("./../css/index.css");
 import {ImageDisplay} from "./front-end/ImageDisplay";
 import {ShowList} from "./front-end/ShowList";
 import {ShowPage} from "./front-end/ShowPage";
-import * as navigate from "./front-end/navigate";
+import navigate from "./front-end/Navigator";
 import {is_mobile} from "./front-end/helpers";
 import {Menu} from "./front-end/Menu";
 import {ShowAdder} from "./front-end/ShowAdder";
