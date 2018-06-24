@@ -101,7 +101,7 @@ class ShortMenu extends React.Component {
     setSource() {
         Link.getBackup().then((data) => {
             var a = document.createElement("a");
-            let file = new Blob([JSON.stringify(data)], {type: "json"});
+            let file = new Blob([JSON.stringify(data, null, 4)], {type: "json"});
             let url = URL.createObjectURL(file);
             console.log(url);
             a.href = url;

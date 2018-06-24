@@ -52,12 +52,12 @@ function getWatcher() {
     console.log("started")
 
     let show : any = <any>{
-        "identifier":"oglaf",
-        "name":"Oglaf",
-        "base_url":"http://oglaf.dreamhosters.com/doctor-hexagon/",
-        "logo":"https://static.comicvine.com/uploads/scale_medium/13/136525/5114639-oglaf.png",
-        "next_xpath":"(//a[./div[@id='nx']]|//a[./div[@id='ns']]|//button[@id='confirm'])",
-        "image_xpath":"//img[@id='strip']",
+        "identifier":"gg",
+        "name":"Girl Genious",
+        "base_url":"http://www.girlgeniusonline.com/comic.php?date=20171204",
+        "logo":"http://www.girlgeniusonline.com/downloads/cocoamac1.jpg",
+        "next_xpath":"//a[@id='topnext']",
+        "image_xpath":"//div[@id='comicbody']/a/img|//div[@id='comicbody']/img",
         "type":"webcomic",
         interval: 30 * 60 * 1000,
         number : 1,
