@@ -19,7 +19,9 @@ class BasicNavigator implements Navigator {
             let url : Promise<string>;
             if (this.show.number == 0) {
                 debug("First time navigation to ", this.show.base_url, " for ", this.show.name);
-                return Promise.resolve(this.show.base_url).then((url) => page.goto(url))            
+                return Promise.resolve(this.show.base_url).then((url) => page.goto(url, {
+                    timeout : 120 * 1000
+                }))            
                 .then(() => {
                     this.first = false;
                     return page;
@@ -42,11 +44,13 @@ class BasicNavigator implements Navigator {
                 .then((handle) => handle.jsonValue())
                 .then((href) => {
                     debug("Navigating via goto for ", this.show.name, " to ", href);
-                    return page.goto(href);
+                    return page.goto(href, {
+                        timeout : 120 * 1000
+                    });
                 })
                 .catch(() => {
                     debug("Navigating via click for ", this.show.name)
-                    return Promise.resolve(element.click()).delay(500);
+                    return Promise.resolve(element.click()).delay(1000);
                 })
             )
             .then(() => page.bringToFront()).then(() => {

@@ -46,19 +46,20 @@ function getWatcher() {
   (async () => {
     console.log("starting")
     const browser = await puppeteer.launch({
-        headless : false
+        headless : true
     });
     const page = await browser.newPage();
     console.log("started")
 
     let show : any = <any>{
-        "identifier":"gg",
-        "name":"Girl Genious",
-        "base_url":"http://www.girlgeniusonline.com/comic.php?date=20171204",
-        "logo":"http://www.girlgeniusonline.com/downloads/cocoamac1.jpg",
-        "next_xpath":"//a[@id='topnext']",
-        "image_xpath":"//div[@id='comicbody']/a/img|//div[@id='comicbody']/img",
-        "type":"webcomic",
+        "identifier": "grrp",
+        "name": "GrrlPower",
+        "base_url": "http://grrlpowercomic.com/archives/2888",
+        "logo": "http://www.grrlpowercomic.com/wp-content/themes/comicpress/images/page_gfx/title_block_title.png",
+        "next_xpath": "//div[@id='comic']/a",
+        "image_xpath": "//div[@id='comic']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='entry']/p",
         interval: 30 * 60 * 1000,
         number : 1,
         directory : "./testTarget",

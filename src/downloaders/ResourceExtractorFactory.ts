@@ -12,7 +12,7 @@ function createDownloadRace(page, xpath, attrNames) : Promise<string[][]>[] {
     let promises = [];
     for (let i = 0; i < 4; i++) {
         promises.push(
-            Promise.delay(i * 1000)
+            Promise.delay(i * 2000)
             .then((() => page.evaluate((xpath, attrNames) => {
                 try {
                     let results = [];
@@ -29,7 +29,7 @@ function createDownloadRace(page, xpath, attrNames) : Promise<string[][]>[] {
                 }
     
             }, xpath, attrNames)))
-            .timeout(3000 ,"Failed to get information")
+            .timeout(5000 ,"Failed to get information")
         );
     }
     return promises;
@@ -93,8 +93,8 @@ class ImageResourceExtractor implements ResourceExtractor {
     extract(page: Page): Promise<[Episode, Resource[]][]> {
         let base_count = this.show.number;
 
-        return getAttribute(page, this.show.image_xpath, ['src', 'alt'])
-            .map(([src, alt] : string, index) : [Episode, Resource[]] => {
+        return getAttribute(page, this.show.image_xpath, ['src', 'alt', "title"])
+            .map(([src, alt, title] : string, index) : [Episode, Resource[]] => {
                 let episode : Episode = {
                     base_url : page.url(),
                     identifier : this.show.identifier,
@@ -102,6 +102,8 @@ class ImageResourceExtractor implements ResourceExtractor {
                     url :  url.resolve(page.url(), src),
                     data : {}
                 }
+
+                if (!alt) alt = title;
 
                 let image : Resource = Resource.image(episode.url);
                 if (alt) {     
