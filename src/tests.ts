@@ -47,7 +47,10 @@ function getWatcher() {
     console.log("starting")
     const browser = await puppeteer.launch({
         headless : true
-    });
+    }).catch(e => puppeteer.launch({
+        headless : true,
+        executablePath: '/usr/bin/chromium-browser'
+    }));
     const page = await browser.newPage();
     console.log("started")
 
