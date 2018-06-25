@@ -29,8 +29,9 @@ class BasicNavigator implements Navigator {
             } else {
                 return this.show.get_episode_page_url(this.show.number)
                     .tap((url) => debug("First run navigation to ", url, " for ", this.show.name))
-                    .then((url) => page.goto(url))
-                    .then(() => {
+                    .then((url) => page.goto(url, {
+                        timeout : 120 * 1000
+                    })).then(() => {
                         this.first = false;
                         return page;
                     })
