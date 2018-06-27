@@ -103,10 +103,10 @@ class ImageResourceExtractor implements ResourceExtractor {
                     data : {}
                 }
 
-                if (!alt) alt = title;
+                if (!title) title = alt;
 
                 let image : Resource = Resource.image(episode.url);
-                if (alt) {     
+                if (title) {     
                     let altRes : Resource = Resource.altText(alt);
                     return [episode, [image, altRes]];
                 }
