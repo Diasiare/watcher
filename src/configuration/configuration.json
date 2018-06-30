@@ -1,0 +1,67 @@
+{
+    "webcomics" : {
+        "displayname" : {
+            "singular" : "Webcomic",
+            "plural" : "Webcomics"
+        },
+        "navigationConfigurations" : {
+            "All" : [
+                    {
+                        "class" : "sequence-navigator",
+                        "mandatory" : true
+                    }
+                ]
+        },
+        "resourceExtractors" : [
+            {
+                "class" : "image-extractor"
+            },
+            {
+                "class" : "title-extractor"
+            },
+            {
+                "class" : "description-extractor"
+            }
+        ]
+    },
+    "manga" : {
+        "displayname" : {
+            "singular" : "Manga",
+            "plural" : "Manga"
+        },
+        "navigationConfigurations" : {
+            "All" : [
+                    {
+                        "class" : "sequence-navigator",
+                        "mandatory" : true
+                    }
+                ]
+        },
+        "resourceExtractors" : [
+            {
+                "class" : "image-extractor"
+            },
+            {
+                "class" : "title-extractor"
+            }
+        ],
+        "preconfigs" : {
+            "mangareader" : {
+                "image-extractor" : {
+                    "image_xpath" : "//div[@id='imgholder']/a/img"
+                },
+                "sequence-navigator" : {
+                    "next_xpath" : "//div[@id='imgholder']/a"
+                }
+            },
+            "mangakakalot" : {
+                "image-extractor" : {
+                    "image_xpath" : "//div[@id='vungdoc']/img"
+                },
+                "sequence-navigator" : {
+                    "next_xpath" : "//a[@class='back']"
+                }
+            }
+        }
+    }
+}
