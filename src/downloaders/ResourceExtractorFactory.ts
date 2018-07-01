@@ -38,7 +38,7 @@ function createDownloadRace(page, xpath, attrNames) : Promise<string[][]>[] {
 function getAttribute(page : Page, xpath : string ,attrNames : string[]) : Promise<string[][]>{
     return Promise.delay(1000).tap(() => debug("Starting xpath " + xpath + " attrNames" + attrNames))
     .then(() => createDownloadRace(page, xpath, attrNames))
-    .any<string[][]>().tap((value : string[][]) => debug("Ran xpath " + xpath + " attrNames" + attrNames + " result " + value));
+    .any<string[][]>().tap((value : string[][]) => debug("Ran xpath " + xpath + " attrNames " + attrNames + " result " + value));
 }
 
 interface  SecondaryResourceExtractor {
@@ -103,11 +103,14 @@ class ImageResourceExtractor implements ResourceExtractor {
                     data : {}
                 }
 
-                if (!title) title = alt;
+                if (!title) {
+                    debug("No title found, switching to alt:", alt);
+                    title = alt;
+                }
 
                 let image : Resource = Resource.image(episode.url);
                 if (title) {     
-                    let altRes : Resource = Resource.altText(alt);
+                    let altRes : Resource = Resource.altText(title);
                     return [episode, [image, altRes]];
                 }
                 return [episode, [image]];

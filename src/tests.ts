@@ -46,7 +46,7 @@ function getWatcher() {
   (async () => {
     console.log("starting")
     const browser = await puppeteer.launch({
-        headless : true
+        headless : false
     }).catch(e => puppeteer.launch({
         headless : true,
         executablePath: '/usr/bin/chromium-browser'
@@ -55,14 +55,13 @@ function getWatcher() {
     console.log("started")
 
     let show : any = <any>{
-        "identifier": "grrp",
-        "name": "GrrlPower",
-        "base_url": "http://grrlpowercomic.com/archives/2888",
-        "logo": "http://www.grrlpowercomic.com/wp-content/themes/comicpress/images/page_gfx/title_block_title.png",
-        "next_xpath": "//div[@id='comic']/a",
-        "image_xpath": "//div[@id='comic']//img",
+        "identifier": "xkcd",
+        "name": "xkcd",
+        "base_url": "https://xkcd.com/2011/",
+        "logo": "https://xkcd.com/s/0b7742.png",
+        "next_xpath": "//ul[@class='comicNav']//a[@rel='next']",
+        "image_xpath": "//div[@id='comic']/img",
         "type": "webcomic",
-        "text_xpath": "//div[@class='entry']/p",
         interval: 30 * 60 * 1000,
         number : 1,
         directory : "./testTarget",
