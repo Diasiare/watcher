@@ -8,14 +8,18 @@ import ShowFields from '../types/Show';
 import ShowData from '../types/ShowData';
 import Episode from '../types/Episode' ;
 import {downloadImage} from "../downloaders/ImageUtil";
-//const db = require('sqlite');
+import {Configuration, loadConfiguration} from "../configuration/Configuration";
+
 const mkdir = Promise.promisify(fs.mkdir);
 
 interface Config {
-    shows: Map<string, Show>
+    shows: Map<string, Show>,
+    showConfig : Configuration.Configurations,
 }
 
 const location: string = process.env.WATCHER_LOCATION;
+const configLocation : string = process.env.WATCHER_CONFIG ? process.env.WATCHER_CONFIG : "./default-configuration.json" ; 
+
 
 const model = {
     shows: `identifier TEXT NOT NULL PRIMARY KEY,
@@ -43,11 +47,14 @@ const defaults = {
 export class Database {
     private static instance: Database = null;
     private static location: string = process.env.WATCHER_LOCATION;
+    private static configLocation : string = process.env.WATCHER_CONFIG ? process.env.WATCHER_CONFIG : "./default-configuration.json" ; 
     private config: Config = {
-        shows: new Map()
+        shows: new Map(),
+        showConfig : null
     };
     public db: sqlite.Database = null;
     private loaded: boolean = false;
+
 
 
     private constructor() {
@@ -78,7 +85,8 @@ export class Database {
                         .return(this.config)));
             });
             else r(this.config);
-        });
+        }).then((config : Config) => loadConfiguration(Database.configLocation)
+            .then(showConf => config.showConfig = showConf).return(config));
     }
 
     private load_shows = (): Promise<ShowFields[]> => {
@@ -105,7 +113,7 @@ export class Database {
     }
 
     private perfrom_setup = (rshow: ShowFields): Promise<Show> => {
-        let show: Show = new Show(rshow);
+        let show: Show = new Show(rshow, this.config.showConfig[rshow.type]);
         return Promise.resolve()
             .then(() => Database.resolve_path(path.join("shows", show.identifier)))
             .then((d) => {
@@ -276,8 +284,9 @@ export class Show implements ShowFields {
     image_xpath: string;
     text_xpath: string;
     requireJS ?: boolean;
+    private configuration : Configuration.Configuration;
 
-    constructor(base_show: ShowFields) {
+    constructor(base_show: ShowFields, configuration : Configuration.Configuration) {
         this.interval = base_show.interval ? base_show.interval : defaults.interval;
         this.directory = base_show.directory;
         this.thumbnail_dir = base_show.thumbnail_dir;
@@ -292,6 +301,7 @@ export class Show implements ShowFields {
         this.image_xpath = base_show.image_xpath;
         this.text_xpath = base_show.text_xpath;
         this.requireJS = base_show.requireJS;
+        this.configuration = configuration;
     }
 
 
@@ -492,6 +502,10 @@ export class Show implements ShowFields {
             $show: this.identifier,
             $image_url: image_url
         })).then((s) => !!s);
+    }
+
+    public getConfiguration() : Configuration.Configuration {
+        return this.configuration;
     }
 
 }

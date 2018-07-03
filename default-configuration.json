@@ -1,14 +1,13 @@
 {
-    "webcomics" : {
+    "webcomic" : {
         "displayname" : {
             "singular" : "Webcomic",
             "plural" : "Webcomics"
         },
         "navigationConfigurations" : {
-            "All" : [
+            "default" : [
                     {
-                        "class" : "sequence-navigator",
-                        "mandatory" : true
+                        "class" : "sequence-navigator"
                     }
                 ]
         },
@@ -30,10 +29,9 @@
             "plural" : "Manga"
         },
         "navigationConfigurations" : {
-            "All" : [
+            "default" : [
                     {
-                        "class" : "sequence-navigator",
-                        "mandatory" : true
+                        "class" : "sequence-navigator"
                     }
                 ]
         },

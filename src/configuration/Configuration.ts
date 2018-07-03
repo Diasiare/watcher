@@ -1,6 +1,6 @@
 import {readFile} from "fs";
 import * as Promise from "bluebird";
-import {IContract, objOf, str, bool, arrOf, arr, num, optional} from "ts-dynamic-type-checker";
+import {IContract, objOf, str, bool, arrOf, arr, num, optional, obj} from "ts-dynamic-type-checker";
 
 const numIndex = <T extends {[key : number] : any}>(x : T) : T => {
     Object.entries(x).forEach(([k, v])  => {
@@ -9,8 +9,15 @@ const numIndex = <T extends {[key : number] : any}>(x : T) : T => {
     return x;
 }
 
+const strIndex = <T extends {[key : number] : any}>(x : T) : T => {
+    obj(x);
+    return x;
+}
+
+
 function strIndexOf<K>(base : IContract<K>) : IContract<{[key : string] : K}> {
     return <T extends {[key : string] : K}>(x : T) : T => {
+        strIndex(x);
         Object.values(x).forEach(v => base(v));
         return x;
     } 
@@ -39,12 +46,10 @@ export namespace Configuration {
 
     export interface NavigationConfiguration {
         class: string;
-        mandatory: boolean;
     }
 
     const NavigationConfigurationContract : IContract<NavigationConfiguration>= objOf({
-        class : str,
-        mandatory : bool
+        class : str
     })
 
     export interface NavigationConfigurations {

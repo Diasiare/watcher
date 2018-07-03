@@ -1,3 +1,3 @@
 import {loadConfiguration} from "./configuration/Configuration";
 
-loadConfiguration("./src/configuration/configuration.json").done()
+loadConfiguration("./default-configuration.json").done()
