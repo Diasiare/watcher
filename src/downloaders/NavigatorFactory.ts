@@ -4,6 +4,13 @@ import * as Promise from 'bluebird';
 import {Browser} from './Browser';
 const debug = require('debug')('watcher-navigator-factory');
 
+export const navigators = {
+    "sequence-navigator" :  {
+        parameters : ["next_xpath"],
+        constructor : (show) => new BasicNavigator(show)
+    }
+}
+
 class BasicNavigator implements Navigator {
     
     private show : Show;
