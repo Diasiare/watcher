@@ -34,7 +34,7 @@ class BasicNavigator implements Navigator {
                     })).then(() => {
                         this.first = false;
                         return page;
-                    })
+                    }).catch((e) => debug("Navigation failed, trying next anyway", e))
                     .then(() => this.next(page));
             }
         }
@@ -51,7 +51,7 @@ class BasicNavigator implements Navigator {
                 })
                 .catch(() => {
                     debug("Navigating via click for ", this.show.name)
-                    return Promise.resolve(element.click()).delay(1000);
+                    return Promise.resolve(element.click()).delay(30 * 1000);
                 })
             )
             .then(() => page.bringToFront()).then(() => {

@@ -36,3 +36,4 @@ Move to a document store for the DB
 refactor direction to be an enum
 refactor new and reread to be an enum
 Remove all CSS
+Add an indicator and a selector of epiosode by number

@@ -22,13 +22,14 @@ function getWatcher() {
     });
     const page = await browser.newPage();
 
-    let show : any = <any>{
-        image_xpath : "//div[@id=\'imgholder\']/a/img",
-        number : 0,
-        base_url : 'https://www.mangareader.net/naruto-gaiden-the-seventh-hokage/10/20',
-        next_xpath : "//div[@id='imgholder']/a",
-        directory : "./testTarget",
-        thumbnail_dir : "./testTarget/thumb"
+    let show : any = <any>    {
+        "identifier": "gg",
+        "name": "Girl Genious",
+        "base_url": "http://www.girlgeniusonline.com/comic.php?date=20180806",
+        "logo": "http://www.girlgeniusonline.com/downloads/cocoamac1.jpg",
+        "next_xpath": "//a[@id='topnext']",
+        "image_xpath": "//div[@id='comicbody']//img",
+        "type": "webcomic"
     }
 
     let nav = await NavigatorFactory.getNavigator(show);
@@ -55,12 +56,12 @@ function getWatcher() {
     console.log("started")
 
     let show : any = <any>{
-        "identifier": "xkcd",
-        "name": "xkcd",
-        "base_url": "https://xkcd.com/2011/",
-        "logo": "https://xkcd.com/s/0b7742.png",
-        "next_xpath": "//ul[@class='comicNav']//a[@rel='next']",
-        "image_xpath": "//div[@id='comic']/img",
+        "identifier": "gg",
+        "name": "Girl Genious",
+        "base_url": "http://www.girlgeniusonline.com/comic.php?date=20180806",
+        "logo": "http://www.girlgeniusonline.com/downloads/cocoamac1.jpg",
+        "next_xpath": "//a[@id='topnext']",
+        "image_xpath": "//div[@id='comicbody']//img",
         "type": "webcomic",
         interval: 30 * 60 * 1000,
         number : 1,
