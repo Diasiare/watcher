@@ -37,3 +37,4 @@ refactor direction to be an enum
 refactor new and reread to be an enum
 Remove all CSS
 Add an indicator and a selector of epiosode by number
+Allow for faster non puppeteer resource extraction when JS is not needed
