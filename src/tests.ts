@@ -10,6 +10,8 @@ import Episode from "./types/Episode";
 import Resource from "./downloaders/Resource";
 import { Watcher } from "./downloaders/Watcher";
 import { Show } from "./data/Database";
+import { PuppeteerBrowser, getPuppeteerBrowser } from "./downloaders/PuppeteerBrowser";
+import { RequestBrowser } from "./downloaders/RequestBrowser";
 
 let watcher : Watcher = null;
 function getWatcher() {
@@ -17,10 +19,7 @@ function getWatcher() {
 }
 
 (async () => {
-    const browser = await puppeteer.launch({
-        headless : false,
-    });
-    const page = await browser.newPage();
+    const browser = await getPuppeteerBrowser(false);
 
     let show : any = <any>    {
         "identifier": "gg",
@@ -34,25 +33,19 @@ function getWatcher() {
 
     let nav = await NavigatorFactory.getNavigator(show);
 
-    await nav.next(page);
-    await ResourceExtractorFactory.getResourceExtractor(show).extract(page)
+    await nav.next(browser);
+    await ResourceExtractorFactory.getResourceExtractor(show).extract(browser)
     .map(([episode, res] : [Episode, Resource[]]) => Promise.reduce(res , (episode, r ) => DownloaderFactory.getDownloader(r).download(episode, show), episode))
     .all()
     .then(console.log)
-    .then(() => nav.next(page))
+    .then(() => nav.next(browser))
     .delay(5000)
     .finally(() => browser.close());
   });
 
   (async () => {
     console.log("starting")
-    const browser = await puppeteer.launch({
-        headless : false
-    }).catch(e => puppeteer.launch({
-        headless : true,
-        executablePath: '/usr/bin/chromium-browser'
-    }));
-    const page = await browser.newPage();
+    const browser = await new RequestBrowser();
     console.log("started")
 
     let show : any = <any>{
@@ -79,7 +72,7 @@ function getWatcher() {
     show.get_episode_page_url = () => Promise.resolve(show.base_url);
 
 
-    watcher = new Watcher(() => Promise.resolve(browser.newPage()).disposer(page => {
+    watcher = new Watcher(() => Promise.resolve(browser).disposer(page => {
         browser.close()
         getWatcher().stop();
     }), show);
