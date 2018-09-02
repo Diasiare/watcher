@@ -7,4 +7,5 @@ export default interface RawShow {
     next_xpath: string;
     image_xpath: string;
     text_xpath: string;
+    requireJS?: boolean;
 }

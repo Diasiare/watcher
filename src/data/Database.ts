@@ -275,6 +275,7 @@ export class Show implements ShowFields {
     next_xpath: string;
     image_xpath: string;
     text_xpath: string;
+    requireJS ?: boolean;
 
     constructor(base_show: ShowFields) {
         this.interval = base_show.interval ? base_show.interval : defaults.interval;
@@ -290,6 +291,7 @@ export class Show implements ShowFields {
         this.next_xpath = base_show.next_xpath;
         this.image_xpath = base_show.image_xpath;
         this.text_xpath = base_show.text_xpath;
+        this.requireJS = base_show.requireJS;
     }
 
 
