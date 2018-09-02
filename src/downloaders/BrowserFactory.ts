@@ -8,7 +8,7 @@ export function getBrowser(show : Show) : Promise<Browser> {
     if (show.requireJS) {
         return getPuppeteerBrowser(true);
     } else {
-        Promise.resolve(new RequestBrowser());
+        return Promise.resolve(new RequestBrowser());
     }
     
 }

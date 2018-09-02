@@ -74,7 +74,7 @@ export class RequestBrowser implements Browser {
         return this.runXPath(xpath, ['href'])
             .then(attrs => {
                 if (attrs.length < 1) {
-                    return Promise.reject(new Error("Failed to naviagte to next"))
+                    throw new Error("Failed to naviagte to next");
                 }
                 return this.navigateToUrl(attrs[0][0])
             });

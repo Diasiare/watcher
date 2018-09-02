@@ -48,12 +48,12 @@ export class Watcher {
 
     private cycle() : void {
         if (this.currentRun) this.currentRun.cancel();
-        this.currentRun =  Promise.using(this.browserProvider(), (Browser) => {
+        this.currentRun =  Promise.using(this.browserProvider(), (browser) => {
             this.interval = Promise.delay(this.show.interval).then(this.cycle);
             let navigator : Navigator = NavigatorFactory.getNavigator(this.show);
             let resourceExtractor : ResourceExtractor = ResourceExtractorFactory.getResourceExtractor(this.show);
 
-            return this.cycleLoop(navigator, resourceExtractor)(Browser)
+            return this.cycleLoop(navigator, resourceExtractor)(browser)
                 .catch((e) => {
                     debug("STOPPING DUE TO ", e);
                     console.log("STOPING " + this.show.name + " AT EPISODE " + this.show.number);
