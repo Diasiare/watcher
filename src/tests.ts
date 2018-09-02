@@ -11,7 +11,8 @@ import Resource from "./downloaders/Resource";
 import { Watcher } from "./downloaders/Watcher";
 import { Show } from "./data/Database";
 import { PuppeteerBrowser, getPuppeteerBrowser } from "./downloaders/PuppeteerBrowser";
-import { RequestBrowser } from "./downloaders/RequestBrowser";
+import { RequestBrowser, getRequestBrowser } from "./downloaders/RequestBrowser";
+import { Browser } from "./downloaders/Browser";
 
 let watcher : Watcher = null;
 function getWatcher() {
@@ -45,7 +46,7 @@ function getWatcher() {
 
   (async () => {
     console.log("starting")
-    const browser = await new RequestBrowser();
+    const browser : Browser = await getPuppeteerBrowser(false);
     console.log("started")
 
     let show : any = <any>{

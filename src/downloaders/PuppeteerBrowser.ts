@@ -2,51 +2,29 @@ import {Browser} from './Browser';
 import * as puppeteer from 'puppeteer';
 import {Page} from 'puppeteer'
 import * as Promise from 'bluebird';
+import { LimitedResourceAllocator } from './LimitedReourceAllocator';
 const debug = require('debug')('watcher-browser-puppeteer');
 
-let browser : Promise<puppeteer.Browser> = null;
-let activeCount = 0;
-const queue : ((p : Promise<puppeteer.Page>) => void)[] = [];
-
-function allocatePage(headless : boolean) : Promise<puppeteer.Page> {
-    if (!browser) {
-        browser = Promise.resolve(
-            puppeteer.launch({
-                headless : headless,
-            }).catch(e => puppeteer.launch({
-                headless : headless,
-                executablePath: '/usr/bin/chromium-browser'
-            }))
-        );
-    } 
-
-    if (activeCount >= 10) {
-        return new Promise((resolve) =>{
-            queue.push(resolve);
-        })
-    } else {
-        activeCount++;
-        return browser.then((b) => b.newPage())
-    }
-}
-
-function dealocatePage(page : puppeteer.Page) : Promise<void> {    
-    if (activeCount <= 1) {
-        activeCount--;
-        let tmpbrowser = browser;
-        browser = null;
-        return tmpbrowser.then(b => b.close());
-    } else if (queue.length != 0){
-        queue.shift()(browser.then((b) => b.newPage()));
-        return Promise.resolve(page.close());
-    } else {
-        activeCount--;
-        return Promise.resolve(page.close());
-    }
-}
+let allocator : LimitedResourceAllocator<Page, puppeteer.Browser> = null;
 
 export function getPuppeteerBrowser(headless ?: boolean) : Promise<PuppeteerBrowser> {
-    return allocatePage(!!headless).then((page : Page) => new PuppeteerBrowser(page));
+    if (!allocator) {
+        allocator = new LimitedResourceAllocator(
+            10,
+            (b : puppeteer.Browser) => Promise.resolve(b.newPage()),
+            (page : Page) => Promise.resolve(page.close()),
+            () =>  Promise.resolve(
+                puppeteer.launch({
+                    headless : headless,
+                }).catch(e => puppeteer.launch({
+                    headless : headless,
+                    executablePath: '/usr/bin/chromium-browser'
+                }))
+            ),
+            (browser : puppeteer.Browser) => Promise.resolve(browser.close())
+        )
+    }
+    return allocator.allocate().then(page => new PuppeteerBrowser(page));
 }
 
 
@@ -133,6 +111,6 @@ export class PuppeteerBrowser implements Browser {
 
     
     public close() : Promise<void> {
-        return dealocatePage(this.page);
+        return allocator.dealocate(this.page);
     }
 }

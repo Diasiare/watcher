@@ -5,6 +5,7 @@ import * as parse5 from 'parse5';
 import * as xmlser from 'xmlserializer';
 import {DOMParser} from 'xmldom';
 import * as Promise from 'bluebird';
+import { LimitedResourceAllocator } from "./LimitedReourceAllocator";
 const xpathQuery : uninitalized_xpath.XPathSelect = uninitalized_xpath.useNamespaces({"x": "http://www.w3.org/1999/xhtml"});
 
 function stripUri(doc : Document) : Document{
@@ -23,6 +24,18 @@ function stripUriRecursive(v, e) {
             stripUriRecursive(v, e[p]);
         }
     }
+}
+
+const allocator : LimitedResourceAllocator<RequestBrowser, null> = new LimitedResourceAllocator(
+    10,
+    (b : null) => Promise.resolve(new RequestBrowser()),
+    (browser : RequestBrowser) => Promise.resolve(),
+    () => Promise.resolve(null),
+    (browser : null) => Promise.resolve()
+)
+
+export function getRequestBrowser() {
+    return allocator.allocate();
 }
 
 
@@ -103,6 +116,6 @@ export class RequestBrowser implements Browser {
     }
     
     public close() : Promise<void> {
-        return Promise.resolve();
+        return allocator.dealocate(this);
     }
 }
