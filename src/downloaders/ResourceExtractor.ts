@@ -1,10 +1,10 @@
 import Resource from "./Resource";
-import { Page } from "puppeteer";
 import * as Promise from 'bluebird';
 import Episode from "../types/Episode";
+import { Browser } from "./Browser";
 
 
 export default interface ResourceExtractor {
 
-    extract(page : Page) : Promise<[Episode, Resource[]][]>
+    extract(browser : Browser) : Promise<[Episode, Resource[]][]>
 }

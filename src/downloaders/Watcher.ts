@@ -1,4 +1,3 @@
-import { Page } from "puppeteer";
 import { Show } from "../data/Database";
 import * as Promise from 'bluebird';
 import { setInterval } from "timers";
@@ -9,6 +8,7 @@ import Resource from "./Resource";
 import DownloaderFactory from "./DownloaderFactory";
 import Episode from "../types/Episode";
 import ResourceExtractorFactory from "./ResourceExtractorFactory";
+import { Browser } from "./Browser";
 const debug = require('debug')('watcher-watcher')
 
 Promise.config({
@@ -16,44 +16,44 @@ Promise.config({
 });
 
 export class Watcher {
-    pageProvider : () => Promise.Disposer<Page>;
+    browserProvider : () => Promise.Disposer<Browser>;
     show : Show;
     currentRun : Promise<void>;
     interval : Promise<void>;
     currentRunStarted : false;
 
-    constructor(pageProvider : () => Promise.Disposer<Page>, show : Show) {
-        this.pageProvider = pageProvider;
+    constructor(browserProvider : () => Promise.Disposer<Browser>, show : Show) {
+        this.browserProvider = browserProvider;
         this.show = show;
 
         this.cycle = this.cycle.bind(this);
     }
 
-    private singleCycle(navigator : Navigator, resourceExtractor : ResourceExtractor) : (page : Page) => Promise<Page> {
-        return (page) => navigator.next(page)
-            .then((page) => resourceExtractor.extract(page))
+    private singleCycle(navigator : Navigator, resourceExtractor : ResourceExtractor) : (browser : Browser) => Promise<Browser> {
+        return (browser) => navigator.next(browser)
+            .then((browser) => resourceExtractor.extract(browser))
             .map(([episode, resources] : [Episode, Resource[]]) => 
                 Promise.reduce(resources, (episode ,resource) => DownloaderFactory.getDownloader(resource).download(episode, this.show), episode)            
             )
             .map((episode : Episode) => this.show.insert_new_episode(episode))
             .then(() => console.log("CONTINUING " + this.show.name + " AT EPISODE " + this.show.number))
-            .then(() => page);
+            .then(() => browser);
     }
 
-    private cycleLoop(navigator : Navigator, resourceExtractor : ResourceExtractor) : (page : Page) => Promise<Page> {
+    private cycleLoop(navigator : Navigator, resourceExtractor : ResourceExtractor) : (Browser : Browser) => Promise<Browser> {
         let itteration = this.singleCycle(navigator, resourceExtractor);
-        let f = <any> ((func) => (page) => itteration(page).then(() => func(func)(page)));
-        return (page : Page) => f(f)(page);
+        let f = <any> ((func) => (Browser) => itteration(Browser).then(() => func(func)(Browser)));
+        return (Browser : Browser) => f(f)(Browser);
     }
 
     private cycle() : void {
         if (this.currentRun) this.currentRun.cancel();
-        this.currentRun =  Promise.using(this.pageProvider(), (page) => {
+        this.currentRun =  Promise.using(this.browserProvider(), (Browser) => {
             this.interval = Promise.delay(this.show.interval).then(this.cycle);
             let navigator : Navigator = NavigatorFactory.getNavigator(this.show);
             let resourceExtractor : ResourceExtractor = ResourceExtractorFactory.getResourceExtractor(this.show);
 
-            return this.cycleLoop(navigator, resourceExtractor)(page)
+            return this.cycleLoop(navigator, resourceExtractor)(Browser)
                 .catch((e) => {
                     debug("STOPPING DUE TO ", e);
                     console.log("STOPING " + this.show.name + " AT EPISODE " + this.show.number);

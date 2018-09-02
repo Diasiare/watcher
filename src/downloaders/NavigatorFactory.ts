@@ -1,7 +1,7 @@
 import { Show } from "../data/Database";
 import Navigator from "./Navigator";
 import * as Promise from 'bluebird';
-import { Page } from "puppeteer";
+import {Browser} from './Browser';
 const debug = require('debug')('watcher-navigator-factory');
 
 class BasicNavigator implements Navigator {
@@ -13,52 +13,30 @@ class BasicNavigator implements Navigator {
         this.show = show;
     }
 
-    public next(page : Page) : Promise<Page> {
-        let start_url = page.url();
+    public next(browser : Browser) : Promise<Browser> {
         if (this.first) {
             let url : Promise<string>;
             if (this.show.number == 0) {
                 debug("First time navigation to ", this.show.base_url, " for ", this.show.name);
-                return Promise.resolve(this.show.base_url).then((url) => page.goto(url, {
-                    timeout : 120 * 1000
-                }))            
+                return browser.navigateToUrl(this.show.base_url)
                 .then(() => {
                     this.first = false;
-                    return page;
+                    return browser;
                 });
             } else {
                 return this.show.get_episode_page_url(this.show.number)
                     .tap((url) => debug("First run navigation to ", url, " for ", this.show.name))
-                    .then((url) => page.goto(url, {
-                        timeout : 120 * 1000
-                    })).then(() => {
+                    .then((url) => browser.navigateToUrl(url))
+                    .catch((e) => debug("Navigation failed, trying next anyway", e))
+                    .then(() => {
                         this.first = false;
-                        return page;
-                    }).catch((e) => debug("Navigation failed, trying next anyway", e))
-                    .then(() => this.next(page));
+                        return browser;
+                    })
+                    .then(() => this.next(browser));
             }
         }
         let xpath = this.show.next_xpath;
-        return Promise.resolve(page.waitForXPath(xpath))
-            .then((element) => 
-                element.getProperty("href")
-                .then((handle) => handle.jsonValue())
-                .then((href) => {
-                    debug("Navigating via goto for ", this.show.name, " to ", href);
-                    return page.goto(href, {
-                        timeout : 120 * 1000
-                    });
-                })
-                .catch(() => {
-                    debug("Navigating via click for ", this.show.name)
-                    return Promise.resolve(element.click()).delay(30 * 1000);
-                })
-            )
-            .then(() => page.bringToFront()).then(() => {
-                if (page.url() == start_url) {
-                    throw new Error("Navigation from " + start_url + " led to same page");
-                }
-            }).then(() => page)
+        return browser.navigateToNext(xpath).then(() => browser);
     }
 
 }

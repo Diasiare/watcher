@@ -1,6 +1,6 @@
-import {Page} from 'puppeteer'
 import * as Promise from 'bluebird';
+import { Browser } from './Browser';
 
 export default interface Navigator {
-    next(page : Page) : Promise<Page> ;
+    next(page : Browser) : Promise<Browser> ;
 }
