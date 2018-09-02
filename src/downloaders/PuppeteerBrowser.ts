@@ -8,13 +8,13 @@ let browser : Promise<puppeteer.Browser> = null;
 let activeCount = 0;
 const queue : ((p : Promise<puppeteer.Page>) => void)[] = [];
 
-function allocatePage() : Promise<puppeteer.Page> {
+function allocatePage(headless : boolean) : Promise<puppeteer.Page> {
     if (!browser) {
         browser = Promise.resolve(
             puppeteer.launch({
-                headless : true,
+                headless : headless,
             }).catch(e => puppeteer.launch({
-                headless : true,
+                headless : headless,
                 executablePath: '/usr/bin/chromium-browser'
             }))
         );
@@ -45,9 +45,10 @@ function dealocatePage(page : puppeteer.Page) : Promise<void> {
     }
 }
 
-export function getPuppeteerBrowser() : Promise<PuppeteerBrowser> {
-    return allocatePage().then((page : Page) => new PuppeteerBrowser(page));
+export function getPuppeteerBrowser(headless ?: boolean) : Promise<PuppeteerBrowser> {
+    return allocatePage(!!headless).then((page : Page) => new PuppeteerBrowser(page));
 }
+
 
 export class PuppeteerBrowser implements Browser {
     private page : Page;
@@ -88,8 +89,8 @@ export class PuppeteerBrowser implements Browser {
     }
 
 
-    public getUrl() : Promise<string> {
-        return Promise.resolve(this.page.url());
+    public getUrl() : string {
+        return this.page.url();
     }
 
     private createDownloadRace(page, xpath, attrNames) : Promise<string[][]>[] {
