@@ -15,7 +15,6 @@ class BasicNavigator implements Navigator {
 
     public next(browser : Browser) : Promise<Browser> {
         if (this.first) {
-            let url : Promise<string>;
             if (this.show.number == 0) {
                 debug("First time navigation to ", this.show.base_url, " for ", this.show.name);
                 return browser.navigateToUrl(this.show.base_url)
@@ -36,7 +35,14 @@ class BasicNavigator implements Navigator {
             }
         }
         let xpath = this.show.next_xpath;
-        return browser.navigateToNext(xpath).then(() => browser);
+        let url = browser.getUrl();
+        return browser.navigateToNext(xpath)
+            .then(() => {
+                if (browser.getUrl() === url) {
+                    throw new Error("Navigation from " + url + " failed, led to same url")
+                }
+            })
+            .then(() => browser);
     }
 
 }

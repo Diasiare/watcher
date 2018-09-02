@@ -46,16 +46,16 @@ function getWatcher() {
 
   (async () => {
     console.log("starting")
-    const browser : Browser = await getPuppeteerBrowser(false);
+    const browser : Browser = await getRequestBrowser();
     console.log("started")
 
     let show : any = <any>{
-        "identifier": "gg",
-        "name": "Girl Genious",
-        "base_url": "http://www.girlgeniusonline.com/comic.php?date=20180806",
-        "logo": "http://www.girlgeniusonline.com/downloads/cocoamac1.jpg",
-        "next_xpath": "//a[@id='topnext']",
-        "image_xpath": "//div[@id='comicbody']//img",
+        "identifier": "sd",
+        "name": "Skin Deep",
+        "base_url": "http://www.skindeepcomic.com/reader-questions/2018-reader-question-98/",
+        "logo": "http://www.skindeepcomic.com/wp-content/uploads/2011/08/wordpresslogo10251.jpg",
+        "next_xpath": "//a[@rel='next']",
+        "image_xpath": "//div[@class='webcomic-image scroll']//img",
         "type": "webcomic",
         interval: 30 * 60 * 1000,
         number : 1,

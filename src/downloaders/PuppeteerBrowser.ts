@@ -52,11 +52,7 @@ export class PuppeteerBrowser implements Browser {
                     return Promise.resolve(element.click()).delay(30 * 1000);
                 })
             )
-            .then(() => this.page.bringToFront()).then(() => {
-                if (this.page.url() == start_url) {
-                    throw new Error("Navigation from " + start_url + " led to same page");
-                }
-            }).then(() => undefined);
+            .then(() => this.page.bringToFront()).then(() => undefined);
     }
 
 
