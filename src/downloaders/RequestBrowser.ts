@@ -6,6 +6,7 @@ import * as xmlser from 'xmlserializer';
 import {DOMParser} from 'xmldom';
 import * as Promise from 'bluebird';
 import { LimitedResourceAllocator } from "./LimitedReourceAllocator";
+import * as url from "url";
 const xpathQuery : uninitalized_xpath.XPathSelect = uninitalized_xpath.useNamespaces({"x": "http://www.w3.org/1999/xhtml"});
 
 function stripUri(doc : Document) : Document{
@@ -89,7 +90,7 @@ export class RequestBrowser implements Browser {
                 if (attrs.length < 1) {
                     throw new Error("Failed to naviagte to next");
                 }
-                return this.navigateToUrl(attrs[0][0])
+                return this.navigateToUrl(url.resolve(this.url,attrs[0][0]))
             });
     }
     public navigateToUrl(url : string) : Promise<void> {

@@ -1,0 +1,636 @@
+[
+    {
+        "identifier": "asdsad",
+        "name": "asdsad",
+        "base_url": "https://www.mangareader.net/ao-no-exorcist/99",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "asfsavbfiu",
+        "name": "aisuvfisav",
+        "base_url": "https://www.mangareader.net/naruto-gaiden-the-seventh-hokage/10",
+        "logo": "https://i995.mangareader.net/naruto-gaiden-the-seventh-hokage/10/naruto-gaiden-the-seventh-hokage-5778116.jpg",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "egsnp2",
+        "name": "egsnp2",
+        "base_url": "http://www.egscomics.com/egsnp/g2-130",
+        "logo": "http://www.egscomics.com/images/logo2.gif",
+        "next_xpath": "//div[@id='cc-comicbody']/a",
+        "image_xpath": "//div[@id='cc-comicbody']//img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "grrp",
+        "name": "GrrlPower",
+        "base_url": "http://grrlpowercomic.com/archives/48",
+        "logo": "http://www.grrlpowercomic.com/wp-content/themes/comicpress/images/page_gfx/title_block_title.png",
+        "next_xpath": "//div[@id='comic']/a",
+        "image_xpath": "//div[@id='comic']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='entry']/p"
+    },
+    {
+        "identifier": "smbc",
+        "name": "Saturday Morning Breakfast Cereal",
+        "base_url": "http://www.smbc-comics.com/comic/2002-09-05",
+        "logo": "http://assets.gocomics.com/uploads/blogs/blog_image_small_3149_982_link_w_title_large_smbc_smbc-MYC-370x220.jpg",
+        "next_xpath": "//a[@rel='next']",
+        "image_xpath": "//div[@id='cc-comicbody']//img|//div[@id='aftercomic']//img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "gunn",
+        "name": "Gunnerkrigg Court",
+        "base_url": "http://www.gunnerkrigg.com/?p=1",
+        "logo": "http://www.gunnerkrigg.com/images/archivetitle.jpg",
+        "next_xpath": "//a[./img[@src='/images/next_a.jpg']]",
+        "image_xpath": "//img[@class='comic_image']",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='content']"
+    },
+    {
+        "identifier": "egs",
+        "name": "EGS",
+        "base_url": "http://www.egscomics.com/index.php?id=1",
+        "logo": "http://www.egscomics.com/images/logo.gif",
+        "next_xpath": "//div[@id='cc-comicbody']/a",
+        "image_xpath": "//div[@id='cc-comicbody']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@id='cc-newsarea']"
+    },
+    {
+        "identifier": "wapsi",
+        "name": "Wapsi Square",
+        "base_url": "http://wapsisquare.com/comic/09092001/",
+        "logo": "http://wapsisquare.com/wp-content/themes/comicpress-wapsi/images/header.png",
+        "next_xpath": "//a[@class='navi comic-nav-next navi-next']",
+        "image_xpath": "//div[@id='comic']//img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "onep",
+        "name": "One Piece",
+        "base_url": "http://www.mangareader.net/one-piece/1",
+        "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzMSjAb_C8fCkygx1cBuWwzJQMq9M_eMyTn3Z7HcH1ElA-ASiJiA",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "strong",
+        "name": "Strong Female Protagonist",
+        "base_url": "http://strongfemaleprotagonist.com/issue-1/page-0/",
+        "logo": "http://strongfemaleprotagonist.com/wp-content/themes/sfp2/images/logo.png",
+        "next_xpath": "//a[@class='page-nav__item page-nav__item--right']",
+        "image_xpath": "//article[@class='comic-page']/p/img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "xkcd",
+        "name": "xkcd",
+        "base_url": "https://xkcd.com/1/",
+        "logo": "https://xkcd.com/s/0b7742.png",
+        "next_xpath": "//ul[@class='comicNav']//a[@rel='next']",
+        "image_xpath": "//div[@id='comic']/img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "mod",
+        "name": "Modest Medusa",
+        "base_url": "http://modestmedusa.com/comic/christmas-eve-3/",
+        "logo": "http://modestmedusa.com/wp-content/uploads/ver_2012/header_000.png",
+        "next_xpath": "//div[@id='comic']/a",
+        "image_xpath": "//div[@id='comic']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='entry']"
+    },
+    {
+        "identifier": "saw",
+        "name": "Sandra and Woo",
+        "base_url": "http://www.sandraandwoo.com/2008/10/19/a-sly-raccoon/",
+        "logo": "http://www.sandraandwoo.com/images/design/sandra-and-woo-logo-small.png",
+        "next_xpath": "//div[@id='comic']/a",
+        "image_xpath": "//div[@id='comic']/a/img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='entry']"
+    },
+    {
+        "identifier": "lilith",
+        "name": "Lilith's Word",
+        "base_url": "http://www.lilithword.com/comic/prologue-page-00",
+        "logo": "http://68.media.tumblr.com/8b9c52c400e415616d7688e8eff243d8/tumblr_oc2kob3HsK1rz1aygo1_r1_500.jpg",
+        "next_xpath": "//div[@id='cc-comicbody']/a",
+        "image_xpath": "//div[@id='cc-comicbody']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='cc-newsbody']"
+    },
+    {
+        "identifier": "dotl",
+        "name": "Daughter of the Lilies",
+        "base_url": "http://www.daughterofthelilies.com/dotl/part-1-a-girl-with-no-face",
+        "logo": "https://capelesscrusader.org/wp-content/uploads/2017/07/Lily_FA_2.jpg",
+        "next_xpath": "//div[@id='cc-comicbody']/a",
+        "image_xpath": "//div[@id='cc-comicbody']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='cc-newsbody']"
+    },
+    {
+        "identifier": "naruto",
+        "name": "Naruto",
+        "base_url": "http://www.mangareader.net/naruto/1",
+        "logo": "https://www.mobipicker.com/wp-content/uploads/2017/02/peliculas-naruto-shippuden.jpg",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "gg",
+        "name": "Girl Genious",
+        "base_url": "http://www.girlgeniusonline.com/comic.php?date=20021104",
+        "logo": "http://www.girlgeniusonline.com/downloads/cocoamac1.jpg",
+        "next_xpath": "//a[@id='topnext']",
+        "image_xpath": "//div[@id='comicbody']//img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "hb",
+        "name": "Headless Bliss",
+        "base_url": "http://www.headlessbliss.com/comic/page-1",
+        "logo": "https://68.media.tumblr.com/b4ad1daa200738c12943d07a2c1f0b9b/tumblr_nh161g2u8U1tqa2rko1_500.jpg",
+        "next_xpath": "//div[@id='cc-comicbody']/a",
+        "image_xpath": "//div[@id='cc-comicbody']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='cc-newsbody']"
+    },
+    {
+        "identifier": "ksbd",
+        "name": "Kill Six Billion Demons",
+        "base_url": "http://killsixbilliondemons.com/comic/kill-six-billion-demons-chapter-1/",
+        "logo": "http://i0.kym-cdn.com/entries/icons/original/000/023/418/ksbd.jpg",
+        "next_xpath": "//td[@class='comic_navi_right']/a[@title='Next Page >']",
+        "image_xpath": "//div[@id='comic']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='entry']"
+    },
+    {
+        "identifier": "ct",
+        "name": "Cut Time",
+        "base_url": "http://www.cuttimecomic.com/comic/volume-01-first-impressions",
+        "logo": "http://static.tvtropes.org/pmwiki/pub/images/cuttime_title_bg.png",
+        "next_xpath": "//a[@class='cc-next']",
+        "image_xpath": "//div[@id='cc-comicbody']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='cc-newsbody']"
+    },
+    {
+        "identifier": "moll",
+        "name": "Molly Beans - A Life In Development",
+        "base_url": "http://mollybeans.com/comic/eggs/",
+        "logo": "http://mollybeans.com/wp-content/uploads/2017/05/BluePageBanner.png",
+        "next_xpath": "//a[@rel='next']",
+        "image_xpath": "//article/a/img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "walk",
+        "name": "It's Walky",
+        "base_url": "http://www.itswalky.com/comic/and-now/",
+        "logo": "http://vignette4.wikia.nocookie.net/walkypedia/images/b/b7/Its_walky_poster_thing_by_itswalky-d2xphpn.jpg/revision/latest?cb=20140421204747",
+        "next_xpath": "//a[@class='comic-nav-base comic-nav-next']",
+        "image_xpath": "//div[@id='comic']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='entry']"
+    },
+    {
+        "identifier": "az",
+        "name": "Awkward Zombie",
+        "base_url": "http://www.awkwardzombie.com/index.php?page=0&comic=092006",
+        "logo": "http://www.awkwardzombie.com/images/az2header2b.png",
+        "next_xpath": "//a[img[@alt='Next Comic']]",
+        "image_xpath": "//div[@id='comic']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@id='blarg']/div[span[@id='date']]"
+    },
+    {
+        "identifier": "mgn",
+        "name": "Magical Girl Niel",
+        "base_url": "http://www.magicalgirlneil.com/comic/magical-girl-neil-1/",
+        "logo": "http://68.media.tumblr.com/325615018f18d07279ffe2f86c5a51cd/tumblr_oaly58xzuw1s9c4nlo1_500.png",
+        "next_xpath": "//td[@class='comic-nav']/a[@class='comic-nav-base comic-nav-next']",
+        "image_xpath": "//div[@id='comic']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='entry']"
+    },
+    {
+        "identifier": "emp",
+        "name": "Empowereed",
+        "base_url": "http://www.empoweredcomic.com/comic/volume-1-page-1",
+        "logo": "http://howtolovecomics.com/wp-content/uploads/2015/12/empowered-facebook.jpg",
+        "next_xpath": "//div[@id='cc-comicbody']/a",
+        "image_xpath": "//div[@id='cc-comicbody']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='cc-newsbody']"
+    },
+    {
+        "identifier": "comm",
+        "name": "Commit Strip",
+        "base_url": "http://www.commitstrip.com/en/2012/02/22/interview/",
+        "logo": "http://www.lesblogsbd.fr/wp-content/uploads/2016/09/commitstrip-banniere.jpg",
+        "next_xpath": "//a[@rel='next']",
+        "image_xpath": "//div[@class='entry-content']//img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "bwf",
+        "name": "The Boy Who Fell",
+        "base_url": "http://www.boywhofell.com/comic/ch00p00",
+        "logo": "https://s3.amazonaws.com/patreon/7e830739befac2bfcba67a671c6b9adf.jpg",
+        "next_xpath": "//a[@rel='next']|//div[@id='cc-comicbody']/a",
+        "image_xpath": "//div[@id='cc-comicbody']//img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "sd",
+        "name": "Skin Deep",
+        "base_url": "http://www.skindeepcomic.com/archive/issue-1-cover/",
+        "logo": "http://www.skindeepcomic.com/wp-content/uploads/2011/08/wordpresslogo10251.jpg",
+        "next_xpath": "//a[@rel='next']",
+        "image_xpath": "//div[@class='webcomic-image scroll']//img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "dhs",
+        "name": "Don't Hit Save",
+        "base_url": "http://donthitsave.com/comic/2015/09/18/the-dev-dilemma",
+        "logo": "http://donthitsave.com/images/dhs-logo.png",
+        "next_xpath": "//a[@class='nav-button nav-button-left nav-end']",
+        "image_xpath": "//img[@class='comicfull']",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "blind",
+        "name": "Blind Springs",
+        "base_url": "http://www.blindsprings.com/comic/blindsprings-cover-book-one",
+        "logo": "http://static.tvtropes.org/pmwiki/pub/images/1483598690_tb_anno_17_redux.png",
+        "next_xpath": "//a[@rel='next']",
+        "image_xpath": "//img[@id='cc-comic']",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "flapa",
+        "name": "Flaky Pastry",
+        "base_url": "http://flakypastry.runningwithpencils.com/comic.php?strip_id=0",
+        "logo": "http://flakypastry.runningwithpencils.com/gfx/newtitle.gif",
+        "next_xpath": "//a[img[@usemap='#ImageMap']]",
+        "image_xpath": "//img[@usemap='#ImageMap']",
+        "type": "webcomic",
+        "text_xpath": "//span[@class='rss-content']"
+    },
+    {
+        "identifier": "doa",
+        "name": "Dumbing of Age",
+        "base_url": "http://www.dumbingofage.com/2010/comic/book-1/01-move-in-day/home/",
+        "logo": "http://www.dumbingofage.com/wp-content/uploads/2010/09/patreonheader.png",
+        "next_xpath": "//a[@title='Next']",
+        "image_xpath": "//div[@id='comic']//img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "sister",
+        "name": "Sister Claire",
+        "base_url": "https://www.sisterclaire.com/comic/book-one",
+        "logo": "http://nerdophiles.files.wordpress.com/2014/01/df79e4848ea0612e26fd1081a6ffa588_large.png",
+        "next_xpath": "//a[@rel='next']",
+        "image_xpath": "//img[@id='cc-comic']",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "ssss",
+        "name": "Stand Still Stay Silent",
+        "base_url": "http://www.sssscomic.com/comic.php?page=1",
+        "logo": "http://www.sssscomic.com/comicpages/273.jpg",
+        "next_xpath": "//a[div[@id='navnext2b']]",
+        "image_xpath": "//img[@class='comicnormal']",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "nerf",
+        "name": "NerfNow!!",
+        "base_url": "http://www.nerfnow.com/comic/4",
+        "logo": "http://www.nerfnow.com/images/logo2.png",
+        "next_xpath": "//li[@id='nav_next']/a",
+        "image_xpath": "//div[@id='comic']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='comment']"
+    },
+    {
+        "identifier": "pa",
+        "name": "Penny Aracade",
+        "base_url": "https://www.penny-arcade.com/comic/1998/11/18",
+        "logo": "https://b4r6v5x2.ssl.hwcdn.net/pa/assets/img/logo_pa.png",
+        "next_xpath": "//a[@title='Next']",
+        "image_xpath": "//div[@id='comicFrame']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='copy comicTag']"
+    },
+    {
+        "identifier": "mm",
+        "name": "Miss Melee",
+        "base_url": "http://miss-melee.com/comic/1-0/",
+        "logo": "http://i.imgur.com/9ETpKht.png",
+        "next_xpath": "//a[@class='navi comic-nav-next navi-next']",
+        "image_xpath": "//div[@id='comic']//img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "satw",
+        "name": "Scandinavia and the World",
+        "base_url": "https://satwcomic.com/sweden-denmark-and-norway",
+        "logo": "https://satwcomic.com/img_satwcomic/denmarklogo7.png",
+        "next_xpath": "//a[@accesskey='n']",
+        "image_xpath": "//div[@class='container']/center//img",
+        "type": "webcomic",
+        "text_xpath": "//span[@itemprop='articleBody']"
+    },
+    {
+        "identifier": "gk",
+        "name": "Ghost Kiss",
+        "base_url": "http://ghostkiss.modestmedusa.com/comic/episode-1-0/",
+        "logo": "https://i1.wp.com/ghostkiss.modestmedusa.com/wp-content/uploads/sites/53/2016/05/GK3-00.jpg?fit=608%2C774",
+        "next_xpath": "//a[@class='comic-nav-base comic-nav-next']",
+        "image_xpath": "//div[@id='comic']//img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "prun",
+        "name": "Prunus Girl",
+        "base_url": "http://www.mangareader.net/prunus-girl/1",
+        "logo": "https://i.ytimg.com/vi/-i_oYmSX8Qs/maxresdefault.jpg",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "onepunch",
+        "name": "One Punch Man",
+        "base_url": "http://www.mangareader.net/onepunch-man/1",
+        "logo": "http://az616578.vo.msecnd.net/files/2017/02/04/636217738283505369-1515048321_one%20pucnch%20man.jpg",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "ds",
+        "name": "Dream Scar",
+        "base_url": "http://dream-scar.net/?id=1",
+        "logo": "http://dream-scar.net/content/dsc-layout02-top-2.jpg",
+        "next_xpath": "//a[@title='next']",
+        "image_xpath": "//img[@id='comic']",
+        "type": "webcomic",
+        "text_xpath": "//div[@id='news']/p"
+    },
+    {
+        "identifier": "soul",
+        "name": "Soul Eater",
+        "base_url": "http://www.mangareader.net/soul-eater/1",
+        "logo": "https://myanimelist.cdn-dena.com/s/common/uploaded_files/1444063749-240dd90d18e9f17827e8155e2c0a1f73.jpeg",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "ghoul",
+        "name": "Tokyo Ghoul ",
+        "base_url": "http://www.mangareader.net/toukyou-kushu/1",
+        "logo": "https://images8.alphacoders.com/546/thumb-1920-546902.jpg",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "bers",
+        "name": "Berserk",
+        "base_url": "http://www.mangareader.net/berserk/1",
+        "logo": "https://vignette.wikia.nocookie.net/berserk/images/2/28/MainPagePart3.jpg/revision/latest/scale-to-width-down/670?cb=20160709045556",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "iro",
+        "name": "I Roved Out In Search of Thruth & Love",
+        "base_url": "http://www.irovedout.com/",
+        "logo": "http://www.irovedout.com/wp-content/uploads/2016/01/cropped-cropped-IRO-header-1.jpg",
+        "next_xpath": "//a[@title='Next >']",
+        "image_xpath": "//div[@id='comic']//img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "maid",
+        "name": "Kobayashi-san Chi no Maid Dragon",
+        "base_url": "http://mangakakalot.com/chapter/kobayashisan_chi_no_maid_dragon/chapter_1",
+        "logo": "https://i.ytimg.com/vi/lgt9CmGDBYk/maxresdefault.jpg",
+        "type": "manga",
+        "next_xpath": "//a[@class='back']",
+        "image_xpath": "//div[@id='vungdoc']/img"
+    },
+    {
+        "identifier": "abyss",
+        "name": "Made in Abyss",
+        "base_url": "http://mangakakalot.com/chapter/made_in_abyss/chapter_1",
+        "logo": "https://i.ytimg.com/vi/zf7IoqJgZXg/maxresdefault.jpg",
+        "type": "manga",
+        "next_xpath": "//a[@class='back']",
+        "image_xpath": "//div[@id='vungdoc']/img"
+    },
+    {
+        "identifier": "kake",
+        "name": "Kakegurui",
+        "base_url": "http://www.mangareader.net/kakegurui/1",
+        "logo": "https://images4.alphacoders.com/836/thumb-1920-836145.png",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "kuro",
+        "name": "Kuro Somato",
+        "base_url": "http://mangakakalot.com/chapter/kuro_somato/chapter_1",
+        "logo": "https://pm1.narvii.com/6146/9b9e1f2d83a9ef69a67b918f38db6a7704544ee4_hq.jpg",
+        "type": "manga",
+        "next_xpath": "//a[@class='back']",
+        "image_xpath": "//div[@id='vungdoc']/img"
+    },
+    {
+        "identifier": "yugi2",
+        "name": "Yu-Gi-Oh Duelist",
+        "base_url": "http://manganelo.com/chapter/read_yugioh_duelist/chapter_1",
+        "type": "manga",
+        "next_xpath": "//a[@class='back']",
+        "image_xpath": "//div[@id='vungdoc']/img"
+    },
+    {
+        "identifier": "ohs",
+        "name": "O Human Star",
+        "base_url": "http://ohumanstar.com/comic/chapter-1-title-page/",
+        "logo": "http://theabsolutemag.com/wp-content/uploads/2014/03/OHS-cover.jpg",
+        "next_xpath": "//a[@title=\"Next\"]",
+        "image_xpath": "//div[@id=\"comic\"]//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class=\"entry\"]"
+    },
+    {
+        "identifier": "negi",
+        "name": "Mahou Sensei Negima",
+        "base_url": "http://www.mangareader.net/mahou-sensei-negima/1",
+        "logo": "http://i.imgur.com/L2k9e0c.png",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "stick",
+        "name": "Order of the Stick",
+        "base_url": "http://www.giantitp.com/comics/oots0001.html",
+        "logo": "https://img00.deviantart.net/2ac7/i/2012/020/f/e/the_order_of_the_stick_by_tomxaros-d4n05qb.jpg",
+        "next_xpath": "//a[img[@title=\"Next Comic\"]]",
+        "image_xpath": "//td[@align='center']/img",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "fair",
+        "name": "Fairy Tail",
+        "base_url": "http://www.mangareader.net/fairy-tail/1",
+        "logo": "https://vignette.wikia.nocookie.net/fairytail/images/0/00/Character_Slider_no_2.jpg/revision/latest/scale-to-width-down/500?cb=20130117033701",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "gint",
+        "name": "Gintama",
+        "base_url": "http://www.mangareader.net/gintama/1",
+        "logo": "http://i.imgur.com/FHzAbwI.jpg",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "Yugi",
+        "name": "Yu gi oh",
+        "base_url": "http://manganelo.com/chapter/read_yugioh_manga_online/chapter_1",
+        "type": "manga",
+        "next_xpath": "//a[@class='back']",
+        "image_xpath": "//div[@id='vungdoc']/img"
+    },
+    {
+        "identifier": "kwbli",
+        "name": "Kiwi Blitz",
+        "base_url": "http://www.kiwiblitz.com/comic/welcome-to-kb",
+        "next_xpath": "//a[@class='cc-next']",
+        "image_xpath": "//div[@id='cc-comicbody']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='cc-newsbody']"
+    },
+    {
+        "identifier": "fruit",
+        "name": "Fruits Basket",
+        "base_url": "http://mangakakalot.com/chapter/fruits_basket/chapter_1.1",
+        "logo": "https://d3ieicw58ybon5.cloudfront.net/ex/600.450/u/f9cdacd6a7c4423f9dc75b477969d813.jpg",
+        "type": "manga",
+        "next_xpath": "//a[@class='back']",
+        "image_xpath": "//div[@id='vungdoc']/img"
+    },
+    {
+        "identifier": "sldom",
+        "name": "Sleepless domain",
+        "base_url": "http://www.sleeplessdomain.com/comic/chapter-1-cover",
+        "logo": "http://www.sleeplessdomain.com/comics/1438655415-chaptercover.png",
+        "next_xpath": "//a[@class='cc-next']",
+        "image_xpath": "//div[@id='cc-comicbody']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='cc-newsbody']"
+    },
+    {
+        "identifier": "egss",
+        "name": "EGS: Sketchbook",
+        "base_url": "http://www.egscomics.com/sketchbook.php?id=79",
+        "logo": "http://www.egscomics.com/images/logo.png",
+        "next_xpath": "//div[@id='cc-comicbody']/a",
+        "image_xpath": "//div[@id='cc-comicbody']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@id='news']"
+    },
+    {
+        "identifier": "ouran",
+        "name": "Ouran Highschool Host Club",
+        "base_url": "http://www.mangareader.net/ouran-high-school-host-club/1",
+        "logo": "https://ibhuluimcom-a.akamaihd.net/ib.huluim.com/show/4043?region=US&size=952x536",
+        "type": "manga",
+        "next_xpath": "//div[@id='imgholder']/a",
+        "image_xpath": "//div[@id='imgholder']/a/img"
+    },
+    {
+        "identifier": "oglaf",
+        "name": "Oglaf",
+        "base_url": "https://www.oglaf.com/cumsprite/",
+        "logo": "https://static.comicvine.com/uploads/scale_medium/13/136525/5114639-oglaf.png",
+        "next_xpath": "(//a[./div[@id='nx']]|//a[./div[@id='ns']])",
+        "image_xpath": "//div[@class='content']//img[2]",
+        "type": "webcomic"
+    },
+    {
+        "identifier": "qc",
+        "name": "Questionable Content",
+        "base_url": "http://www.questionablecontent.net/view.php?comic=1",
+        "logo": "http://www.questionablecontent.net/images/logo16.png",
+        "next_xpath": "//img[@id='strip']/..",
+        "image_xpath": "//img[@id='strip']",
+        "type": "webcomic",
+        "text_xpath": "//div[@id='news']"
+    },
+    {
+        "identifier": "egsnp",
+        "name": "EGS NP",
+        "base_url": "http://www.egscomics.com/egsnp.php?id=12",
+        "logo": "http://www.egscomics.com/images/logo2.gif",
+        "next_xpath": "//div[@id='cc-comicbody']/a",
+        "image_xpath": "//div[@id='cc-comicbody']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@id='cc-newsarea']"
+    },
+    {
+        "identifier": "ggar",
+        "name": "Go Get A Roomie",
+        "base_url": "http://www.gogetaroomie.com/comic/and-so-it-begins",
+        "logo": "https://ksr-ugc.imgix.net/assets/015/388/650/642a79262206017bccd28541360bab1d_original.png?crop=faces&w=1552&h=873&fit=crop&v=1486157466&auto=format&q=92&s=a9822ba9996e88dbebdd92bfc8481c37",
+        "next_xpath": "//a[@class='cc-next']",
+        "image_xpath": "//div[@id='cc-comicbody']//img",
+        "type": "webcomic",
+        "text_xpath": "//div[@class='cc-newsbody']"
+    },
+    {
+        "identifier": "boku",
+        "name": "Boku Girl",
+        "base_url": "http://mangakakalot.com/chapter/boku_girl_2/chapter_1",
+        "logo": "https://i.ytimg.com/vi/7JFRas12Sr8/maxresdefault.jpg",
+        "type": "manga",
+        "next_xpath": "//a[@class='back']",
+        "image_xpath": "//div[@id='vungdoc']/img"
+    },
+    {
+        "identifier": "sin",
+        "name": "Sin Fest",
+        "base_url": "http://www.sinfest.net/view.php?date=2000-01-17",
+        "logo": "http://www.sinfest.net/images/bright_sinfest.gif",
+        "next_xpath": "//a[img[@src='../images/next.gif']]",
+        "image_xpath": "//tbody[@class='style5']//img",
+        "type": "webcomic"
+    }
+]
