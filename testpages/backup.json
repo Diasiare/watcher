@@ -434,7 +434,7 @@
     {
         "identifier": "maid",
         "name": "Kobayashi-san Chi no Maid Dragon",
-        "base_url": "http://mangakakalot.com/chapter/kobayashisan_chi_no_maid_dragon/chapter_1",
+        "base_url": "https://manganelo.com/chapter/kobayashisan_chi_no_maid_dragon/chapter_1",
         "logo": "https://i.ytimg.com/vi/lgt9CmGDBYk/maxresdefault.jpg",
         "type": "manga",
         "next_xpath": "//a[@class='back']",

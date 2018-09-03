@@ -115,7 +115,7 @@ function getWatcher() {
     let referenceConfiguration = fs.readFileSync("testpages/backup.json", "utf-8");
 
     let config : any[] = JSON.parse(referenceConfiguration);
-    
+
     for (let i = 0; i < config.length; i++) {
         const show = config[i];
         
@@ -147,7 +147,9 @@ function getWatcher() {
 
         console.log("Starting: " + show.name);
         let a = await (getBrowser(show)
+        .tap(() => console.log("got browser"))
         .then((browser) => nav.next(browser))
+        .tap(() => console.log("first next"))
         .then((browser)=>res.extract(browser).then((v) => {
             console.log("Got 1 ", JSON.stringify(v))
                 if (v.length < 1) {
@@ -158,17 +160,16 @@ function getWatcher() {
                 return Promise.reduce(resources, (episode ,resource : Resource) => DownloaderFactory.getDownloader(resource).download(episode, show), episode);
             }).all().return(browser))
         .then((browser) => nav.next(browser))
-        .then((browser)=>res.extract(browser))
-        .then((v) => {
-            console.log("Got 2 ", JSON.stringify(v))
-            if (v.length < 1) {
-                failedCount++;
-            }
-            return v;
-        })
-        .map(([episode, resources]) => {
-            return Promise.reduce(resources, (episode ,resource : Resource) => DownloaderFactory.getDownloader(resource).download(episode, show), episode);
-        }).all().return("hello"))
+        .then((browser)=>res.extract(browser).then((v) => {
+            console.log("Got 1 ", JSON.stringify(v))
+                if (v.length < 1) {
+                    failedCount++;
+                }
+                return v;
+            }).map(([episode, resources]) => {
+                return Promise.reduce(resources, (episode ,resource : Resource) => DownloaderFactory.getDownloader(resource).download(episode, show), episode);
+            }).all().then(() => browser.close()))
+            .return("hello"))
 
         if (failedCount > 1) {
             throw new Error("Got nothing on " + show.name);

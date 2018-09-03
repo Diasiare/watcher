@@ -107,7 +107,12 @@ export class RequestBrowser implements Browser {
     }
     public runXPath(xpath : string, attributes: string[]) : Promise<string[][]> {
         let nodes : Element[] = <Element[]> xpathQuery(xpath, this.doc);
-        return Promise.resolve(nodes.map(node => attributes.map(a => node.getAttribute(a))));
+        return Promise.resolve(nodes.map(node => attributes.map(a => {
+            if (a === "outerHTML") {
+                return xmlser.serializeToString(node, true);
+            }
+            return node.getAttribute(a);
+        })));
     }
     
     public getPageTitle() : Promise<string> {
