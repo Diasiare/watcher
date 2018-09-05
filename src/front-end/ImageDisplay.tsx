@@ -7,7 +7,7 @@ import TextField from 'material-ui/TextField';
 import Episode from './../types/FrontEndEpisode';
 import Flink from '../link/FrontLink';
 import ShowData from '../types/ShowData';
-
+import ShowDataCache from './ShowDataCache';
 
 import {resolve_width, resolve_width_int} from "./helpers";
 import  {extract_body, InteractiveXpath} from "./ShowAdder";
@@ -26,7 +26,8 @@ interface ImageDisplayProps {
 export class ImageDisplay extends React.Component {
     state : {
             current: Episode,
-            menu_open: boolean
+            menu_open: boolean,
+            final_episode: number
         };
 
     props : ImageDisplayProps; 
@@ -40,7 +41,8 @@ export class ImageDisplay extends React.Component {
         this.delete_current = this.delete_current.bind(this);
         this.state = {
             current: null,
-            menu_open: false
+            menu_open: false,
+            final_episode : 0
         };
     }
 
@@ -78,16 +80,28 @@ export class ImageDisplay extends React.Component {
             this.setState({current : episode}); 
             $('html, body').animate({scrollTop: 0}, 'fast')
         });
+        ShowDataCache.registerSingleShowCallback(this.props.show, "ImageDisplay", (data : ShowData) => {
+            if (data) {
+                this.setState({final_episode : data.episode_count});
+            }
+        })
     }
 
     componentWillReceiveProps(newProps : ImageDisplayProps) {
         if (this.props.show != newProps.show || this.props.type != newProps.type) {
             EpisodeNavigator.changeShow(newProps.show, newProps.type);
+            ShowDataCache.removeSingleShowCallback("ImageDisplay");
+            ShowDataCache.registerSingleShowCallback(newProps.show, "ImageDisplay", (data : ShowData) => {
+                if (data) {
+                    this.setState({final_episode : data.episode_count});
+                }
+            })
         }
     }
 
     componentWillUnmount() {
         EpisodeNavigator.removeCallback("ImageDisplay");
+        ShowDataCache.removeSingleShowCallback("ImageDisplay");
         $(document).off("keydown", this.on_key);
     }
 
@@ -98,7 +112,10 @@ export class ImageDisplay extends React.Component {
         let info = this.state.current ? this.state.current.data : null;
         elems.push(<ImageContainer episode={this.state.current}
                                    width={this.props.width}
-                                   navigate={this.navigate} key="container"/>);
+                                   navigate={this.navigate} 
+                                   key="container"
+                                   final_episode={this.state.final_episode}
+                                   />);
         elems.push(<NavElements navigate={this.navigate}
                                 width={this.props.width} flip_menu={this.flip_menu} delete_current={this.delete_current} key="nav"/>);
 
@@ -366,6 +383,7 @@ class NavButton extends React.Component {
 interface ImageConatainerProps {
         width : number;
         navigate : (string) => void,
+        final_episode: number,
         episode : Episode;
     }
 
@@ -380,7 +398,13 @@ class ImageContainer extends React.Component {
     render() {
         if (this.props.episode) {
             return (<div className="imageContainer" onClick={() => this.props.navigate("next")}>
-                    <Title title={this.props.episode.data.title}/>
+                    <div style={{
+                        display: "flex",
+                        flexDirection: "row",
+                    }}>
+                        <Title title={this.props.episode.data.title}/>
+                        <EpisodeCount max={this.props.final_episode} current={this.props.episode.number}/>
+                    </div>
                     <img src={this.props.episode.src} style={{
                         maxWidth: Math.min(1500, this.props.width - 4) + "px",
                     }}/>
@@ -404,7 +428,7 @@ function Title(props) {
     return <div style={{
         marginBottom: "5px",
         marginLeft: "5px",
-        width: "95%",
+        flex : "1 0 auto",
         textAlign: "left",
         fontSize: "16px",
         fontWeight: "bold",
@@ -437,12 +461,12 @@ function Description(props) {
     </Paper>
 }
 
-interface EpisodeSelectorProps {
-    start : number;
+interface EpisodeCountProps {
+    current : number;
     max : number;
 }
 
-class EpisodeSelector extends React.Component<EpisodeSelectorProps> {
+class EpisodeCount extends React.Component<EpisodeCountProps> {
 
     constructor(props) {
         super(props);
@@ -450,6 +474,12 @@ class EpisodeSelector extends React.Component<EpisodeSelectorProps> {
 
 
     render() {
-        return null;
+        return <div style={{
+            fontWeight : "bold",
+            flex : "1 0 auto",
+            textAlign: "right",
+        }} >
+            {this.props.current + " / " + this.props.max}
+        </div>
     }
 }
