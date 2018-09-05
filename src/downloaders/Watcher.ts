@@ -1,6 +1,5 @@
 import { Show } from "../data/Database";
 import * as Promise from 'bluebird';
-import { setInterval } from "timers";
 import NavigatorFactory from "./NavigatorFactory";
 import Navigator from "./Navigator";
 import ResourceExtractor from "./ResourceExtractor";

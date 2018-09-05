@@ -261,6 +261,7 @@ class Options extends React.Component {
                     }}
                     value={this.state.new_url}
                     onChange={(e : any) => this.setState({new_url: e.target.value})}
+                    onKeyDown={(e : React.KeyboardEvent<Element>) => e.nativeEvent.stopImmediatePropagation()}
                     hintText="New URL"/>
                 <RaisedButton
                     label="Restart"
@@ -434,4 +435,21 @@ function Description(props) {
     }}
                   dangerouslySetInnerHTML={{__html: props.text}}>
     </Paper>
+}
+
+interface EpisodeSelectorProps {
+    start : number;
+    max : number;
+}
+
+class EpisodeSelector extends React.Component<EpisodeSelectorProps> {
+
+    constructor(props) {
+        super(props);
+    }
+
+
+    render() {
+        return null;
+    }
 }

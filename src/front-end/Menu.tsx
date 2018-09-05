@@ -201,7 +201,7 @@ function BackupHandlers(props) {
                         let file = files[0];
                         let reader = new FileReader();
                         reader.onload = (e) => {
-                            let data : RawShow[] = JSON.parse(e.target.result);
+                            let data : RawShow[] = JSON.parse((e.target as any).result);
                             console.log(data);
                             Link.loadBackup(data).then(()=>navigate.list()).catch((e) => console.log('Error loding backup: ' + e));
                         }

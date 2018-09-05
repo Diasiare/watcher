@@ -24,6 +24,8 @@ Modify title when new episodes exist - DONE
 Split image_downloader into Resource selector, downloader, and navigator -DONE
 Use puppeteer or simmilar to enable scraping JS enabled pages - DONE
 Consolidate all navigation calls into a single class - DONE
+Allow for faster non puppeteer resource extraction when JS is not needed - DONE
+Make sure text editors aren't affected by key overrides - DONE
 Add input validation to backend (ts-dynamic-type-checker?)
 Add unit tests
 Document the backend
@@ -37,4 +39,3 @@ refactor direction to be an enum
 refactor new and reread to be an enum
 Remove all CSS
 Add an indicator and a selector of epiosode by number
-Allow for faster non puppeteer resource extraction when JS is not needed

@@ -91,6 +91,7 @@ export class InteractiveXpath extends React.Component<InteractiveXpathProps> {
                         value={this.props.val}
                         style={{width: "100%"}}
                         onChange={(e : React.FormEvent<HTMLFormElement>) => this.props.change(this.props.valName, e.currentTarget.value)}
+                        onKeyDown={(e : React.KeyboardEvent<Element>) => e.nativeEvent.stopImmediatePropagation()}
                         hintText={this.props.text}/>
                 </div>
             </div>)
@@ -101,6 +102,7 @@ export class InteractiveXpath extends React.Component<InteractiveXpathProps> {
                         value={this.props.val}
                         style={{width: "100%"}}
                         onChange={(e : React.FormEvent<HTMLFormElement>) => this.props.change(this.props.valName, e.currentTarget.value)}
+                        onKeyDown={(e : React.KeyboardEvent<Element>) => e.nativeEvent.stopImmediatePropagation()}
                         hintText={this.props.text}/>
                     <IconButton onClick={this.openClose}>
                         <DownArrow/>
@@ -127,6 +129,7 @@ export class InteractiveXpath extends React.Component<InteractiveXpathProps> {
                     value={this.props.val}
                     style={{width: "100%"}}
                     onChange={(e : React.FormEvent<HTMLFormElement>) => this.props.change(this.props.valName, e.currentTarget.value)}
+                    onKeyDown={(e : React.KeyboardEvent<Element>) => e.nativeEvent.stopImmediatePropagation()}
                     hintText={this.props.text}/>
                 <IconButton onClick={this.openClose}>
                     <UpArrow/>
@@ -173,6 +176,7 @@ export class InteractiveImage extends React.Component<InteractiveImageProps> {
                         value={this.props.val}
                         style={{width: "100%"}}
                         onChange={(e : React.FormEvent<HTMLFormElement>) => this.props.change(this.props.valName, e.currentTarget.value)}
+                        onKeyDown={(e : React.KeyboardEvent<Element>) => e.nativeEvent.stopImmediatePropagation()}
                         hintText={this.props.text}/>
                 </div>
             </div>)
@@ -183,6 +187,7 @@ export class InteractiveImage extends React.Component<InteractiveImageProps> {
                         value={this.props.val}
                         style={{width: "100%"}}
                         onChange={(e : React.FormEvent<HTMLFormElement>) => this.props.change(this.props.valName, e.currentTarget.value)}
+                        onKeyDown={(e : React.KeyboardEvent<Element>) => e.nativeEvent.stopImmediatePropagation()}
                         hintText={this.props.text}/>
                     <IconButton onClick={this.openClose}>
                         <DownArrow/>
@@ -197,6 +202,7 @@ export class InteractiveImage extends React.Component<InteractiveImageProps> {
                     value={this.props.val}
                     style={{width: "100%"}}
                     onChange={(e : React.FormEvent<HTMLFormElement>) => this.props.change(this.props.valName, e.currentTarget.value)}
+                    onKeyDown={(e : React.KeyboardEvent<Element>) => e.nativeEvent.stopImmediatePropagation()}
                     hintText={this.props.text}/>
                 <IconButton onClick={this.openClose}>
                     <UpArrow/>

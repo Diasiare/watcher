@@ -1,4 +1,3 @@
-import Resource from "./Resource";
 import Episode from "../types/Episode";
 import * as Promise from 'bluebird';
 import { Show } from "../data/Database";
