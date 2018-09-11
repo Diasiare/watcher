@@ -428,7 +428,7 @@ function Title(props) {
     return <div style={{
         marginBottom: "5px",
         marginLeft: "5px",
-        flex : "1 0 auto",
+        flex : "1 1 auto",
         textAlign: "left",
         fontSize: "16px",
         fontWeight: "bold",
