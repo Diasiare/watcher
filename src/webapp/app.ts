@@ -48,9 +48,6 @@ const setup_data_calls = function (): Promise<express.Express> {
              *
              */
             app.get('/data/shows/:show/:episode/:direction', (req, res) => {
-                res.set({
-                    "Cache-Control": "no-cache, no-store, must-revalidate"
-                })
                 Link.getRelativeEpisode(req.params.show, parseInt(req.params.episode), req.params.direction).then((data) => res.json(data)).catch((e) => {
                         console.error(e);
                         res.status(500).send(e.message);
@@ -62,9 +59,6 @@ const setup_data_calls = function (): Promise<express.Express> {
              *
              */
             app.get('/data/shows/', (req, res) => {
-                res.set({
-                    "Cache-Control": "no-cache, no-store, must-revalidate"
-                })
                 Link.getShowsData().then((data) => res.json(data)).catch((e) => {
                         console.error(e);
                         res.status(500).send(e.message);
@@ -76,9 +70,6 @@ const setup_data_calls = function (): Promise<express.Express> {
              *
              */
             app.get('/data/shows/:show', (req, res) => {
-                res.set({
-                    "Cache-Control": "no-cache, no-store, must-revalidate"
-                })
                 Link.getShowData(req.params.show).then((data) => res.json(data)).catch((e) => {
                         console.error(e);
                         res.status(500).send(e.message);
@@ -91,7 +82,6 @@ const setup_data_calls = function (): Promise<express.Express> {
              */
             app.get('/data/backup.json', (req, res) => {
                 res.set({
-                    "Cache-Control": "no-cache, no-store, must-revalidate",
                     "Content-Disposition": 'attachment; filename="backup.json"',
                     "Content-Type": "text/html"
                 })
