@@ -5,9 +5,10 @@
             "plural" : "Webcomics"
         },
         "navigationConfigurations" : {
-            "default" : [
+            "all" : [
                     {
-                        "class" : "sequence-navigator"
+                        "class" : "sequence-navigator",
+                        "optional" : true
                     }
                 ]
         },
@@ -29,9 +30,10 @@
             "plural" : "Manga"
         },
         "navigationConfigurations" : {
-            "default" : [
+            "all" : [
                     {
-                        "class" : "sequence-navigator"
+                        "class" : "sequence-navigator",
+                        "optional" : true
                     }
                 ]
         },

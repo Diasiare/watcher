@@ -1,24 +1,25 @@
-import * as Promise from 'bluebird' ;
-import * as fs from 'fs' ;
-import * as path from 'path' ;
-import * as shelljs from 'shelljs' ;
-import * as sqlite from 'sqlite' ;
+import * as Promise from 'bluebird';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as shelljs from 'shelljs';
+import * as sqlite from 'sqlite';
 import RawShow from '../types/RawShow';
 import ShowFields from '../types/Show';
 import ShowData from '../types/ShowData';
-import Episode from '../types/Episode' ;
-import {downloadImage} from "../downloaders/ImageUtil";
-import {Configuration, loadConfiguration} from "../configuration/Configuration";
+import Episode from '../types/Episode';
+import { downloadImage } from "../downloaders/ImageUtil";
+import { Configuration, loadConfiguration } from "../configuration/Configuration";
+const debug = require('debug')('watcher-database-databse');
 
 const mkdir = Promise.promisify(fs.mkdir);
 
 interface Config {
     shows: Map<string, Show>,
-    showConfig : Configuration.Configurations,
+    showConfig: Configuration.Configurations,
 }
 
 const location: string = process.env.WATCHER_LOCATION;
-const configLocation : string = process.env.WATCHER_CONFIG ? process.env.WATCHER_CONFIG : "./default-configuration.json" ; 
+const configLocation: string = process.env.WATCHER_CONFIG ? process.env.WATCHER_CONFIG : "./default-configuration.json";
 
 
 const model = {
@@ -47,10 +48,10 @@ const defaults = {
 export class Database {
     private static instance: Database = null;
     private static location: string = process.env.WATCHER_LOCATION;
-    private static configLocation : string = process.env.WATCHER_CONFIG ? process.env.WATCHER_CONFIG : "./default-configuration.json" ; 
+    private static configLocation: string = process.env.WATCHER_CONFIG ? process.env.WATCHER_CONFIG : "./default-configuration.json";
     private config: Config = {
         shows: new Map(),
-        showConfig : null
+        showConfig: null
     };
     public db: sqlite.Database = null;
     private loaded: boolean = false;
@@ -70,23 +71,24 @@ export class Database {
 
     private create_tables = (): Promise<any> => {
         return Promise.each(Object.keys(model), (t_name) => {
-                return this.db.exec("CREATE TABLE IF NOT EXISTS " + t_name + " ( " + model[t_name] + " )");
-            }
+            return this.db.exec("CREATE TABLE IF NOT EXISTS " + t_name + " ( " + model[t_name] + " )");
+        }
         );
     }
 
     private ensure_loaded = (): Promise<Config> => {
-        return new Promise((r) => {
-            if (!this.loaded) this.load_shows().then((shows) => {
+        if (!this.loaded) return loadConfiguration(Database.configLocation)
+            .then(showConf => {
+                debug("loaded configuration", showConf);
+                this.config.showConfig = showConf;
+            }).then(() => this.load_shows()).then((shows) => {
                 this.loaded = true;
-                r(Database.get_storage_location()
+                return Database.get_storage_location()
                     .then((dir) => shelljs.mkdir('-p', dir))
-                    .then(() => Promise.map(shows, this.perfrom_setup)
-                        .return(this.config)));
-            });
-            else r(this.config);
-        }).then((config : Config) => loadConfiguration(Database.configLocation)
-            .then(showConf => config.showConfig = showConf).return(config));
+                    .then(() => Promise.map(shows, this.perfrom_setup)).all();
+            }).return(this.config);
+        else return Promise.resolve(this.config);
+
     }
 
     private load_shows = (): Promise<ShowFields[]> => {
@@ -94,18 +96,18 @@ export class Database {
     }
 
     private resolve_show = (ritem: RawShow): Promise<ShowFields> => {
-        let item: ShowFields = <ShowFields> ritem;
+        let item: ShowFields = <ShowFields>ritem;
         return Promise.resolve(this.db.get("SELECT number , page_url , image_url FROM episodes WHERE show=? ORDER BY number DESC LIMIT 1"
             , item.identifier)).then((row) => {
-            if (row == undefined) {
-                item.number = 0;
-            } else {
-                item.number = row.number;
-                item.base_url = row.page_url;
-                item.last_episode_url = row.image_url;
-            }
-            return item;
-        });
+                if (row == undefined) {
+                    item.number = 0;
+                } else {
+                    item.number = row.number;
+                    item.base_url = row.page_url;
+                    item.last_episode_url = row.image_url;
+                }
+                return item;
+            });
     }
 
     private static get_storage_location = (): Promise<string> => {
@@ -167,7 +169,7 @@ export class Database {
     }
 
     public get_show_data = (identifier: string): Promise<ShowData> => {
-        let data: ShowData = <ShowData> {};
+        let data: ShowData = <ShowData>{};
         data.identifier = identifier;
         return Promise.resolve(this.db.all("SELECT number , type FROM last_read WHERE show=?", identifier))
             .map((row: { type: string, number: number }) => {
@@ -210,7 +212,7 @@ export class Database {
             return Promise.reject(new Error("Database already initalized"));
         }
         return Database.resolve_path(path)
-            .then((full_path) => sqlite.open(full_path, <any> {Promise}))
+            .then((full_path) => sqlite.open(full_path, <any>{ Promise }))
             .then((sql) => Database.instance.db = sql)
             .then(Database.instance.create_tables)
             .then(Database.instance.ensure_loaded);
@@ -283,10 +285,11 @@ export class Show implements ShowFields {
     next_xpath: string;
     image_xpath: string;
     text_xpath: string;
-    requireJS ?: boolean;
-    private configuration : Configuration.Configuration;
+    requireJS?: boolean;
+    navigator_configuration?: string;
+    private configuration: Configuration.Configuration;
 
-    constructor(base_show: ShowFields, configuration : Configuration.Configuration) {
+    constructor(base_show: ShowFields, configuration: Configuration.Configuration) {
         this.interval = base_show.interval ? base_show.interval : defaults.interval;
         this.directory = base_show.directory;
         this.thumbnail_dir = base_show.thumbnail_dir;
@@ -302,6 +305,7 @@ export class Show implements ShowFields {
         this.text_xpath = base_show.text_xpath;
         this.requireJS = base_show.requireJS;
         this.configuration = configuration;
+        this.navigator_configuration = base_show.navigator_configuration;
     }
 
 
@@ -321,7 +325,7 @@ export class Show implements ShowFields {
     }
 
     public get_show_data = (): Promise<ShowData> => {
-        let data: ShowData = <ShowData> {};
+        let data: ShowData = <ShowData>{};
         data.identifier = this.identifier;
         return Database.getInstance().then(db => db.db.all("SELECT number , type FROM last_read WHERE show=?", this.identifier))
             .map((row: { type: string, number: number }) => {
@@ -369,7 +373,7 @@ export class Show implements ShowFields {
     }
 
     public restart_from = (episode: number, new_url: string, next_xpath: string,
-                           image_xpath: string, text_xpath: string): Promise<string> => {
+        image_xpath: string, text_xpath: string): Promise<string> => {
         return this.get_show_data()
             .then(data => {
                 return Database.getInstance().then(db =>
@@ -433,24 +437,24 @@ export class Show implements ShowFields {
             .return(data);
     }
 
-    private episodePostParse(resp) : Promise<Episode>{
-            return new Promise((r, e) => {
-                    if (!resp || !resp.show) {
-                        e(new Error("Query failed - Could not find episode"));
-                        return;
-                    }
-                    let result: Episode = {
-                        identifier: resp.show,
-                        number: resp.number,
-                        url: resp.image_url,
-                        base_url: resp.page_url,
-                        thumbnail_name: "shows/" + resp.show + "/thumbnails/" + resp.number + ".jpg",
-                        filename : "shows/" + resp.show + "/" + resp.number + ".jpg",
-                        data: JSON.parse(resp.aditional_data)
-                    }
-                    r(result);
-         });
-        
+    private episodePostParse(resp): Promise<Episode> {
+        return new Promise((r, e) => {
+            if (!resp || !resp.show) {
+                e(new Error("Query failed - Could not find episode"));
+                return;
+            }
+            let result: Episode = {
+                identifier: resp.show,
+                number: resp.number,
+                url: resp.image_url,
+                base_url: resp.page_url,
+                thumbnail_name: "shows/" + resp.show + "/thumbnails/" + resp.number + ".jpg",
+                filename: "shows/" + resp.show + "/" + resp.number + ".jpg",
+                data: JSON.parse(resp.aditional_data)
+            }
+            r(result);
+        });
+
     }
 
     public get_episode_data = (episode_number: number): Promise<Episode> => {
@@ -490,11 +494,15 @@ export class Show implements ShowFields {
             .then((episode: number) => this.get_next(episode));
     }
 
-    public deleteEpiosde(index : number) : Promise<any> {
+    public deleteEpiosde(index: number): Promise<any> {
         return this.get_episode_data(index).then((episode) => [
-                Database.getInstance().then(db => db.db.get("DELETE FROM episodes WHERE show=? AND number=?", this.identifier, index)),
-                Promise.all([Database.resolve_path(episode.filename), Database.resolve_path(episode.thumbnail_name)]).map((file : string) => shelljs.rm(file))
-            ]).all();
+            Database.getInstance().then(db => db.db.get("DELETE FROM episodes WHERE show=? AND number=?", this.identifier, index)),
+            Promise.all([Database.resolve_path(episode.filename), Database.resolve_path(episode.thumbnail_name)]).map((file: string) => shelljs.rm(file))
+        ]).all();
+    }
+
+    public getConfiguration = (): Configuration.Configuration => {
+        return this.configuration;
     }
 
     public check_image_exists = (image_url: string): Promise<boolean> => {
@@ -502,10 +510,6 @@ export class Show implements ShowFields {
             $show: this.identifier,
             $image_url: image_url
         })).then((s) => !!s);
-    }
-
-    public getConfiguration() : Configuration.Configuration {
-        return this.configuration;
     }
 
 }

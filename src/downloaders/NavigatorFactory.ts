@@ -2,6 +2,7 @@ import { Show } from "../data/Database";
 import Navigator from "./Navigator";
 import * as Promise from 'bluebird';
 import {Browser} from './Browser';
+import {Configuration} from '../configuration/Configuration';
 const debug = require('debug')('watcher-navigator-factory');
 
 export const navigators = {
@@ -51,12 +52,40 @@ class BasicNavigator implements Navigator {
             })
             .then(() => browser);
     }
+}
 
+class NavigatorSequence implements Navigator {
+    private navigators : Navigator[];
+
+    constructor(navigators : Navigator[]) {
+        this.navigators = navigators;
+    }
+    
+    public next(browser : Browser) : Promise<Browser> {
+        if (this.navigators.length < 1) {
+            return Promise.reject(new Error("Out of navigators"));
+        }
+        return this.navigators[0].next(browser).catch((error) => {
+            debug("Navigation failed with error moving to next navigator", error);
+            this.navigators.shift();
+            return this.next(browser);
+        });
+    }
 }
 
 class NavigatorFactory {
     public getNavigator(show : Show) : Navigator {
-        return new BasicNavigator(show);
+        if (!show.navigator_configuration) {
+            return this.buildFrom(show, show.getConfiguration().navigationConfigurations["all"]);
+        } else {
+            return this.buildFrom(show, show.getConfiguration().navigationConfigurations[show.navigator_configuration]);
+        }
+    }
+
+    private buildFrom(show : Show, confs : Configuration.NavigationConfiguration[]) : Navigator {
+        return new NavigatorSequence(confs.map((conf) => {
+            return navigators[conf.class].constructor(show);
+        }));
     }
 }
 

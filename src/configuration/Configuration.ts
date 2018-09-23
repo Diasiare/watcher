@@ -1,6 +1,7 @@
 import {readFile} from "fs";
 import * as Promise from "bluebird";
 import {IContract, objOf, str, bool, arrOf, arr, num, optional, obj} from "ts-dynamic-type-checker";
+const debug = require('debug')('watcher-configuration');
 
 const numIndex = <T extends {[key : number] : any}>(x : T) : T => {
     Object.entries(x).forEach(([k, v])  => {
@@ -46,10 +47,12 @@ export namespace Configuration {
 
     export interface NavigationConfiguration {
         class: string;
+        optional?: boolean;
     }
 
     const NavigationConfigurationContract : IContract<NavigationConfiguration>= objOf({
-        class : str
+        class : str,
+        optional : optional(bool)
     })
 
     export interface NavigationConfigurations {
@@ -60,10 +63,12 @@ export namespace Configuration {
 
     export interface ResourceExtractor {
         class: string;
+        optional ?: boolean;
     }
 
     const ResourceExtractorContract : IContract<ResourceExtractor> = objOf({
         class : str,
+        optional : optional(bool)
     });
 
     export interface Preconfiguration {
@@ -106,6 +111,7 @@ export namespace Configuration {
 }
 
 export function loadConfiguration(path : string) : Promise<Configuration.Configurations> {
+    debug("loading configuration at ", path)
     return Promise.promisify(readFile)(path).then((buffer) => JSON.parse(buffer.toString()))
         .then(Configuration.ConfigurationsContract);
 }
