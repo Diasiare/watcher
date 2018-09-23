@@ -8,19 +8,22 @@
             "all" : [
                     {
                         "class" : "sequence-navigator",
-                        "optional" : true
+                        "optional" : false
                     }
                 ]
         },
         "resourceExtractors" : [
             {
-                "class" : "image-extractor"
+                "class" : "image-extractor",
+                "optional" : false
             },
             {
-                "class" : "title-extractor"
+                "class" : "title-extractor",
+                "optional" : false
             },
             {
-                "class" : "description-extractor"
+                "class" : "description-extractor",
+                "optional" : true
             }
         ]
     },
@@ -33,16 +36,18 @@
             "all" : [
                     {
                         "class" : "sequence-navigator",
-                        "optional" : true
+                        "optional" : false
                     }
                 ]
         },
         "resourceExtractors" : [
             {
-                "class" : "image-extractor"
+                "class" : "image-extractor",
+                "optional" : false
             },
             {
-                "class" : "title-extractor"
+                "class" : "title-extractor",
+                "optional" : false
             }
         ],
         "preconfigs" : {

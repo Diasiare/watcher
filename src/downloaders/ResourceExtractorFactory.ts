@@ -7,21 +7,26 @@ import * as url from 'url';
 import { Browser } from "./Browser";
 const debug = require('debug')('watcher-resource-extractor')
 
-export const resourceExtractors = {
+export const resourceExtractors : {
+    [key:string] : {
+    parameters : string[],
+    type : "global" | "primary",
+    constructor : (show : Show) => ResourceExtractor | SecondaryResourceExtractor
+}} = {
     "title-extractor" : {
         parameters : [],
         type : "global",
-        constrcutor : (show : Show) => new TitleExtractor()
+        constructor : (show : Show) => new TitleExtractor()
     },
     "image-extractor" : {
-        parameters : ["next_xpath"],
+        parameters : ["image_xpath"],
         type : "primary",
-        constrcutor : (show : Show) => new ImageResourceExtractor(show)
+        constructor : (show : Show) => new ImageResourceExtractor(show)
     },
     "description-extractor" : {
         parameters : ["text_xpath"],
         type : "global",
-        constrcutor : (show : Show) => new SimpleSecondaryResourceExtractor(show.text_xpath, "outerHTML", Resource.description)
+        constructor : (show : Show) => new SimpleSecondaryResourceExtractor(show.text_xpath, "outerHTML", Resource.description)
     }
 }
 
@@ -89,22 +94,6 @@ class TitleExtractor implements SecondaryResourceExtractor {
     }
  
 }
-
-class ResourceExtractorFactory {
-    public getResourceExtractor(show : Show) : ResourceExtractor {
-         let secondarys : SecondaryResourceExtractor[] = [new TitleExtractor()]; 
-
-        if (show.text_xpath) {
-            secondarys.push(
-                new SimpleSecondaryResourceExtractor(show.text_xpath, "outerHTML", Resource.description),
-            )
-        }
-
-        return new GroupingResourceExtractor(
-            new ImageResourceExtractor(show), secondarys);
-    }
-}
-
 class ImageResourceExtractor implements ResourceExtractor {
     private show : Show;
 
@@ -164,6 +153,31 @@ class GroupingResourceExtractor implements ResourceExtractor {
         })
     }
 }
+
+class ResourceExtractorFactory {
+    public getResourceExtractor(show : Show) : ResourceExtractor {
+        let secondarys : SecondaryResourceExtractor[] = <SecondaryResourceExtractor[]> this.buildExtractors(show, "global");
+
+
+        let primary : ResourceExtractor[] = <ResourceExtractor[]> this.buildExtractors(show, "primary");
+
+        if (primary.length != 1) {
+            throw new Error("Wronmg number of primary resource extractors created")
+        }
+
+        return new GroupingResourceExtractor(primary[0], secondarys);
+    }
+
+    private buildExtractors(show : Show, type : "global" | "primary") : (ResourceExtractor | SecondaryResourceExtractor)[] {
+        return show.getConfiguration().resourceExtractors
+            .filter((r) => resourceExtractors[r.class].type === type)
+            .filter((r) => {
+                return resourceExtractors[r.class].parameters.every((param) => show[param])
+            }).map(r => resourceExtractors[r.class].constructor(show)); 
+    }
+}
+
+
 
 
 export default new ResourceExtractorFactory();
