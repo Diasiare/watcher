@@ -208,7 +208,20 @@ const setup_data_calls = function (): Promise<express.Express> {
                     });
             })
             return app;
-        });;
+        }).then((app) => {
+            /*
+             * Get the configuration
+             */
+            app.get('/data/configurations', (req, res) => {
+                Link.getConfigurations()
+                    .then((conf) => res.json(conf))
+                    .catch((e) => {
+                        console.error(e);
+                        res.status(500).send(e.message);
+                    });
+            })
+            return app;
+        });
 }
 
 const setup_default = function (): void {

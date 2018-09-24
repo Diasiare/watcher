@@ -268,6 +268,10 @@ export class Database {
         this.config.shows.delete(identifier);
         return this;
     }
+
+    public getConfigurations() : Configuration.Configurations {
+        return this.config.showConfig;
+    }
 }
 
 

@@ -120,9 +120,17 @@ class FrontLink implements Link {
 		});
 	}
 
+	getConfigurations() : Promise<Configuration.Configurations> {
+		return FrontLink.doRequest("GET", { 
+			url : "/data/configurations",
+			dataType : "json"
+		})
+	}
+
 }
 
 const link : Link = new FrontLink() 
 export default link as Link;
 
 import ShowCache from "../front-end/ShowDataCache";
+import { Configuration } from '../configuration/Configuration';

@@ -4,6 +4,7 @@ import FrontEndEpisode from '../types/FrontEndEpisode';
 import RawShow from '../types/RawShow'
 import * as Promise from 'bluebird';
 import * as request from 'request' ;
+import { Configuration } from '../configuration/Configuration';
 const debug = require('debug')('watcher-back-link')
 
 
@@ -115,6 +116,10 @@ class BackLink implements Link {
 	deleteEpisode(identifier : string, episode : number) : Promise<void> {
 		return Database.getInstance().then(db => db.get_show(identifier))
             .then(show => show.deleteEpiosde(episode));
+	}
+
+	getConfigurations() : Promise<Configuration.Configurations> {
+		return Database.getInstance().then((db) => db.getConfigurations());
 	}
 }
 

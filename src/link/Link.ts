@@ -3,6 +3,7 @@ import ShowData from '../types/ShowData';
 import Show from '../types/Show';
 import RawShow from '../types/RawShow';
 import FrontEndEpisode from '../types/FrontEndEpisode';
+import { Configuration } from '../configuration/Configuration';
 
 export default interface Link {
 
@@ -29,4 +30,6 @@ export default interface Link {
 	deleteShow(identifier : string) : Promise<any>;
 
 	deleteEpisode(identifier : string, episode : number) : Promise<void>;
+
+	getConfigurations() : Promise<Configuration.Configurations>;
 }
