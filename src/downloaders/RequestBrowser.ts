@@ -28,7 +28,7 @@ function stripUriRecursive(v, e) {
 }
 
 const allocator : LimitedResourceAllocator<RequestBrowser, null> = new LimitedResourceAllocator(
-    2,
+    5,
     (b : null) => Promise.resolve(new RequestBrowser()),
     (browser : RequestBrowser) => Promise.resolve(),
     () => Promise.resolve(null),

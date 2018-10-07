@@ -30,7 +30,7 @@ const stop_watcher = function (show: Show): Promise<Show> {
 }
 
 const start_watchers = function (shows: Show[]): Promise<Show[]> {
-    return Promise.all(shows.map((show, i) => Promise.delay(i * 15 * 1000).then(() => add_watcher(show))));
+    return Promise.all(shows.map((show, i) => Promise.delay((i * 67 * 1000) % show.interval).then(() => add_watcher(show))));
 }
 
 export {
