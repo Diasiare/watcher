@@ -10,7 +10,8 @@
     "build": "(tsc --listFiles --listEmittedFiles || echo 'typescript has errors') && webpack",
     "tscd": "tsc -w",
     "webd": "webpack --watch --progress",
-    "try": "npm run build && npm start"
+    "try": "npm run build && npm start",
+    "debug": "npm run build && node --inspect --max_old_space_size=400 dist/server.js"
   },
   "dependencies": {
     "@types/body-parser": "^1.17.0",

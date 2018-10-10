@@ -107,6 +107,8 @@ export class PuppeteerBrowser implements Browser {
 
     
     public close() : Promise<void> {
-        return allocator.dealocate(this.page);
+        let p = allocator.dealocate(this.page);
+        this.page = undefined;
+        return p;
     }
 }

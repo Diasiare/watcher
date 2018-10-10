@@ -122,6 +122,8 @@ export class RequestBrowser implements Browser {
     }
     
     public close() : Promise<void> {
+        this.doc = undefined;
+        this.url = undefined;
         return allocator.dealocate(this);
     }
 }

@@ -39,10 +39,13 @@ export class Watcher {
             .then(() => browser);
     }
 
-    private cycleLoop(navigator : Navigator, resourceExtractor : ResourceExtractor) : (Browser : Browser) => Promise<Browser> {
+    private cycleLoop(navigator : Navigator, resourceExtractor : ResourceExtractor) : (browser : Browser) => Promise<void> {
         let itteration = this.singleCycle(navigator, resourceExtractor);
-        let f = <any> ((func) => (Browser) => itteration(Browser).then(() => func(func)(Browser)));
-        return (Browser : Browser) => f(f)(Browser);
+        return  (browser : Browser) => Promise.resolve((async () => {
+            while (true) {
+                browser = await itteration(browser);
+            }
+        })());
     }
 
     private cycle() : void {

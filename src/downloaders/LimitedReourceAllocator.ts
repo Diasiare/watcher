@@ -46,9 +46,9 @@ export class LimitedResourceAllocator<T, P> {
         this.activeCount--;
         let tmpParent = this.parent;
         this.parent = null;
-        return tmpParent.then(b => this.deInitializer(b));
+        return tmpParent.then(this.deInitializer);
     } else if (this.queue.length > 0){
-        this.queue.shift()(this.parent.then((b) => this.creator(b)));
+        this.queue.shift()(this.parent.then(this.creator));
         return Promise.resolve(this.deCreator(child));
     } else {
         this.activeCount--;
