@@ -73,6 +73,18 @@ export class RequestBrowser implements Browser {
                     return;
                 }
                 resolve(body);
+            }).on('error', (error) => {
+                if (error) {
+                    if (error.name && error.name == "ECONNRESET") {
+                        if (remainingAttemps > 0) {
+                            resolve(Promise.delay(50).then(() =>
+                                this.makeRequest(url, remainingAttemps - 1)));
+                            return;
+                        }
+                    }
+                    reject(error);
+                    return;
+                }
             })
         })
     }
