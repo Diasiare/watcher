@@ -112,7 +112,7 @@ const setup_data_calls = function (): Promise<express.Express> {
             return app;
         }).then((app) => {
             app.post('/data/shows/:show/:episode/:type', (req, res) => {
-                Link.updateLastRead(req.params.show, req.params.episode, req.params.type)
+                Link.updateLastRead(req.params.show, parseInt(req.params.episode), req.params.type)
                     .done();
                 res.end();
             });
@@ -145,7 +145,7 @@ const setup_data_calls = function (): Promise<express.Express> {
              */
             app.post('/data/shows/:show', (req, res) => {
                 let data = req.body;
-                Link.restartShow(req.params.show, data.episode, data.new_url,
+                Link.restartShow(req.params.show, parseInt(data.episode), data.new_url,
                             data.nextxpath, data.imxpath, data.textxpath)
                     .then(() => res.end())
                     .catch((e) => {
@@ -200,7 +200,7 @@ const setup_data_calls = function (): Promise<express.Express> {
              * Delete an episode
              */
             app.delete('/data/shows/:show/:episode', (req, res) => {
-                Link.deleteEpisode(req.params.show, req.params.episode)
+                Link.deleteEpisode(req.params.show, parseInt(req.params.episode))
                     .then(() => res.end())
                     .catch((e) => {
                         console.error(e);

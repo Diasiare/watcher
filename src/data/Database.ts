@@ -1,14 +1,17 @@
 import * as Promise from 'bluebird' ;
 import * as fs from 'fs' ;
 import * as path from 'path' ;
-import * as shelljs from 'shelljs' ;
-import * as sqlite from 'sqlite' ;
+import * as Nedb from 'nedb';
+import * as shelljs from 'shelljs';
 import RawShow from '../types/RawShow';
 import ShowFields from '../types/Show';
 import ShowData from '../types/ShowData';
 import Episode from '../types/Episode' ;
 import {downloadImage} from "../downloaders/ImageUtil";
-//const db = require('sqlite');
+import { ShowList } from '../front-end/ShowList';
+const debug = require('debug')('watcher-database');
+const qdebug = require('debug')('watcher-database-query');
+
 const mkdir = Promise.promisify(fs.mkdir);
 
 interface Config {
@@ -17,28 +20,101 @@ interface Config {
 
 const location: string = process.env.WATCHER_LOCATION;
 
-const model = {
-    shows: `identifier TEXT NOT NULL PRIMARY KEY,
-    data TEXT
-    `,
-    episodes: `show TEXT NOT NULL REFERENCES shows(identifier) ON DELETE CASCADE,
-    number INT NOT NULL,
-    image_url TEXT NOT NULL,
-    page_url TEXT NOT NULL,
-    aditional_data TEXT,
-    CONSTRAINT episodes_pkey PRIMARY KEY (show,number) ON CONFLICT REPLACE
-    `,
-    last_read: `show TEXT NOT NULL REFERENCES shows(identifier) ON DELETE CASCADE,
-    type TEXT NOT NULL,
-    number INT NOT NULL,
-    CONSTRAINT unread_pkey PRIMARY KEY(show,type) ON CONFLICT REPLACE
-    `
+interface DBShow {
+    identifier : string,
+    type : "show",
+    data : RawShow
+    new : number,
+    reread : number
+}
+
+interface DBEpisodeData {
+    image_url ?: string,
+    image_location ?: string,
+    title ?: string,
+    alt_text ?: string,
+    text ?: string[] 
+}
+
+interface DBEpisode {
+    type : "episode",
+    show : string,
+    number : number,
+    url ?: string,
+    data : {
+        image_url ?: string,
+        image_location ?: string,
+        title ?: string,
+        alt_text ?: string,
+        text ?: string[] 
+    }
 }
 
 const defaults = {
     interval: 30 * 60 * 1000 //30 Minutes
 }
 
+function exec<T>(cursor : Nedb.Cursor<any>) : Promise<T[]> {
+    return new Promise((resolve, reject) => {
+        cursor.exec((err, docs) => {
+            if (err) {
+                qdebug("exec failed ", err);
+                reject(err);
+            } else {
+                qdebug("exec returned ", docs);
+                resolve(docs);
+            }
+        })
+    })
+}
+
+function exec1<T>(cursor : Nedb.Cursor<any>) : Promise<T> {
+    return exec<T>(cursor.limit(1)).any();
+}
+
+function insert(db : Nedb, data: any) : Promise<void> {
+    return new Promise((resolve, reject) => {
+        db.insert(data, (error, doc) => {
+            if (error) {
+                qdebug("insert failed ", error);
+                reject(error);
+            } else {
+                qdebug("insert returned ", doc);
+                resolve();
+            }
+        })
+    })
+} 
+
+function update(db : Nedb, query: any, update : any, options ?: any) : Promise<number> {
+    if (!options) options = {};
+    return new Promise((resolve, reject) => {
+        db.update(query, update, options, (error, number) => {
+            if (error) {
+                qdebug("update failed ", error);
+                reject(error);
+            } else {
+                qdebug("update returned ", number);
+                resolve(number);
+            }
+        })
+    })
+}
+
+function remove(db : Nedb, query: any, options ?: { multi ?: boolean }) : Promise<number> {
+    if (!options) options = {};
+    return new Promise((resolve, reject) => {
+        db.remove(query, options, (error, number) => {
+            if (error) {
+                qdebug("remove failed ", error);
+                reject(error);
+            } else {
+                qdebug("remove returned ", number);
+                resolve(number);
+            }
+        })
+    })
+}
 
 export class Database {
     private static instance: Database = null;
@@ -46,7 +122,7 @@ export class Database {
     private config: Config = {
         shows: new Map()
     };
-    public db: sqlite.Database = null;
+    public db: Nedb = null;
     private loaded: boolean = false;
 
 
@@ -58,14 +134,7 @@ export class Database {
         console.log("DATABASE CLOSED")
         this.loaded = false;
         Database.instance = null;
-        return Promise.resolve(this.db.close());
-    }
-
-    private create_tables = (): Promise<any> => {
-        return Promise.each(Object.keys(model), (t_name) => {
-                return this.db.exec("CREATE TABLE IF NOT EXISTS " + t_name + " ( " + model[t_name] + " )");
-            }
-        );
+        return Promise.resolve();
     }
 
     private ensure_loaded = (): Promise<Config> => {
@@ -82,22 +151,23 @@ export class Database {
     }
 
     private load_shows = (): Promise<ShowFields[]> => {
-        return this.get_pure_shows().map(this.resolve_show);
+        debug("loading shows")
+        return this.get_pure_shows().map(this.resolve_show).tap(() => debug("Shows loaded"));
     }
 
     private resolve_show = (ritem: RawShow): Promise<ShowFields> => {
         let item: ShowFields = <ShowFields> ritem;
-        return Promise.resolve(this.db.get("SELECT number , page_url , image_url FROM episodes WHERE show=? ORDER BY number DESC LIMIT 1"
-            , item.identifier)).then((row) => {
-            if (row == undefined) {
+        return new Promise((resolve, reject) => this.db.find({type:"episode", show: item.identifier}).sort({number: -1}).limit(1).exec((e, rows: DBEpisode[]) => {
+            if (rows.length == 0) {
                 item.number = 0;
             } else {
+                let row = rows[0];
                 item.number = row.number;
-                item.base_url = row.page_url;
-                item.last_episode_url = row.image_url;
+                item.base_url = row.url;
+                item.last_episode_url = row.data.image_url;
             }
-            return item;
-        });
+            resolve(item);
+        }));
     }
 
     private static get_storage_location = (): Promise<string> => {
@@ -146,24 +216,20 @@ export class Database {
     }
 
     public get_pure_shows = (): Promise<RawShow[]> => {
-        return Promise.resolve(this.db.all("SELECT data FROM shows"))
-            .map((show: { data: string }) => Promise.resolve(JSON.parse(show.data)));
+        return exec<DBShow>(this.db.find({type : "show"})).map((show : DBShow) => show.data);
     }
 
     public get_pure_show = (identifier: string): Promise<RawShow> => {
-        return Promise.resolve(this.db.get("SELECT data FROM shows WHERE identifier=?", identifier))
-            .then((show: { data: string }) => {
-                if (show) return Promise.resolve(JSON.parse(show.data));
-                else return show;
-            });
+        return exec<DBShow>(this.db.find({type : "show", identifier : identifier}).limit(1)).any().then((show : DBShow) => show.data);
     }
 
     public get_show_data = (identifier: string): Promise<ShowData> => {
         let data: ShowData = <ShowData> {};
         data.identifier = identifier;
-        return Promise.resolve(this.db.all("SELECT number , type FROM last_read WHERE show=?", identifier))
-            .map((row: { type: string, number: number }) => {
-                data[row.type] = row.number;
+        return exec<DBShow>(this.db.find({type : "show", identifier : identifier}).limit(1)).any()
+        .then((row : DBShow) => {
+                data.new = row.new;
+                data.reread = row.reread;
             })
             .then(() => this.get_show(identifier))
             .then((show: ShowFields) => {
@@ -202,9 +268,9 @@ export class Database {
             return Promise.reject(new Error("Database already initalized"));
         }
         return Database.resolve_path(path)
-            .then((full_path) => sqlite.open(full_path, <any> {Promise}))
+            .then((full_path) => new Nedb({ filename: full_path, autoload: true }))
             .then((sql) => Database.instance.db = sql)
-            .then(Database.instance.create_tables)
+            .tap(() => debug("Database created"))
             .then(Database.instance.ensure_loaded);
     }
 
@@ -217,19 +283,20 @@ export class Database {
     }
 
     private insert_new_show = (data: RawShow): Promise<RawShow> => {
-        var identifier = data.identifier;
-        var aditional_data = JSON.stringify(data);
-        return Promise.resolve("").then(() => this.db.run("INSERT INTO shows VALUES(?,?)", identifier, aditional_data))
-            .then(() => this.db.run("INSERT INTO last_read VALUES(?,?,?)", identifier, "reread", 1))
-            .then(() => this.db.run("INSERT INTO last_read VALUES(?,?,?)", identifier, "new", 1))
-            .return(data);
+        let show : DBShow = {
+            type : "show",
+            identifier : data.identifier,
+            data : data,
+            new : 0,
+            reread : 0
+        }
+        return insert(this.db, show).return(data);
     }
 
 
     public start_show = (identifier: string): Promise<ShowFields> => {
-        return Promise.resolve(identifier)
-            .then(() => this.db.get("SELECT data FROM shows WHERE identifier=?", identifier))
-            .then((r) => JSON.parse(r.data))
+        return exec<DBShow>(this.db.find({type: "show", identifier : identifier}).limit(1)).any()
+            .then((r: DBShow) => r.data)
             .then(this.resolve_show)
             .then(this.perfrom_setup)
             .then(manager.add_watcher);
@@ -237,7 +304,7 @@ export class Database {
     }
 
     public add_new_show = (show: RawShow): Promise<Show> => {
-        return this.get_pure_show(show.identifier)
+        return this.get_pure_show(show.identifier).catch((or) => null)
             .then((os) => {
                 //Don't update if no chnages have been made
                 if (os && Object.keys(show).every((k) => os[k] == show[k])
@@ -313,11 +380,10 @@ export class Show implements ShowFields {
     public get_show_data = (): Promise<ShowData> => {
         let data: ShowData = <ShowData> {};
         data.identifier = this.identifier;
-        return Database.getInstance().then(db => db.db.all("SELECT number , type FROM last_read WHERE show=?", this.identifier))
-            .map((row: { type: string, number: number }) => {
-                data[row.type] = row.number;
-            })
-            .then(() => {
+        return Database.getInstance().then(db => exec1<DBShow>(db.db.find({type : "show", identifier : this.identifier})))
+            .then((sdata : DBShow) => {
+                data.new = sdata.new;
+                data.reread = sdata.reread;
                 data.episode_count = this.number;
                 data.name = this.name;
                 data.type = this.type;
@@ -331,28 +397,19 @@ export class Show implements ShowFields {
 
     public update_last_read = (number: number, type: string): Promise<any> => {
         if (type != "new")
-            return Database.getInstance().then(db => db.db.run("UPDATE last_read SET number=$number WHERE show=$show AND type=$type",
-                {
-                    $number: Math.min(this.number, number),
-                    $show: this.identifier,
-                    $type: type
-                }));
-        else
-            return Promise.all([Database.getInstance(), this.get_show_data()])
-                .then(([db, data]) => db.db.run("UPDATE last_read SET number=$number WHERE show=$show AND type=$type",
-                    {
-                        $number: Math.min(Math.max(number, data[type]), this.number),
-                        $show: this.identifier,
-                        $type: type
-                    }));
+            return Database.getInstance().then(db => update(db.db, {type : "show", identifier : this.identifier}, {
+                $set :{reread : Math.min(this.number, number) }
+            }))
+        else return Database.getInstance().then(db => update(db.db, {type : "show", identifier : this.identifier}, {
+            $max :{new : Math.min(this.number, number) }
+        }))
     }
 
     public delete_show = (): Promise<void> => {
         return Database.getInstance().then(db => db.deregister_show(this.identifier))
             .then(db => manager.stop_watcher(this.identifier)
-                .then(() => db.db.run("DELETE FROM shows WHERE identifier=?", this.identifier))
-                .then(() => db.db.run("DELETE FROM episodes WHERE show=?", this.identifier))
-                .then(() => db.db.run("DELETE FROM last_read WHERE show=?", this.identifier))
+                .then(() => remove(db.db, {type : "show", identifier : this.identifier}))
+                .then(() => remove(db.db, {type : "episode", show : this.identifier}, {multi : true}))
                 .then(() => shelljs.rm("-rf", this.directory))
                 .catch(console.error)
             );
@@ -360,6 +417,7 @@ export class Show implements ShowFields {
 
     public restart_from = (episode: number, new_url: string, next_xpath: string,
                            image_xpath: string, text_xpath: string): Promise<string> => {
+        debug("restarting show", this.identifier, " from ", episode);
         return this.get_show_data()
             .then(data => {
                 return Database.getInstance().then(db =>
@@ -367,16 +425,21 @@ export class Show implements ShowFields {
                         .then(() => db.deregister_show(this.identifier))
                         .then(() => manager.stop_watcher(this))
                         .then()
-                        .then(() => db.db.run("DELETE FROM episodes WHERE show=? AND number > ?", this.identifier, episode))
-                        .then(() => db.db.run("UPDATE last_read SET number=? WHERE show=? AND type=?",
-                            Math.min(Math.min(episode, data["new"]), this.number), this.identifier, "new"))
-                        .then(() => db.db.run("UPDATE last_read SET number=? WHERE show=? AND type=?",
-                            Math.min(Math.min(episode, data["reread"]), this.number), this.identifier, "reread"))
+                        .then(() =>remove(db.db, {type : "episode", show : this.identifier, number : {$gt : episode}}, {multi : true}))
+                        .tap((n) => debug("deleted ", n, "episodes"))
+                        .then(() => update(db.db, {type : "show", identifier : this.identifier}, {
+                            $min :{reread : episode }
+                        }))
+                        .tap((n) => debug("show is now after new update", n))
+                        .then(() => update(db.db, {type : "show", identifier : this.identifier}, {
+                            $min : {new : episode }
+                        }))
+                        .tap((n) => debug("show is now after reread update", n))
                         .then(() => {
                             if (new_url) {
-                                return Promise.resolve()
-                                    .then(() => db.db.run("UPDATE episodes SET page_url=? WHERE show=? AND number=?",
-                                        new_url, this.identifier, episode));
+                                return update(db.db, {type : "episode", show : this.identifier, number: episode}, {
+                                    $set :{url : new_url }
+                                }).tap((n) => debug("episode is now", n))
                             }
                         })
                         .then(() => {
@@ -387,10 +450,9 @@ export class Show implements ShowFields {
                                             if (next_xpath) pure_data.next_xpath = next_xpath;
                                             if (image_xpath) pure_data.image_xpath = image_xpath;
                                             if (text_xpath) pure_data.text_xpath = text_xpath;
-                                            return db.db.run("UPDATE shows SET data=? WHERE identifier=?",
-                                                JSON.stringify(pure_data),
-                                                this.identifier)
-                                        }).return(this.identifier));
+                                            return update(db.db, {type : "show", identifier : this.identifier}, {
+                                                $set :{data : pure_data }
+                                            })}).return(this.identifier));
                             } else {
                                 return this.identifier;
                             }
@@ -404,15 +466,19 @@ export class Show implements ShowFields {
 
 
     public insert_new_episode = (data: Episode): Promise<Episode> => {
-        var identifier = data.identifier;
-        var number = data.number;
-        var image_url = data.url;
-        var page_url = data.base_url;
-        var aditional_data = {};
+        var aditional_data : DBEpisodeData = {};
         if ('data' in data) aditional_data = data.data;
-        aditional_data = JSON.stringify(aditional_data);
+        aditional_data.image_url = data.url;
+        let ep : DBEpisode = {
+            type : "episode",
+            show : this.identifier,
+            number : data.number,
+            url : data.base_url,
+            data : aditional_data
+        }
+
         return Database.getInstance()
-            .then(db => db.db.run("INSERT INTO episodes VALUES(?,?,?,?,?)", identifier, number, image_url, page_url, aditional_data))
+            .then(db => insert(db.db, ep))
             .then(() => {
                 if (this.number < data.number) {
                     this.number = data.number;
@@ -423,7 +489,7 @@ export class Show implements ShowFields {
             .return(data);
     }
 
-    private episodePostParse(resp) : Promise<Episode>{
+    private episodePostParse(resp : DBEpisode) : Promise<Episode>{
             return new Promise((r, e) => {
                     if (!resp || !resp.show) {
                         e(new Error("Query failed - Could not find episode"));
@@ -432,11 +498,11 @@ export class Show implements ShowFields {
                     let result: Episode = {
                         identifier: resp.show,
                         number: resp.number,
-                        url: resp.image_url,
-                        base_url: resp.page_url,
+                        url: resp.data.image_url,
+                        base_url: resp.url,
                         thumbnail_name: "shows/" + resp.show + "/thumbnails/" + resp.number + ".jpg",
                         filename : "shows/" + resp.show + "/" + resp.number + ".jpg",
-                        data: JSON.parse(resp.aditional_data)
+                        data: resp.data
                     }
                     r(result);
          });
@@ -444,8 +510,8 @@ export class Show implements ShowFields {
     }
 
     public get_episode_data = (episode_number: number): Promise<Episode> => {
-        return Database.getInstance().then(db => db.db.get("SELECT * FROM episodes WHERE show=? AND number=? LIMIT 1", this.identifier, episode_number))
-            .then((resp) => this.episodePostParse(resp))
+        return Database.getInstance().then(db => exec1<DBEpisode>(db.db.find({type : "episode", show : this.identifier, number : episode_number}))
+            .then((resp) => this.episodePostParse(resp)))
     }
 
     public get_episode_page_url = (episode_number: number): Promise<string> => {
@@ -453,24 +519,24 @@ export class Show implements ShowFields {
             .then((episode) => episode.base_url);
     }
     public get_first = (): Promise<Episode> => {
-        return Database.getInstance().then(db => db.db.get("SELECT *, MIN(number) FROM episodes WHERE show=?", this.identifier))
-            .then((resp) => this.episodePostParse(resp));
+        return Database.getInstance().then(db => exec1<DBEpisode>(db.db.find({type : "episode", show : this.identifier}).sort({number : 1}))
+            .then((resp) => this.episodePostParse(resp)));
     }
 
     public get_last = (): Promise<Episode> => {
-        return Database.getInstance().then(db => db.db.get("SELECT *, MAX(number) FROM episodes WHERE show=?", this.identifier))
-            .then((resp) => this.episodePostParse(resp));
+        return Database.getInstance().then(db => exec1<DBEpisode>(db.db.find({type : "episode", show : this.identifier}).sort({number : -1}))
+            .then((resp) => this.episodePostParse(resp)));
 
     }
 
     public get_next = (episode_number: number): Promise<Episode> => {
-        return Database.getInstance().then(db => db.db.get("SELECT *, MIN(number) FROM episodes WHERE show=? AND number > ?", this.identifier, episode_number))
+        return Database.getInstance().then(db => exec1<DBEpisode>(db.db.find({type : "episode", show : this.identifier, number : {$gt : episode_number}}).sort({number : 1})))
             .then((resp) => this.episodePostParse(resp)).catch((e) => this.get_episode_data(episode_number)).catch(() => undefined);
     }
 
 
     public get_prev = (episode_number: number): Promise<Episode> => {
-        return Database.getInstance().then(db => db.db.get("SELECT *, MAX(number) FROM episodes WHERE show=? AND number < ?", this.identifier, episode_number))
+        return Database.getInstance().then(db => exec1<DBEpisode>(db.db.find({type : "episode", show : this.identifier, number : {$lt : episode_number}}).sort({number : -1})))
             .then((resp) => this.episodePostParse(resp)).catch((e) => this.get_episode_data(episode_number)).catch(() => undefined);
     }
 
@@ -481,17 +547,15 @@ export class Show implements ShowFields {
     }
 
     public deleteEpiosde(index : number) : Promise<any> {
-        return this.get_episode_data(index).then((episode) => [
-                Database.getInstance().then(db => db.db.get("DELETE FROM episodes WHERE show=? AND number=?", this.identifier, index)),
+        debug("Trying to delete episode", index, " for show ", this.name);
+        return this.get_episode_data(index).tap(v => debug("Got epiosde for deletion", v)).then((episode) => [
+                Database.getInstance().then(db => remove(db.db, {type : "episode", show : this.identifier, number : episode.number})).tap((v) => debug("Deleted epiosde ", v)),
                 Promise.all([Database.resolve_path(episode.filename), Database.resolve_path(episode.thumbnail_name)]).map((file : string) => shelljs.rm(file))
             ]).all();
     }
 
     public check_image_exists = (image_url: string): Promise<boolean> => {
-        return Database.getInstance().then(db => db.db.get("SELECT image_url FROM episodes WHERE show=$show AND image_url=$image_url LIMIT 1", {
-            $show: this.identifier,
-            $image_url: image_url
-        })).then((s) => !!s);
+        return Database.getInstance().then(db => exec1<DBEpisode>(db.db.find({type : "episode", show : this.identifier, "data.image_url" : image_url}))).catch(() => false).then((s) => !!s);
     }
 
 }

@@ -92,7 +92,9 @@ export class RequestBrowser implements Browser {
     private extractBody(body: string) : Document{
         var document = parse5.parse(body);
         var xhtml = xmlser.serializeToString(document);
-        var doc = new DOMParser().parseFromString(xhtml);
+        var doc = new DOMParser({
+            errorHandler: () => {}
+        }).parseFromString(xhtml);
         return stripUri(doc);
     }
 

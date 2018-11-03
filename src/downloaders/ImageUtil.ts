@@ -21,6 +21,8 @@ export function downloadImage(url : string, targetFolder : string, name : string
                 headers: {
                     'User-Agent': "request",
                 }
+            }).on('error', (e) => {
+                error(e);
             }))
         }
 

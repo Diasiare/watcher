@@ -69,7 +69,7 @@ export class Watcher {
     }
 
     public stop() : void {
-        this.interval.cancel();
-        this.currentRun.cancel();
+        if (this.interval) this.interval.cancel();
+        if (this.currentRun) this.currentRun.cancel();
     }
 }
