@@ -6,8 +6,9 @@ import * as Promise from "bluebird";
 const debug = require('debug')('watcher-image-utils');
 
 
-export function downloadImage(url : string, targetFolder : string, name : string) : Promise<any> {
-    return new Promise((r, error) => {
+export function downloadImage(url : string, targetFolder : string, name : string, retries : number) : Promise<any> {
+    debug("Downloading", url, "to", targetFolder, "with name", name, "retries left", retries);
+    return new Promise((r, reject) => {
         let filename = path.join(targetFolder, name + ".jpg");
         let image;
         if (url.startsWith("data:")) {
@@ -21,17 +22,27 @@ export function downloadImage(url : string, targetFolder : string, name : string
                 headers: {
                     'User-Agent': "request",
                 }
-            }))
+            }).on('error', (error => {
+                debug("Problem downloading image", error)
+                reject(error)
+            })));
         }
 
         image.selectFrame(0)
             .flatten()
             .write(filename, (e) => {
-                if (e) error(e);
+                if (e) {
+                    debug("Problem writing image", e);
+                    reject(e);
+                }
                 else r(filename);
             });
     }).catch(error => {
         debug("Failed to download ", url, "to ", name, " due to " , error);
+        if (retries > 0) {
+            debug("Retrying image download")
+            return Promise.delay(100).then(() => downloadImage(url, targetFolder, name , retries - 1));
+        }
         throw error;
     });
 }

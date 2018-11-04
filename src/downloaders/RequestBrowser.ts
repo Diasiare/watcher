@@ -59,12 +59,12 @@ export class RequestBrowser implements Browser {
                 method: 'GET',
                 gzip: true,
                 encoding: "utf-8",
-                timeout : 60 * 1000,
                 headers: {
                     'User-Agent': "request",
                 }
             }, function (error, response, body) {
                 if (error) {
+                    debug("Got error", error)
                     reject(error);
                     return;
                 } else {
@@ -87,7 +87,8 @@ export class RequestBrowser implements Browser {
                 debug("Retrying");
                 return Promise.delay(50).then(() => this.makeRequest(url, remainingAttemps - 1));
             }
-        });
+            throw error;
+        }).delay(100);
     }
 
     private extractBody(body: string) : Document{

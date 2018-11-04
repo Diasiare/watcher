@@ -24,7 +24,7 @@ const gm : any = magick.subClass({imageMagick: true});
 import { Database, Show } from "../data/Database";
 import * as path from 'path';
 import {downloadImage} from "./ImageUtil" ;
-
+const debug = require('debug')('watcher-downloader-factory')
 class ImageDownloader implements Downloader {
 
     private url : string;
@@ -45,11 +45,13 @@ class ImageDownloader implements Downloader {
     }
 
     download(episode: Episode, show : Show): Promise<Episode> {
-
+        debug("Downloading image", episode)
         let filename = episode.number + ".jpg";
         let thumbnailPath = path.join(show.thumbnail_dir, filename);
-        return downloadImage(this.url, show.directory, episode.number + "")
+        return downloadImage(this.url, show.directory, episode.number + "", 5)
+            .tap(() => debug("Image downloaded creating thumbnail"))
             .then((filepath) => this.createThumbnail(filepath, thumbnailPath))
+            .tap(() => debug("thumbnail created"))
             .then(() => episode);
     }
 
