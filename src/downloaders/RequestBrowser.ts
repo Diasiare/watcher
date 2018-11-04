@@ -59,24 +59,17 @@ export class RequestBrowser implements Browser {
                 method: 'GET',
                 gzip: true,
                 encoding: "utf-8",
-                timeout : 120 * 1000,
+                timeout : 60 * 1000,
                 headers: {
                     'User-Agent': "request",
                 }
             }, function (error, response, body) {
                 if (error) {
-                    debug("Got error", error);
-                    if (error.code && error.code == "ECONNRESET") {
-                        if (remainingAttemps > 0) {
-                            resolve(Promise.delay(50).then(() =>
-                                this.makeRequest(url, remainingAttemps - 1)));
-                            return;
-                        }
-                    }
                     reject(error);
                     return;
+                } else {
+                    resolve(body);
                 }
-                resolve(body);
             })
             // .on('error', (error) => {
             //      debug("Got error in on error", error);
@@ -89,6 +82,11 @@ export class RequestBrowser implements Browser {
             //     reject(error);
             //      return;
             //  })
+        }).catch((error) => {
+            if (remainingAttemps > 0) {
+                debug("Retrying");
+                return Promise.delay(50).then(() => this.makeRequest(url, remainingAttemps - 1));
+            }
         });
     }
 
