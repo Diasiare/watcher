@@ -59,6 +59,7 @@ export class RequestBrowser implements Browser {
                 method: 'GET',
                 gzip: true,
                 encoding: "utf-8",
+                timeout : 120 * 1000,
                 headers: {
                     'User-Agent': "request",
                 }
@@ -76,27 +77,27 @@ export class RequestBrowser implements Browser {
                     return;
                 }
                 resolve(body);
-            }).on('error', (error) => {
-                debug("Got error in on error", error);
-                if (error && error.name && error.name == "ECONNRESET") {
-                    if (remainingAttemps > 0) {
-                        resolve(Promise.delay(50).then(() => this.makeRequest(url, remainingAttemps - 1)));
-                        return;
-                    }
-                }
-                reject(error);
-                return;
             })
-        }).timeout(60 * 1000, "Request took too long").catch((e) => {
-            debug("error in request", e);
-            throw e;
+            // .on('error', (error) => {
+            //      debug("Got error in on error", error);
+            //      if (error && error.name && error.name == "ECONNRESET") {
+            //          if (remainingAttemps > 0) {
+            //             resolve(Promise.delay(50).then(() => this.makeRequest(url, remainingAttemps - 1)));
+            //             return;
+            //          }
+            //      }
+            //     reject(error);
+            //      return;
+            //  })
         });
     }
 
     private extractBody(body: string) : Document{
         var document = parse5.parse(body);
         var xhtml = xmlser.serializeToString(document);
-        var doc = new DOMParser().parseFromString(xhtml);
+        var doc = new DOMParser({
+            errorHandler: (level,msg) => debug(level,msg)
+        }).parseFromString(xhtml);
         return stripUri(doc);
     }
 

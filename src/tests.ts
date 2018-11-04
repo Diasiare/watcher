@@ -83,7 +83,7 @@ function getWatcher() {
         getWatcher().stop();
     }), show);
     watcher.start();
-  })();
+  });
 
   (async () => {
     const browser = await getPuppeteerBrowser(false);
@@ -161,7 +161,7 @@ function getWatcher() {
             }).all().return(browser))
         .then((browser) => nav.next(browser))
         .then((browser)=>res.extract(browser).then((v) => {
-            console.log("Got 1 ", JSON.stringify(v))
+            console.log("Got 2 ", JSON.stringify(v))
                 if (v.length < 1) {
                     failedCount++;
                 }
@@ -176,4 +176,4 @@ function getWatcher() {
         }
         console.log("Ending: " + show.name);
     }
-  });
+  })();
