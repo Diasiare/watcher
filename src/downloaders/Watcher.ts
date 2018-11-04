@@ -32,8 +32,9 @@ export class Watcher {
         return (browser) => navigator.next(browser)
             .then((browser) => resourceExtractor.extract(browser))
             .map(([episode, resources] : [Episode, Resource[]]) => 
-                Promise.reduce(resources, (episode ,resource) => DownloaderFactory.getDownloader(resource).download(episode, this.show), episode)            
+                Promise.reduce(resources, (episode ,resource) => DownloaderFactory.getDownloader(resource).download(episode, this.show), episode)
             )
+            .tap((episode) => debug("Inserting epiosde", episode))
             .map((episode : Episode) => this.show.insert_new_episode(episode))
             .then(() => console.log("CONTINUING " + this.show.name + " AT EPISODE " + this.show.number))
             .then(() => browser);

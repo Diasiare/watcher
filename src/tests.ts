@@ -55,12 +55,12 @@ function getWatcher() {
     console.log("started")
 
     let show : any = <any>{
-        "identifier": "sd",
-        "name": "Skin Deep",
-        "base_url": "http://www.skindeepcomic.com/reader-questions/2018-reader-question-98/",
-        "logo": "http://www.skindeepcomic.com/wp-content/uploads/2011/08/wordpresslogo10251.jpg",
-        "next_xpath": "//a[@rel='next']",
-        "image_xpath": "//div[@class='webcomic-image scroll']//img",
+        "identifier": "doa",
+        "name": "Dumbing of Age",
+        "base_url": "http://www.dumbingofage.com/2018/comic/book-9-comic/01-flyin-to-the-red/exhaustive/",
+        "logo": "http://www.dumbingofage.com/wp-content/uploads/2010/09/patreonheader.png",
+        "next_xpath": "//a[@title='Next']",
+        "image_xpath": "//div[@id='comic']//img",
         "type": "webcomic",
         interval: 30 * 60 * 1000,
         number : 1,
@@ -83,7 +83,7 @@ function getWatcher() {
         getWatcher().stop();
     }), show);
     watcher.start();
-  });
+  })();
 
   (async () => {
     const browser = await getPuppeteerBrowser(false);
@@ -176,4 +176,4 @@ function getWatcher() {
         }
         console.log("Ending: " + show.name);
     }
-  })();
+  });

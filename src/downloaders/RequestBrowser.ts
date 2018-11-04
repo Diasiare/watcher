@@ -8,6 +8,7 @@ import * as Promise from 'bluebird';
 import { LimitedResourceAllocator } from "./LimitedReourceAllocator";
 import * as url from "url";
 const xpathQuery : uninitalized_xpath.XPathSelect = uninitalized_xpath.useNamespaces({"x": "http://www.w3.org/1999/xhtml"});
+const debug = require('debug')('watcher-browser-request');
 
 function stripUri(doc : Document) : Document{
     let v = new Set();
@@ -51,7 +52,8 @@ export class RequestBrowser implements Browser {
 
     
     private makeRequest(url : string, remainingAttemps : number) : Promise<string> {
-        return new Promise(function (resolve, reject) {
+        return new Promise<string>(function (resolve, reject) {
+            debug("Sending request to ", url, " remanding attempts ", remainingAttemps);
             request({
                 url: url,
                 method: 'GET',
@@ -62,6 +64,7 @@ export class RequestBrowser implements Browser {
                 }
             }, function (error, response, body) {
                 if (error) {
+                    debug("Got error", error);
                     if (error.code && error.code == "ECONNRESET") {
                         if (remainingAttemps > 0) {
                             resolve(Promise.delay(50).then(() =>
@@ -74,19 +77,20 @@ export class RequestBrowser implements Browser {
                 }
                 resolve(body);
             }).on('error', (error) => {
-                if (error) {
-                    if (error.name && error.name == "ECONNRESET") {
-                        if (remainingAttemps > 0) {
-                            resolve(Promise.delay(50).then(() =>
-                                this.makeRequest(url, remainingAttemps - 1)));
-                            return;
-                        }
+                debug("Got error in on error", error);
+                if (error && error.name && error.name == "ECONNRESET") {
+                    if (remainingAttemps > 0) {
+                        resolve(Promise.delay(50).then(() => this.makeRequest(url, remainingAttemps - 1)));
+                        return;
                     }
-                    reject(error);
-                    return;
                 }
+                reject(error);
+                return;
             })
-        })
+        }).timeout(60 * 1000, "Request took too long").catch((e) => {
+            debug("error in request", e);
+            throw e;
+        });
     }
 
     private extractBody(body: string) : Document{
