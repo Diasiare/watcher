@@ -52,6 +52,7 @@
     "sqlite": "^2.9.2",
     "sqlite3": "^4.2.0",
     "style-loader": "^0.18.2",
+    "ts-dynamic-type-checker": "0.0.13",
     "webtorrent": "^0.98.20",
     "xmldom": "^0.1.27",
     "xmlserializer": "0.6.0",

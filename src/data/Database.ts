@@ -133,7 +133,7 @@ export class Database {
             .catch(console.error)
             .then(() => {
                 if (show.logo && !fs.existsSync(path.join(show.directory, "logo.jpg"))) {
-                    return downloadImage(show.logo, show.directory, "logo")
+                    return downloadImage(show.logo, show.directory, "logo", 1)
                         .catch((e) => {
                             delete show.logo;
                         })

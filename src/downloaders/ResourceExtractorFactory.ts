@@ -30,39 +30,6 @@ export const resourceExtractors : {
     }
 }
 
-function createDownloadRace(page, xpath, attrNames) : Promise<string[][]>[] {
-    let promises = [];
-    for (let i = 0; i < 4; i++) {
-        promises.push(
-            Promise.delay(i * 2000)
-            .then((() => page.evaluate((xpath, attrNames) => {
-                try {
-                    let results = [];
-                    let query = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_ITERATOR_TYPE, null);
-                    let r = query.iterateNext();
-                    console.log(r);
-                    while(r) {
-                        results.push(attrNames.map(name => (<any>r)[name]));
-                        r = query.iterateNext();
-                    }
-                    return results;
-                } catch (e) {
-                    return attrNames.map(() => null);
-                }
-    
-            }, xpath, attrNames)))
-            .timeout(5000 ,"Failed to get information")
-        );
-    }
-    return promises;
-}
-
-function getAttribute(page : Page, xpath : string ,attrNames : string[]) : Promise<string[][]>{
-    return Promise.delay(1000).tap(() => debug("Starting xpath " + xpath + " attrNames" + attrNames))
-    .then(() => createDownloadRace(page, xpath, attrNames))
-    .any<string[][]>().tap((value : string[][]) => debug("Ran xpath " + xpath + " attrNames" + attrNames + " result " + value));
-}
-
 interface  SecondaryResourceExtractor {
     extract(browser : Browser) : Promise<Resource[]> ;
 }
@@ -87,10 +54,8 @@ class SimpleSecondaryResourceExtractor implements SecondaryResourceExtractor {
 }
 
 class TitleExtractor implements SecondaryResourceExtractor {
-    public extract(page : Page) : Promise<Resource[]> {
-        return Promise.resolve(page.waitForFunction("document.title"))
-        .then(() => page.title())
-        .then(title => [Resource.title(title)])  
+    public extract(browser : Browser) : Promise<Resource[]> {
+        return  browser.getPageTitle().then((title) => [Resource.title(title)]);
     }
  
 }
