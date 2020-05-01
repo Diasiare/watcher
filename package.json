@@ -50,7 +50,7 @@
     "request-promise": "^4.2.2",
     "shelljs": "^0.7.8",
     "sqlite": "^2.9.2",
-    "sqlite3": "^3.1.13",
+    "sqlite3": "^4.2.0",
     "style-loader": "^0.18.2",
     "webtorrent": "^0.98.20",
     "xmldom": "^0.1.27",
