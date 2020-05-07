@@ -20,6 +20,7 @@ import IconMenu from 'material-ui/IconMenu';
 import Badge from 'material-ui/Badge';
 import RawShow from '../types/RawShow';
 import Link from '../link/FrontLink';
+import { Configuration } from '../configuration/Configuration';
 
 
 var navigate : Navigator = null;
@@ -35,15 +36,20 @@ export class Menu extends React.Component {
 
     state : {
         open : boolean,
+        configuration: Configuration.Configurations,
     }
 
     props : MenuProps;
 
     constructor(props: MenuProps) {
         super(props);
-        this.state = {open: false};
+        this.state = {
+            open: false,
+            configuration: {},
+        };
         this.set_open = this.set_open.bind(this);
         this.change = this.change.bind(this);
+        Link.getConfigurations().then(configuration => this.setState({configuration}));
     }
 
     componentWillMount() {
@@ -61,7 +67,7 @@ export class Menu extends React.Component {
     render() {
         return <div>
             <ShortMenu action={this.change} width={this.props.width}/>
-            <MenuDrawer open={this.state.open} action={this.set_open}/>
+            <MenuDrawer open={this.state.open} action={this.set_open} configuration={this.state.configuration}/>
         </div>;
     }
 }
@@ -77,6 +83,7 @@ class ShortMenu extends React.Component {
 
     state : {
         new_shows : any[],
+        configuration:  Configuration.Configurations,
     }
 
     props : ShortMenuProps;
@@ -84,8 +91,11 @@ class ShortMenu extends React.Component {
     constructor(props : ShortMenuProps) {
         super(props);
         this.state = {
-            new_shows: []
+            new_shows: [],
+            configuration: {},
         }
+
+        Link.getConfigurations().then(configuration => this.setState({configuration}));
     }
 
     componentWillMount() {
@@ -154,8 +164,8 @@ class ShortMenu extends React.Component {
                       targetOrigin={{horizontal: 'left', vertical: 'top'}}
             >
                 <MenuItem primaryText="All" onClick={() => navigate.list()}/>
-                <MenuItem primaryText="Webcomics" onClick={() => navigate.list("webcomic")}/>
-                <MenuItem primaryText="Manga" onClick={() => navigate.list("manga")}/>
+                {Object.entries(this.state.configuration).map(([key, config]) => 
+                <MenuItem primaryText={config.displayname.plural} onClick={() => navigate.list(key)}/>)}
                 <MenuItem primaryText="Backup" rightIcon={<ArrowDropRight/>} menuItems={[
                     <MenuItem primaryText="Download" onClick={this.setSource}/>,
 
@@ -215,16 +225,19 @@ function BackupHandlers(props) {
 }
 
 
-function MenuDrawer(props) {
-    let types = ["webcomic", "manga"];
+function MenuDrawer(props : {
+    open: boolean, 
+    action: (state: boolean) => void,
+    configuration: Configuration.Configurations
+}) {
     return <Drawer
         docked={false}
         open={props.open}
         onRequestChange={props.action}
     >
         <SelectableList>
-            {types.map((item) => {
-                return <SubMenu name={item} key={item}/>
+            {Object.entries(props.configuration).map(([key, content]) => {
+                return <SubMenu config={content} configKey={key} key={key}/>
             })}
         </SelectableList>
     </Drawer>
@@ -288,7 +301,8 @@ function NavButton(props) {
 
 
 interface SubMenuProps { 
-    name : string,
+    config: Configuration.Configuration,
+    configKey: string,
 }
 
 class SubMenu extends React.Component {
@@ -311,13 +325,13 @@ class SubMenu extends React.Component {
     }
 
     componentWillMount() {
-        ShowCache.registerAllShowsCallback("SubMenu:" + this.props.name, (shows) => this.setState({
-            shows : shows.filter((show) => show.type == this.props.name)
+        ShowCache.registerAllShowsCallback("SubMenu:" + this.props.configKey, (shows) => this.setState({
+            shows : shows.filter((show) => show.type == this.props.configKey)
         }));
     }
 
     componentWillUnmount() {
-        ShowCache.removeAllShowsCallback("SubMenu:" + this.props.name);
+        ShowCache.removeAllShowsCallback("SubMenu:" + this.props.configKey);
     }
 
     change() {
@@ -325,7 +339,7 @@ class SubMenu extends React.Component {
     }
 
     render() {
-        let name = this.props.name.charAt(0).toUpperCase() + this.props.name.slice(1) + "s"
+        let name = this.props.config.displayname.plural;
         if (!this.state.shows) {
             return <ListItem>
                 {name}
