@@ -4,13 +4,9 @@
             "singular" : "Webcomic",
             "plural" : "Webcomics"
         },
-        "navigationConfigurations" : {
-            "all" : [
-                    {
-                        "class" : "sequence-navigator",
-                        "optional" : false
-                    }
-                ]
+        "navigationConfiguration" : {
+            "class" : "sequence-navigator",
+            "optional" : false
         },
         "resourceExtractors" : [
             {
@@ -32,13 +28,9 @@
             "singular" : "Manga",
             "plural" : "Manga"
         },
-        "navigationConfigurations" : {
-            "all" : [
-                    {
-                        "class" : "sequence-navigator",
-                        "optional" : false
-                    }
-                ]
+        "navigationConfiguration" : {
+            "class" : "sequence-navigator",
+            "optional" : false
         },
         "resourceExtractors" : [
             {
@@ -50,7 +42,7 @@
                 "optional" : false
             }
         ],
-        "preconfigs" : {
+        "defaults" : {
             "mangareader" : {
                 "image-extractor" : {
                     "image_xpath" : "//div[@id='imgholder']/a/img"

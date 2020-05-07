@@ -15,6 +15,10 @@ import {DOMParser as dom} from 'xmldom';
 import * as url from 'url';
 import navigate from "./Navigator";
 import {resolve_width} from "./helpers";
+import { Configuration } from '../configuration/Configuration';
+import { MuiThemeProvider } from 'material-ui/styles';
+import { navigators } from '../downloaders/NavigatorFactory';
+import { resourceExtractors } from '../downloaders/ResourceExtractorFactory';
 
 const manga_sources = [{
     name: "Mangareader"
@@ -216,6 +220,11 @@ export class InteractiveImage extends React.Component<InteractiveImageProps> {
     }
 }
 
+function paramToName(param: string): string {
+    let words = param.split("_");
+    words = words.map((word) => word.substring(0,1).toUpperCase() + word.substring(1));
+    return words.join(" ");
+}
 
 interface ShowAdderProps {
     width : number,
@@ -224,41 +233,51 @@ interface ShowAdderProps {
 export class ShowAdder extends React.Component<ShowAdderProps> {
 
     state : {
-            showType: number,
+            configuration ?: Configuration.Configurations,
+            preconfiguration ?: Configuration.Preconfigurations,
+            showType?: string,
             contentsValid: boolean,
             identifier: string,
             name: string,
             baseUrl: string,
-            imxpath: string,
-            nextxpath:string,
-            textxpath: string,
+            image_xpath?: string,
+            text_xpath?: string,
+            next_xpath?: string,
             logo:string,
-            manga_type: number,
-            doc: any
+            doc?: any
     };
 
     constructor(props) {
         super(props);
         this.state = {
-            showType: 1,
             contentsValid: false,
             identifier: "",
             name: "",
             baseUrl: "",
-            imxpath: "",
-            nextxpath: "",
-            textxpath: "",
             logo: "",
-            manga_type: 0,
-            doc: null
         }
         this.showTypeDropdownChange = this.showTypeDropdownChange.bind(this);
+        this.preconfigDropdownChange = this.preconfigDropdownChange.bind(this);
         this.change = this.change.bind(this);
         this.create_show = this.create_show.bind(this);
+        Link.getConfigurations().then((config) => this.setState({configuration : config}));
     }
 
     showTypeDropdownChange(event, index, value) {
-        this.setState({showType: value});
+        this.setState({
+            showType: value,
+            preconfiguration: undefined,
+        });
+    }
+
+    preconfigDropdownChange(event, index, value: Configuration.Preconfigurations) {
+        const newState = {
+            preconfiguration: value,
+        };
+
+        Object.values(value).forEach((v) => Object.entries(v).forEach(([k,v]) => newState[k] = v));
+
+        this.setState(newState);
     }
 
     change(s, v) {
@@ -274,25 +293,26 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
         this.setState(tmp, this.validate);
     }
 
+    requiredProps(includeOptional : boolean) : string[] {
+        if (!this.state.showType) return [];
+        
+        const config = this.state.configuration[this.state.showType];
+        const rw : string[] = []
+        const navClass = config.navigationConfiguration.class;
+        navigators[navClass].parameters.forEach(p => rw.push(p));
+        
+        const exts = config.resourceExtractors;
+        const extParams = exts.filter(v => includeOptional || !v.optional).map((ext) => resourceExtractors[ext.class].parameters);
+        extParams.forEach(ps => ps.forEach(p => rw.push(p)));
+        return rw;
+    }
+
     validate() {
         let valid = false;
         let s = this.state;
-        valid = valid
-            || Boolean(s.showType == 2
-                && s.identifier
-                && s.name
-                && s.nextxpath
-                && s.imxpath
-                && s.baseUrl)
-            || Boolean(s.showType == 3
-                && s.identifier
-                && s.name
-                && s.baseUrl
-            );
+        valid = s.identifier && s.showType && !!s.name;
 
-        //Force valid to be a boolan, otherwise it might be a string or smth
-        if (valid) valid = true;
-        else valid = false;
+        valid = this.requiredProps(false).map(p => !!this.state[p]).reduce((valid, present) => valid && present, valid);
 
         if (valid != s.contentsValid) {
             this.setState({contentsValid: !s.contentsValid})
@@ -306,19 +326,9 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
             data.identifier = s.identifier;
             data.name = s.name;
             data.base_url = s.baseUrl;
+            data.type = s.showType;
             if (s.logo) data.logo = s.logo;
-            if (s.showType == 2) {
-                data.next_xpath = s.nextxpath;
-                data.image_xpath = s.imxpath;
-                data.type = "webcomic"
-                if (s.textxpath) {
-                    data.text_xpath = s.textxpath;
-                }
-            } else if (s.showType == 3) {
-                data.type = "manga";
-                data.next_xpath = manga_sources[s.manga_type].next_xpath;
-                data.image_xpath = manga_sources[s.manga_type].image_xpath;
-            }
+            this.requiredProps(true).forEach(prop => data[prop] = s[prop]);
 
             Link.newShow(data).then((data) => navigate.showPage(data.identifier))
                 .catch((e) => alert(e.message));
@@ -327,19 +337,35 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
 
     render() {
         let remainder = [];
-        let r2_extra = [];
 
+        if (!this.state.configuration) return <div></div>;
 
-        if ([3].includes(this.state.showType)) {
-            r2_extra.push(<DropDownMenu key="manga_source"
-                                        value={this.state.manga_type}
-                                        onChange={(event, index, value) => this.change("manga_type", value)}>
-                {manga_sources.map((m, i) => <MenuItem key={i} value={i} primaryText={m.name}/>)}
-            </DropDownMenu>);
-        }
+        const showTypes = Object.entries(this.state.configuration)
+            .map(([name, val] : [string, Configuration.Configuration]) => 
+                <MenuItem value={name} primaryText={val.displayname.singular} />);
 
+        const topRow = <div style={{width: "100%", display : "flex"}}>
+                <h1 className="pageTitle">
+                    Add new show
+                </h1>
+                <DropDownMenu value={this.state.showType}
+                              onChange={this.showTypeDropdownChange}
+                              style={{alignSelf:"flex-end"}}>
+                    {[<MenuItem value={undefined} primaryText="Select Type"/>]
+                    .concat(showTypes)}
+                  
+                </DropDownMenu>
+                <RaisedButton
+                    label="Submit"
+                    onClick={this.create_show}
+                    style={{alignSelf:"flex-end"}}
+                    disabled={!this.state.contentsValid}/>
 
-        if ([2, 3].includes(this.state.showType)) {
+        </div>
+
+        if (this.state.showType) {
+            const config = this.state.configuration[this.state.showType];
+
             remainder.push(
                 <TextField
                     key="baseUrl"
@@ -348,67 +374,49 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
                     onChange={(e : React.FormEvent<HTMLFormElement>) => this.change("baseUrl", e.currentTarget.value)}
                     hintText="Start URL"/>
             );
-        }
 
-
-        if ([2].includes(this.state.showType)) {
-            remainder.push(
-                <InteractiveXpath
-                    key="imxpath"
-                    text="Image Xpath"
-                    valName="imxpath"
-                    val={this.state.imxpath}
-                    doc={this.state.doc}
-                    url={this.state.baseUrl}
-                    change={this.change}/>
-            );
-            remainder.push(
-                <InteractiveXpath
-                    key="nextxpath"
-                    text="Next Xpath"
-                    valName="nextxpath"
-                    val={this.state.nextxpath}
-                    doc={this.state.doc}
-                    url={this.state.baseUrl}
-                    change={this.change}/>
-            );
-            remainder.push(
-                <InteractiveXpath
-                    key="textxpath"
-                    text="Text Xpath"
-                    valName="textxpath"
-                    val={this.state.textxpath}
-                    doc={this.state.doc}
-                    url={this.state.baseUrl}
-                    change={this.change}/>
-            );
-        }
-
-
-        return <div className="showAdder columnFelx center" style={{width: resolve_width(this.props.width)}}>
-            <div className="rowFlex">
-                <h1 className="pageTitle">
-                    Add new show
-                </h1>
-                <DropDownMenu value={this.state.showType}
-                              onChange={this.showTypeDropdownChange}>
-                    <MenuItem value={1} primaryText="Select Type"/>
-                    <MenuItem value={2} primaryText="Webcomic"/>
-                    <MenuItem value={3} primaryText="Manga"/>
-                </DropDownMenu>
-                <div style={{width: "100%", paddingRight: "10px"}}>
+            if (config.defaults) {
+                remainder.push(<div key="logo" style={{display: "flex"}}>
+                    <div style={{flex : "1"}}>
+                        <InteractiveImage
+                            text="Logo Url"
+                            valName="logo"
+                            change={this.change}
+                            val={this.state.logo}/>
+                    </div>
+                    <DropDownMenu value={this.state.preconfiguration}
+                              onChange={this.preconfigDropdownChange}>
+                                  
+                    {[<MenuItem value={undefined} primaryText="Select Preconfig"/>].concat(
+                                  Object.entries(config.defaults).map(([name, val])=><MenuItem value={val} primaryText={name}/>))}
+                    </DropDownMenu>
+                </div>)
+            } else {
+                remainder.push(
+                <div style={{width: "100%", paddingRight: "10px"}} key="logo">
                     <InteractiveImage
                         text="Logo Url"
                         valName="logo"
                         change={this.change}
                         val={this.state.logo}/>
-                </div>
-                <div>
-                    <RaisedButton
-                        label="Submit"
-                        onClick={this.create_show}
-                        disabled={!this.state.contentsValid}/>
-                </div>
+                </div>)
+            }
+            
+
+            this.requiredProps(true).map((paramName) => <InteractiveXpath 
+                key={paramName}
+                text={paramToName(paramName)}
+                valName={paramName}
+                val={this.state[paramName]}
+                doc={this.state.doc}
+                url={this.state.baseUrl}
+                change={this.change}
+            />).forEach(v => remainder.push(v));
+        }
+
+        return <div className="showAdder columnFelx center" style={{width: resolve_width(this.props.width)}}>
+            <div className="rowFlex">
+                {topRow}
             </div>
             <div className="rowFlex">
                 <TextField
@@ -421,7 +429,6 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
                     style={{flexGrow: 1}}
                     onChange={(e : React.FormEvent<HTMLFormElement>) => this.change("name", e.currentTarget.value)}
                     hintText="Name"/>
-                {r2_extra}
             </div>
             <div className="columnFelx" style={{width: "100%"}}>
                 {remainder}

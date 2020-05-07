@@ -5,7 +5,12 @@ import {Browser} from './Browser';
 import {Configuration} from '../configuration/Configuration';
 const debug = require('debug')('watcher-navigator-factory');
 
-export const navigators = {
+export const navigators : {
+    [key :string] : {
+        parameters : string[],
+        constructor: (show: Show) => Navigator,
+    }
+} = {
     "sequence-navigator" :  {
         parameters : ["next_xpath"],
         constructor : (show) => new BasicNavigator(show)
@@ -75,17 +80,11 @@ class NavigatorSequence implements Navigator {
 
 class NavigatorFactory {
     public getNavigator(show : Show) : Navigator {
-        if (!show.navigator_configuration) {
-            return this.buildFrom(show, show.getConfiguration().navigationConfigurations["all"]);
-        } else {
-            return this.buildFrom(show, show.getConfiguration().navigationConfigurations[show.navigator_configuration]);
-        }
+        return this.buildFrom(show, show.getConfiguration().navigationConfiguration);
     }
 
-    private buildFrom(show : Show, confs : Configuration.NavigationConfiguration[]) : Navigator {
-        return new NavigatorSequence(confs.map((conf) => {
-            return navigators[conf.class].constructor(show);
-        }));
+    private buildFrom(show : Show, conf: Configuration.NavigationConfiguration) : Navigator {
+        return navigators[conf.class].constructor(show);
     }
 }
 

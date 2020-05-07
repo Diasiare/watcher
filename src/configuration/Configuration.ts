@@ -53,13 +53,7 @@ export namespace Configuration {
     const NavigationConfigurationContract : IContract<NavigationConfiguration>= objOf({
         class : str,
         optional : optional(bool)
-    })
-
-    export interface NavigationConfigurations {
-        [key: string]: NavigationConfiguration[];
-    }
-
-    const NavigationConfigurationsContract : IContract<NavigationConfigurations> = strIndexOf(arrOf(NavigationConfigurationContract));
+    });
 
     export interface ResourceExtractor {
         class: string;
@@ -91,14 +85,14 @@ export namespace Configuration {
 
     export interface Configuration {
         displayname: Displayname;
-        navigationConfigurations: NavigationConfigurations;
+        navigationConfiguration: NavigationConfiguration;
         resourceExtractors: ResourceExtractor[];
         defaults ?: Defaults;
     }
 
     const ConfigurationContract : IContract<Configuration> = objOf({
         displayname : DisplaynameContract,
-        navigationConfigurations : NavigationConfigurationsContract,
+        navigationConfiguration : NavigationConfigurationContract,
         resourceExtractors : arrOf(ResourceExtractorContract),
         defaults : optional(DefaultsContract)
     });
@@ -115,5 +109,3 @@ export function loadConfiguration(path : string) : Promise<Configuration.Configu
     return Promise.promisify(readFile)(path).then((buffer) => JSON.parse(buffer.toString()))
         .then(Configuration.ConfigurationsContract);
 }
- 
-
