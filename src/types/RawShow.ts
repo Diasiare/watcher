@@ -1,12 +1,11 @@
-export default interface RawShow {
+import ShowParameters from "./ShowParameters";
+
+export default interface RawShow extends ShowParameters {
     identifier: string;
     name: string;
     type: string;
     logo?: string;
     base_url: string;
-    next_xpath: string;
-    image_xpath: string;
-    text_xpath: string;
     requireJS?: boolean;
     navigator_configuration?: string;
 }

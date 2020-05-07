@@ -139,14 +139,12 @@ const setup_data_calls = function (): Promise<express.Express> {
              * Body componenets:
              *   episode: the episode to restart from (String parsable to int)
              *   new_url: the new page url of episode
-             *   nextpath: the new next_xpath that the show should use from now
-             *   imxpath: the new image xpath the show should use from now
-             *   textxpath: the new text xpath that the show should use from now 
+             *   params: the new show params
              */
             app.post('/data/shows/:show', (req, res) => {
                 let data = req.body;
                 Link.restartShow(req.params.show, data.episode, data.new_url,
-                            data.nextxpath, data.imxpath, data.textxpath)
+                            data.params)
                     .then(() => res.end())
                     .catch((e) => {
                         console.error(e);

@@ -5,6 +5,7 @@ import RawShow from '../types/RawShow'
 import * as Promise from 'bluebird';
 import * as request from 'request' ;
 import { Configuration } from '../configuration/Configuration';
+import ShowParameters from '../types/ShowParameters';
 const debug = require('debug')('watcher-back-link')
 
 
@@ -79,9 +80,9 @@ class BackLink implements Link {
 		return Promise.reject(new Error("Redownload currently not supported"));
 	}
 
-	restartShow(identifier : string, episode : number , new_url : string, nextxpath: string , imxpath : string, textxpath : string) : Promise<any> {
+	restartShow(identifier : string, episode : number , new_url : string, params: ShowParameters) : Promise<any> {
 		return Database.getInstance().then(db => db.get_show(identifier))
-                        .then(show => show.restart_from(episode, new_url, nextxpath, imxpath, textxpath));
+                        .then(show => show.restart_from(episode, new_url, params));
 	}
 
 	newShow(showData : RawShow) : Promise<Show> {

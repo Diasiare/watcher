@@ -9,9 +9,11 @@ import Flink from '../link/FrontLink';
 import ShowData from '../types/ShowData';
 import ShowDataCache from './ShowDataCache';
 
-import {resolve_width, resolve_width_int} from "./helpers";
+import {resolve_width, resolve_width_int, requiredProps, paramToName} from "./helpers";
 import  {extract_body, InteractiveXpath} from "./ShowAdder";
 import ShowCache from "./ShowDataCache";
+import ShowParameters from '../types/ShowParameters';
+import { Configuration } from '../configuration/Configuration';
 
 function get_url_for(show, episode, read_type) {
     return "/read/" + show + "/" + episode + "/" + read_type;
@@ -176,9 +178,8 @@ class Options extends React.Component {
 
     state : {
         new_url: string,
-        imxpath: string,
-        nextxpath: string,
-        textxpath: string,
+        params: ShowParameters,
+        configuration: Configuration.Configurations,
         doc
     }
 
@@ -189,40 +190,40 @@ class Options extends React.Component {
         super(props);
         this.state = {
                 new_url : this.props.episode.base_url,
-                imxpath: "",
-                nextxpath: "",
-                textxpath: "",
+                params: {},
+                configuration: {},
                 doc : null,
         }
 
         this.restart = this.restart.bind(this);
         this.updateShow = this.updateShow.bind(this);
+
+        Flink.getConfigurations().then(configuration => this.setState({configuration}, () => this.paramTransfer()));
     }
 
     restart() {
-        Flink.restartShow(this.props.episode.identifier, this.props.episode.number, this.state.new_url,
-            this.state.nextxpath == this.show.next_xpath ? "" : this.state.nextxpath,
-            this.state.imxpath == this.show.image_xpath ? "" : this.state.imxpath,
-            this.state.textxpath == this.show.text_xpath ? "" : this.state.textxpath)
+        const new_params : ShowParameters = {};
+        Object.entries(this.state.params).forEach(([key, value]) => {
+            if (value && value !== this.show[key]) {
+                new_params[key] = value;
+            }
+        })
+
+        Flink.restartShow(this.props.episode.identifier, this.props.episode.number, this.state.new_url, new_params)
             .then(() => location.reload())
             .catch((e) => alert(e.message));
     }
 
     updateShow(show : ShowData) {
         this.show = show;
-        if (show) {
-            this.setState({
-                imxpath: show.image_xpath,
-                nextxpath: show.next_xpath,
-                textxpath: show.text_xpath,
-            })
-        } else {
-            this.setState({
-                imxpath: "",
-                nextxpath: "",
-                textxpath: "",
-            })
-        }
+        this.paramTransfer();
+    }
+
+    paramTransfer() {
+        this.setState({params: requiredProps(this.state.configuration[this.show.type], true).reduce((p, v)=> {
+            p[v] = this.show[v];
+            return p;
+        }, {})});
     }
 
     componentWillMount() {
@@ -287,30 +288,20 @@ class Options extends React.Component {
                     }}
                     onClick={this.restart}/>
             </div>
-            <InteractiveXpath
-                key="imxpath"
-                text="Image Xpath"
-                valName="imxpath"
-                val={this.state.imxpath}
-                doc={this.state.doc}
-                url={this.props.episode.base_url}
-                change={(name, value) => this.setState({imxpath : value})}/>
-            <InteractiveXpath
-                key="nextxpath"
-                text="Next Xpath"
-                valName="nextxpath"
-                val={this.state.nextxpath}
-                doc={this.state.doc}
-                url={this.props.episode.base_url}
-                change={(name, value) => this.setState({nextxpath : value})}/>
-            <InteractiveXpath
-                key="textxpath"
-                text="Text Xpath"
-                valName="textxpath"
-                val={this.state.textxpath}
-                doc={this.state.doc}
-                url={this.props.episode.base_url}
-                change={(name, value) => this.setState({textxpath : value})}/>
+            {requiredProps(this.state.configuration[this.show.type], true).map(prop => {
+                return <InteractiveXpath
+                    key={prop}
+                    text={paramToName(prop)}
+                    valName={prop}
+                    val={this.state.params[prop]}
+                    doc={this.state.doc}
+                    url={this.props.episode.base_url}
+                    change={(name, value) => {
+                        const s = {};
+                        s[prop] = value;
+                        this.setState({params: s});
+                    }}/> 
+            })}
         </div>)
     }
 }

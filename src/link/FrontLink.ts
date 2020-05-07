@@ -74,15 +74,13 @@ class FrontLink implements Link {
 		});
 	}
 
-	restartShow(identifier : string, episode : number , new_url : string, nextxpath: string , imxpath : string, textxpath : string) : Promise<any> {
+	restartShow(identifier : string, episode : number , new_url : string, params: ShowParameters) : Promise<any> {
 		return FrontLink.doRequest("POST", {
 			url : "/data/shows/" + identifier,
 			data : {
 				episode: episode,
-            	new_url: new_url,
-            	imxpath: imxpath,
-            	nextxpath: nextxpath,
-           	    textxpath: textxpath,
+				new_url: new_url,
+				params,
 			}
 		});
 	}
@@ -133,4 +131,5 @@ const link : Link = new FrontLink()
 export default link as Link;
 
 import ShowCache from "../front-end/ShowDataCache";
-import { Configuration } from '../configuration/Configuration';
+import { Configuration } from '../configuration/Configuration';import ShowParameters from '../types/ShowParameters';
+

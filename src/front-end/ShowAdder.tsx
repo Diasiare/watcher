@@ -14,7 +14,7 @@ import * as xmlser from 'xmlserializer';
 import {DOMParser as dom} from 'xmldom';
 import * as url from 'url';
 import navigate from "./Navigator";
-import {resolve_width} from "./helpers";
+import {resolve_width, requiredProps, paramToName} from "./helpers";
 import { Configuration } from '../configuration/Configuration';
 import { MuiThemeProvider } from 'material-ui/styles';
 import { navigators } from '../downloaders/NavigatorFactory';
@@ -220,12 +220,6 @@ export class InteractiveImage extends React.Component<InteractiveImageProps> {
     }
 }
 
-function paramToName(param: string): string {
-    let words = param.split("_");
-    words = words.map((word) => word.substring(0,1).toUpperCase() + word.substring(1));
-    return words.join(" ");
-}
-
 interface ShowAdderProps {
     width : number,
 }
@@ -293,26 +287,12 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
         this.setState(tmp, this.validate);
     }
 
-    requiredProps(includeOptional : boolean) : string[] {
-        if (!this.state.showType) return [];
-        
-        const config = this.state.configuration[this.state.showType];
-        const rw : string[] = []
-        const navClass = config.navigationConfiguration.class;
-        navigators[navClass].parameters.forEach(p => rw.push(p));
-        
-        const exts = config.resourceExtractors;
-        const extParams = exts.filter(v => includeOptional || !v.optional).map((ext) => resourceExtractors[ext.class].parameters);
-        extParams.forEach(ps => ps.forEach(p => rw.push(p)));
-        return rw;
-    }
-
     validate() {
         let valid = false;
         let s = this.state;
         valid = s.identifier && s.showType && !!s.name;
 
-        valid = this.requiredProps(false).map(p => !!this.state[p]).reduce((valid, present) => valid && present, valid);
+        valid = requiredProps(this.state.configuration[this.state.showType], false).map(p => !!this.state[p]).reduce((valid, present) => valid && present, valid);
 
         if (valid != s.contentsValid) {
             this.setState({contentsValid: !s.contentsValid})
@@ -328,7 +308,7 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
             data.base_url = s.baseUrl;
             data.type = s.showType;
             if (s.logo) data.logo = s.logo;
-            this.requiredProps(true).forEach(prop => data[prop] = s[prop]);
+            requiredProps(this.state.configuration[this.state.showType], true).forEach(prop => data[prop] = s[prop]);
 
             Link.newShow(data).then((data) => navigate.showPage(data.identifier))
                 .catch((e) => alert(e.message));
@@ -403,7 +383,7 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
             }
             
 
-            this.requiredProps(true).map((paramName) => <InteractiveXpath 
+            requiredProps(this.state.configuration[this.state.showType], true).map((paramName) => <InteractiveXpath 
                 key={paramName}
                 text={paramToName(paramName)}
                 valName={paramName}

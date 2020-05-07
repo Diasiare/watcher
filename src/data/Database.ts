@@ -9,6 +9,7 @@ import ShowData from '../types/ShowData';
 import Episode from '../types/Episode';
 import { downloadImage } from "../downloaders/ImageUtil";
 import { Configuration, loadConfiguration } from "../configuration/Configuration";
+import ShowParameters from '../types/ShowParameters';
 const debug = require('debug')('watcher-database-databse');
 
 const mkdir = Promise.promisify(fs.mkdir);
@@ -376,15 +377,13 @@ export class Show implements ShowFields {
             );
     }
 
-    public restart_from = (episode: number, new_url: string, next_xpath: string,
-        image_xpath: string, text_xpath: string): Promise<string> => {
+    public restart_from = (episode: number, new_url: string, params: ShowParameters): Promise<string> => {
         return this.get_show_data()
             .then(data => {
                 return Database.getInstance().then(db =>
                     Promise.resolve()
                         .then(() => db.deregister_show(this.identifier))
                         .then(() => manager.stop_watcher(this))
-                        .then()
                         .then(() => db.db.run("DELETE FROM episodes WHERE show=? AND number > ?", this.identifier, episode))
                         .then(() => db.db.run("UPDATE last_read SET number=? WHERE show=? AND type=?",
                             Math.min(Math.min(episode, data["new"]), this.number), this.identifier, "new"))
@@ -398,13 +397,13 @@ export class Show implements ShowFields {
                             }
                         })
                         .then(() => {
-                            if (next_xpath || image_xpath || text_xpath) {
+                            if (params) {
                                 return Database.getInstance()
                                     .then((db) => db.get_pure_show(this.identifier)
                                         .then((pure_data) => {
-                                            if (next_xpath) pure_data.next_xpath = next_xpath;
-                                            if (image_xpath) pure_data.image_xpath = image_xpath;
-                                            if (text_xpath) pure_data.text_xpath = text_xpath;
+                                            Object.entries(params).forEach(([key, value]) => {
+                                                if (value) pure_data[key] = value;
+                                            });
                                             return db.db.run("UPDATE shows SET data=? WHERE identifier=?",
                                                 JSON.stringify(pure_data),
                                                 this.identifier)
