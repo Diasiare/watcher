@@ -375,8 +375,8 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
             }
             
             remainder.push(
-                <div style={{width: "100%", display:"flex"}}>
-                    Requires JS to run <Toggle />
+                <div style={{display:"flex"}} key="requireJS">
+                    <Toggle label={<p>Requires JS to run </p>} toggled={this.state.requireJs} onToggle={(event, input) => this.setState({requireJs: input})}/>
                 </div>
             );
 

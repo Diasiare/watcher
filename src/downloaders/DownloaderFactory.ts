@@ -48,7 +48,7 @@ class ImageDownloader implements Downloader {
         debug("Downloading image", episode)
         let filename = episode.number + ".jpg";
         let thumbnailPath = path.join(show.thumbnail_dir, filename);
-        return downloadImage(this.url, show.directory, episode.number + "", 5)
+        return downloadImage(this.url, show.directory, episode.number + "", 5, episode.base_url)
             .tap(() => debug("Image downloaded creating thumbnail"))
             .then((filepath) => this.createThumbnail(filepath, thumbnailPath))
             .tap(() => debug("thumbnail created"))

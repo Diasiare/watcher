@@ -159,6 +159,9 @@ const setup_data_calls = function (): Promise<express.Express> {
             //TODO: Validate the data here
             app.post('/data/shows', (req, res) => {
                 let data : RawShow = req.body;
+                if (typeof data.requireJS === "string") {
+                    data.requireJS = data.requireJS === "true";
+                }
                 Link.newShow(data)
                     .then((data) => res.json(data))
                     .catch((e) => {

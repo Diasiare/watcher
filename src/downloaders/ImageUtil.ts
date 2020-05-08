@@ -6,7 +6,7 @@ import * as Promise from "bluebird";
 const debug = require('debug')('watcher-image-utils');
 
 
-export function downloadImage(url : string, targetFolder : string, name : string, retries : number) : Promise<any> {
+export function downloadImage(url : string, targetFolder : string, name : string, retries : number, referer ?: string) : Promise<any> {
     debug("Downloading", url, "to", targetFolder, "with name", name, "retries left", retries);
     return new Promise((r, reject) => {
         let filename = path.join(targetFolder, name + ".jpg");
@@ -15,13 +15,18 @@ export function downloadImage(url : string, targetFolder : string, name : string
                 let [prelim, raw] = url.split(',');
                 image = gm(Buffer.from(raw, 'base64'));
         } else {
+            let headers = {
+                'User-Agent': "request",
+            };
+            if (referer) {
+                headers["Referer"] = referer;
+            }
+
             image = gm(request({
                 url: url,
                 method: 'GET',
                 encoding: null,
-                headers: {
-                    'User-Agent': "request",
-                }
+                headers,
             }).on('error', (error => {
                 debug("Problem downloading image", error)
                 reject(error)
