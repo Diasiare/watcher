@@ -3,6 +3,7 @@ import * as puppeteer from 'puppeteer';
 import {Page} from 'puppeteer'
 import * as Promise from 'bluebird';
 import { LimitedResourceAllocator } from './LimitedReourceAllocator';
+import { Configuration } from '../configuration/Configuration';
 const debug = require('debug')('watcher-browser-puppeteer');
 
 let allocator : LimitedResourceAllocator<Page, puppeteer.Browser> = null;
@@ -59,7 +60,8 @@ export class PuppeteerBrowser implements Browser {
     public navigateToUrl(url : string) : Promise<void> {
         return Promise.resolve(this.page.goto(url, {
             timeout : 120 * 1000
-        })).then(() => undefined);
+        }))
+        .then(() => undefined);
     }
 
 
@@ -110,5 +112,17 @@ export class PuppeteerBrowser implements Browser {
         let p = allocator.dealocate(this.page);
         this.page = undefined;
         return p;
+    }
+
+    public setCookies(cookies: Configuration.Cookie[]): Promise<void> {
+        return Promise.resolve(cookies).map(async (cookie : Configuration.Cookie) => {
+            await this.page.setCookie({
+                name: cookie.name,
+                value: cookie.value,
+                url: "https://" + cookie.domain,
+                domain: "." + cookie.domain,
+                expires: Date.now()/1000 + 60* 60,
+            });
+        }).then(() => undefined);
     }
 }

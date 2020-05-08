@@ -60,5 +60,44 @@
                 }
             }
         }
+    },
+    "manhwa" : {
+        "displayname" : {
+            "singular" : "Manhwa",
+            "plural" : "Manhwa"
+        },
+        "navigationConfiguration" : {
+            "class" : "sequence-navigator",
+            "optional" : false
+        },
+        "resourceExtractors" : [
+            {
+                "class" : "image-extractor",
+                "optional" : false
+            },
+            {
+                "class" : "title-extractor",
+                "optional" : false
+            }
+        ],
+        "defaults" : {
+            "webtoons" : {
+                "image-extractor" : {
+                    "image_xpath" : "//div[@id='_imageList']/img"
+                },
+                "sequence-navigator" : {
+                    "next_xpath" : "//a[@title='Next Episode']"
+                }
+            }
+        },
+        "cookies" : [{
+            "name" : "ageGatePass",
+            "value" : "true",
+            "domain" : "webtoons.com"
+        },{
+            "name" : "contentLanguage",
+            "value" : "en",
+            "domain" : "webtoons.com"
+        }]
     }
 }

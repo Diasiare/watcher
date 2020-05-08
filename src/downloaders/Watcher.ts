@@ -31,9 +31,16 @@ export class Watcher {
     private singleCycle(navigator : Navigator, resourceExtractor : ResourceExtractor) : (browser : Browser) => Promise<Browser> {
         return (browser) => navigator.next(browser)
             .then((browser) => resourceExtractor.extract(browser))
-            .map(([episode, resources] : [Episode, Resource[]]) => 
-                Promise.reduce(resources, (episode ,resource) => DownloaderFactory.getDownloader(resource).download(episode, this.show), episode)
-            )
+            .then(async (input : [Episode, Resource[]][]) => {
+                let outEps = [];
+                for (let i = 0; i < input.length; i++) {
+                    let [episode, resources] = input[i];
+                    const outEp = await Promise.reduce(resources, (episode ,resource) => 
+                        DownloaderFactory.getDownloader(resource).download(episode, this.show), episode);
+                    outEps.push(outEp);
+                }
+                return outEps;
+            })
             .tap((episode) => debug("Inserting epiosde", episode))
             .map((episode : Episode) => this.show.insert_new_episode(episode))
             .then(() => console.log("CONTINUING " + this.show.name + " AT EPISODE " + this.show.number))

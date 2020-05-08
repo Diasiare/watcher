@@ -1,4 +1,5 @@
 import * as Promise from 'bluebird';
+import { Configuration } from '../configuration/Configuration';
 
 export interface Browser {
     navigateToNext(xpath : string) : Promise<void>;
@@ -7,4 +8,5 @@ export interface Browser {
     runXPath(xpath : string, attributes: string[]) : Promise<string[][]>;
     getPageTitle() : Promise<string>;
     close() : Promise<void>;
+    setCookies(cookies: Configuration.Cookie[]): Promise<void>;
 }

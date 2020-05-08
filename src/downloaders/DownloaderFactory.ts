@@ -45,13 +45,13 @@ class ImageDownloader implements Downloader {
     }
 
     download(episode: Episode, show : Show): Promise<Episode> {
-        debug("Downloading image", episode)
+        debug("Downloading image for", show.name, episode.number)
         let filename = episode.number + ".jpg";
         let thumbnailPath = path.join(show.thumbnail_dir, filename);
         return downloadImage(this.url, show.directory, episode.number + "", 5, episode.base_url)
-            .tap(() => debug("Image downloaded creating thumbnail"))
+            .tap(() => debug("Image downloaded", filename,"creating thumbnail"))
             .then((filepath) => this.createThumbnail(filepath, thumbnailPath))
-            .tap(() => debug("thumbnail created"))
+            .tap(() => debug("Thumbnail created", filename))
             .then(() => episode);
     }
 

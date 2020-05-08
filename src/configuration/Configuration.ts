@@ -83,18 +83,32 @@ export namespace Configuration {
 
     const DefaultsContract : IContract<Defaults> = strIndexOf(PreconfigurationsContract);
 
+    export interface Cookie {
+        name: string;
+        value: string;
+        domain: string;
+    }
+
+    const CookieContract : IContract<Cookie> = objOf({
+        name: str,
+        value: str,
+        domain: str,
+    });
+
     export interface Configuration {
         displayname: Displayname;
         navigationConfiguration: NavigationConfiguration;
         resourceExtractors: ResourceExtractor[];
         defaults ?: Defaults;
+        cookies ?: Cookie[];
     }
 
     const ConfigurationContract : IContract<Configuration> = objOf({
         displayname : DisplaynameContract,
         navigationConfiguration : NavigationConfigurationContract,
         resourceExtractors : arrOf(ResourceExtractorContract),
-        defaults : optional(DefaultsContract)
+        defaults : optional(DefaultsContract),
+        cookies: optional(arrOf(CookieContract))
     });
 
     export interface Configurations {

@@ -7,6 +7,7 @@ import {DOMParser} from 'xmldom';
 import * as Promise from 'bluebird';
 import { LimitedResourceAllocator } from "./LimitedReourceAllocator";
 import * as url from "url";
+import { Configuration } from "../configuration/Configuration";
 const xpathQuery : uninitalized_xpath.XPathSelect = uninitalized_xpath.useNamespaces({"x": "http://www.w3.org/1999/xhtml"});
 const debug = require('debug')('watcher-browser-request');
 
@@ -45,15 +46,21 @@ export class RequestBrowser implements Browser {
 
     private doc : Document;
     private url : string;
+    private cookieJar : Configuration.Cookie[] = [];
 
     public constructor() {
         this.doc = null;
     }
-
     
     private makeRequest(url : string, remainingAttemps : number) : Promise<string> {
         return new Promise<string>(function (resolve, reject) {
             debug("Sending request to ", url, " remanding attempts ", remainingAttemps);
+
+            const cookies = this.cookieJar.filter(cookie => this.cookieMatches(url, cookie.domain));
+            const jar = request.jar();
+            cookies.forEach((cookie : Configuration.Cookie) => jar.setCookie(cookie.name + "=" + cookie.value, url));
+            
+
             request({
                 url: url,
                 method: 'GET',
@@ -61,7 +68,8 @@ export class RequestBrowser implements Browser {
                 encoding: "utf-8",
                 headers: {
                     'User-Agent': "request",
-                }
+                },
+                jar,
             }, function (error, response, body) {
                 if (error) {
                     debug("Got error", error)
@@ -141,5 +149,15 @@ export class RequestBrowser implements Browser {
         this.doc = undefined;
         this.url = undefined;
         return allocator.dealocate(this);
+    }
+
+    public setCookies(cookies: Configuration.Cookie[]) {
+        this.cookieJar = cookies;
+        return Promise.resolve();
+    }
+
+    private cookieMatches(requestUrl : string, cookieDomain: string) : boolean {
+        const domain = new URL(requestUrl).hostname;
+        return domain.endsWith(cookieDomain); 
     }
 }

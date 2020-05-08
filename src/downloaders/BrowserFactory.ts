@@ -8,10 +8,19 @@ const debug = require('debug')('watcher-browser-factory');
 
 export function getBrowser(show : Show) : Promise<Browser> {
     debug("Creating browser for: ", show.name, ", requireJs:", show.requireJS, "---", typeof show.requireJS);
+    let browser : Promise<Browser>;
     if (show.requireJS) {
-        return getPuppeteerBrowser(true);
+        browser = getPuppeteerBrowser(true);
     } else {
-        return getRequestBrowser();
+        browser = getRequestBrowser();
     }
-    
+
+    const cookies = show.getConfiguration().cookies;
+    if (cookies) {
+        browser = browser.then(async (b) => {
+            await b.setCookies(show.getConfiguration().cookies);
+            return b;
+        });
+    }
+    return browser;
 }
