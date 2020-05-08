@@ -53,7 +53,7 @@ export class RequestBrowser implements Browser {
     }
     
     private makeRequest(url : string, remainingAttemps : number) : Promise<string> {
-        return new Promise<string>(function (resolve, reject) {
+        return new Promise<string>((resolve, reject) => {
             debug("Sending request to ", url, " remanding attempts ", remainingAttemps);
 
             const cookies = this.cookieJar.filter(cookie => this.cookieMatches(url, cookie.domain));
@@ -70,7 +70,7 @@ export class RequestBrowser implements Browser {
                     'User-Agent': "request",
                 },
                 jar,
-            }, function (error, response, body) {
+            }, (error, response, body) => {
                 if (error) {
                     debug("Got error", error)
                     reject(error);
@@ -79,17 +79,6 @@ export class RequestBrowser implements Browser {
                     resolve(body);
                 }
             })
-            // .on('error', (error) => {
-            //      debug("Got error in on error", error);
-            //      if (error && error.name && error.name == "ECONNRESET") {
-            //          if (remainingAttemps > 0) {
-            //             resolve(Promise.delay(50).then(() => this.makeRequest(url, remainingAttemps - 1)));
-            //             return;
-            //          }
-            //      }
-            //     reject(error);
-            //      return;
-            //  })
         }).catch((error) => {
             if (remainingAttemps > 0) {
                 debug("Retrying");
