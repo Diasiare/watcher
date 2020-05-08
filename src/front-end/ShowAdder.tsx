@@ -2,6 +2,7 @@ import * as React from 'react';
 import DropDownMenu from 'material-ui/DropDownMenu';
 import MenuItem from 'material-ui/MenuItem';
 import RaisedButton from 'material-ui/RaisedButton';
+import Toggle from 'material-ui/Toggle';
 import TextField from 'material-ui/TextField';
 import DownArrow from 'material-ui/svg-icons/navigation/expand-more';
 import UpArrow from 'material-ui/svg-icons/navigation/expand-less';
@@ -16,20 +17,8 @@ import * as url from 'url';
 import navigate from "./Navigator";
 import {resolve_width, requiredProps, paramToName} from "./helpers";
 import { Configuration } from '../configuration/Configuration';
-import { MuiThemeProvider } from 'material-ui/styles';
-import { navigators } from '../downloaders/NavigatorFactory';
-import { resourceExtractors } from '../downloaders/ResourceExtractorFactory';
 
-const manga_sources = [{
-    name: "Mangareader"
-    , next_xpath: "//div[@id='imgholder']/a"
-    , image_xpath: "//div[@id='imgholder']/a/img"
-},
-    {
-        name: "mangakakalot"
-        , next_xpath: "//a[@class='back']"
-        , image_xpath: "//div[@id='vungdoc']/img"
-    },]
+
 
 function strip_uri(doc, urld) {
     let v = new Set();
@@ -237,6 +226,7 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
             image_xpath?: string,
             text_xpath?: string,
             next_xpath?: string,
+            requireJs: boolean;
             logo:string,
             doc?: any
     };
@@ -245,6 +235,7 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
         super(props);
         this.state = {
             contentsValid: false,
+            requireJs: false,
             identifier: "",
             name: "",
             baseUrl: "",
@@ -307,6 +298,7 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
             data.name = s.name;
             data.base_url = s.baseUrl;
             data.type = s.showType;
+            data.requireJS = s.requireJs;
             if (s.logo) data.logo = s.logo;
             requiredProps(this.state.configuration[this.state.showType], true).forEach(prop => data[prop] = s[prop]);
 
@@ -382,6 +374,11 @@ export class ShowAdder extends React.Component<ShowAdderProps> {
                 </div>)
             }
             
+            remainder.push(
+                <div style={{width: "100%", display:"flex"}}>
+                    Requires JS to run <Toggle />
+                </div>
+            );
 
             requiredProps(this.state.configuration[this.state.showType], true).map((paramName) => <InteractiveXpath 
                 key={paramName}
