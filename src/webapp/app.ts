@@ -47,8 +47,19 @@ const setup_data_calls = function (): Promise<express.Express> {
             /* Gets the episode that is in direction of the given episode
              *
              */
-            app.get('/data/shows/:show/:episode/:direction', (req, res) => {
+            app.get('/data/shows/:show/:episode/relative/:direction', (req, res) => {
                 Link.getRelativeEpisode(req.params.show, parseInt(req.params.episode), req.params.direction).then((data) => res.json(data)).catch((e) => {
+                        console.error(e);
+                        res.status(500).send(e.message);
+                    });;
+            });
+            return app;
+        }).then((app) => {
+            /* Gets the episode that is in direction of the given episode
+             *
+             */
+            app.get('/data/shows/:show/:episode/samepage', (req, res) => {
+                Link.getSamePageEpisodes(req.params.show, parseInt(req.params.episode)).then((data) => res.json(data)).catch((e) => {
                         console.error(e);
                         res.status(500).send(e.message);
                     });;

@@ -38,6 +38,17 @@ class BackLink implements Link {
 		});
 	}
 
+	
+	getSamePageEpisodes(show: string, episode: number) : Promise<FrontEndEpisode[]> {
+		return Database.getInstance().then(db => db.get_show(show))
+			.then(show => show.get_episodes_on_same_page(episode))
+			.then(episodes => {
+				return episodes.map(ep => {
+					return {...ep, src: BackLink.build_resource_url(show, ep.number + ".jpg")}
+				})
+			});
+	}
+
 	getShowsData() {
 		return Database.getInstance().then(db => db.get_shows())
 		.map((show: Show) => {

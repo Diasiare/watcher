@@ -19,10 +19,16 @@ class FrontLink implements Link {
 
 	getRelativeEpisode(show : string, episode : number, direction : string) : Promise<FrontEndEpisode> {
 		return FrontLink.doRequest("GET" ,{ 
-			url :"/data/shows/" + show + "/" + episode + "/" + direction,
+			url :"/data/shows/" + show + "/" + episode + "/relative/" + direction,
 			dataType : "json"
-		});
-		
+		});	
+	}
+
+	getSamePageEpisodes(show : string, episode : number) : Promise<FrontEndEpisode[]> {
+		return FrontLink.doRequest("GET" ,{ 
+			url :"/data/shows/" + show + "/" + episode + "/samepage",
+			dataType : "json"
+		});	
 	}
 
 	getShowsData() : Promise<ShowData[]> {

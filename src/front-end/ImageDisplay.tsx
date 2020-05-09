@@ -8,16 +8,15 @@ import Episode from './../types/FrontEndEpisode';
 import Flink from '../link/FrontLink';
 import ShowData from '../types/ShowData';
 import ShowDataCache from './ShowDataCache';
+import ActionList from 'material-ui/svg-icons/action/list';
+import {black, grey500} from 'material-ui/styles/colors';
 
 import {resolve_width, resolve_width_int, requiredProps, paramToName} from "./helpers";
 import  {extract_body, InteractiveXpath} from "./ShowAdder";
 import ShowCache from "./ShowDataCache";
 import ShowParameters from '../types/ShowParameters';
-import { Configuration } from '../configuration/Configuration';
-
-function get_url_for(show, episode, read_type) {
-    return "/read/" + show + "/" + episode + "/" + read_type;
-}
+import { Configuration } from '../configuration/Configuration'; 
+import Checkbox from 'material-ui/Checkbox';
 
 interface ImageDisplayProps {
     type : string,
@@ -27,9 +26,10 @@ interface ImageDisplayProps {
 
 export class ImageDisplay extends React.Component {
     state : {
-            current: Episode,
+            current: Episode[],
             menu_open: boolean,
             final_episode: number
+            pageMode: boolean,
         };
 
     props : ImageDisplayProps; 
@@ -41,11 +41,18 @@ export class ImageDisplay extends React.Component {
         this.navigate = this.navigate.bind(this);
         this.flip_menu = this.flip_menu.bind(this);
         this.delete_current = this.delete_current.bind(this);
+        this.setPageMode = this.setPageMode.bind(this);
         this.state = {
-            current: null,
+            current: [],
             menu_open: false,
-            final_episode : 0
+            final_episode : 0,
+            pageMode: EpisodeNavigator.getPageMode(),
         };
+    }
+
+    setPageMode(active: boolean) {
+        this.setState({pageMode: active});
+        EpisodeNavigator.setPageMode(active);
     }
 
     on_key (e) {
@@ -61,10 +68,12 @@ export class ImageDisplay extends React.Component {
     }
 
     delete_current() {
-        let episode = this.state.current.number;
-        let show = this.props.show;
-        Flink.deleteEpisode(show, episode)
-        .then(() => EpisodeNavigator.navigate("next"));
+        this.state.current.forEach((e) => {
+            let episode = e.number;
+            let show = this.props.show;
+            Flink.deleteEpisode(show, episode)
+            .then(() => EpisodeNavigator.navigate("next"));
+        })
     }
 
     flip_menu() {
@@ -111,23 +120,50 @@ export class ImageDisplay extends React.Component {
     render() {
         let elems = []
 
-        let info = this.state.current ? this.state.current.data : null;
-        elems.push(<ImageContainer episode={this.state.current}
+
+        if (this.state.current.length > 0) {
+            elems.push(
+                <div style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    }}>
+                    <Title title={this.state.current[0].data.title}/>
+                    <EpisodeCount max={this.state.final_episode} first={this.state.current[0].number} last={this.state.current[this.state.current.length -1].number}/>
+                </div>);
+        }
+
+        this.state.current.forEach((episode, i) =>{
+            elems.push(<ImageContainer episode={episode}
                                    width={this.props.width}
                                    navigate={this.navigate} 
-                                   key="container"
+                                   key={"container" + i}
                                    final_episode={this.state.final_episode}
+                                   showAltText={!this.state.pageMode}
                                    />);
-        elems.push(<NavElements navigate={this.navigate}
-                                width={this.props.width} flip_menu={this.flip_menu} delete_current={this.delete_current} key="nav"/>);
+        });
 
-        if (this.state.menu_open) {
-            elems.push(<Options episode={this.state.current} width={this.props.width}
+        if (this.state.current.length === 0) {
+            elems.push(
+                <div className="imageContainer" key="loading">
+                    <img src="/images/loading.gif"/>
+                </div>);
+        }
+
+        elems.push(<NavElements navigate={this.navigate}
+                                width={this.props.width} flip_menu={this.flip_menu} delete_current={this.delete_current} 
+                                setPageLayout={this.setPageMode} key="nav"/>);
+
+        if (this.state.menu_open && this.state.current.length > 0) {
+            elems.push(<Options episode={this.state.current[this.state.current.length - 1]} width={this.props.width}
                                 key="options"/>)
         }
 
-        if (info && "text" in info) {
-            elems.push(<Description text={info.text} width={this.props.width} key="text"/>);
+        const text = this.state.current.map(episode => episode.data)
+            .filter(data => "text" in data)
+            .reduce((texts, data) => texts.concat(data.text), []);
+
+        if (text.length > 0) {
+            elems.push(<Description text={text} width={this.props.width} key="text"/>);
         }
 
 
@@ -150,6 +186,29 @@ function NavElements(props) {
         <NavButton type="first" navigate={props.navigate}/>
         <NavButton type="prev" navigate={props.navigate}/>
         <OptionsButton flip_menu={props.flip_menu}/>
+        <Checkbox
+          checkedIcon={<ActionList color={black} style={{
+            height: "40px",
+            width: "40px",
+        }}/>}
+          uncheckedIcon={<ActionList color={grey500}  style={{
+            height: "40px",
+            width: "40px",
+        }}/>}
+          onCheck={(unused, checked) => props.setPageLayout(checked)}
+          style={{
+              flex: "1",
+              height: "40px",
+              width: "40px",
+              alignItems: "center",
+              justifyContent: "center",  
+          }}
+          labelStyle={{
+              width: "0",
+              padding: "0",
+              margin: "0",
+          }}
+        />
         <DeleteEpisodeButton delete_current={props.delete_current}/>
         <NavButton type="next" navigate={props.navigate}/>
         <NavButton type="last" navigate={props.navigate}/>
@@ -376,6 +435,7 @@ interface ImageConatainerProps {
         navigate : (string) => void,
         final_episode: number,
         episode : Episode;
+        showAltText : boolean;
     }
 
 class ImageContainer extends React.Component {
@@ -387,27 +447,20 @@ class ImageContainer extends React.Component {
 
 
     render() {
-        if (this.props.episode) {
-            return (<div className="imageContainer" onClick={() => this.props.navigate("next")}>
-                    <div style={{
-                        display: "flex",
-                        flexDirection: "row",
-                    }}>
-                        <Title title={this.props.episode.data.title}/>
-                        <EpisodeCount max={this.props.final_episode} current={this.props.episode.number}/>
-                    </div>
+            if (!this.props.showAltText) {
+                return <img src={this.props.episode.src} onClick={() => this.props.navigate("next")} style={{
+                    maxWidth: Math.min(1500, this.props.width - 4) + "px",
+                }}/>
+            }
+
+            return (
+                <div className="imageContainer" onClick={() => this.props.navigate("next")}>
                     <img src={this.props.episode.src} style={{
                         maxWidth: Math.min(1500, this.props.width - 4) + "px",
-                    }}/>
-                    <AltText alt_text={this.props.episode.data.alt_text} width={this.props.width}/>
+                     }}/>
+                    {this.props.showAltText ? <AltText alt_text={this.props.episode.data.alt_text} width={this.props.width}/> : undefined}
                 </div>
             )
-        }
-
-
-        return <div className="imageContainer">
-            <img src="/images/loading.gif"/>
-        </div>
     }
 }
 
@@ -453,7 +506,8 @@ function Description(props) {
 }
 
 interface EpisodeCountProps {
-    current : number;
+    first: number;
+    last: number;
     max : number;
 }
 
@@ -470,7 +524,8 @@ class EpisodeCount extends React.Component<EpisodeCountProps> {
             flex : "1 0 auto",
             textAlign: "right",
         }} >
-            {this.props.current + " / " + this.props.max}
+            {(this.props.first === this.props.last ? this.props.first : this.props.first + " - " + this.props.last) 
+                + " / " + this.props.max}
         </div>
     }
 }

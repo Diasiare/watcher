@@ -10,6 +10,8 @@ export default interface Link {
 
 	getRelativeEpisode(show : string, episode : number, direction : string) : Promise<FrontEndEpisode> ;
 
+	getSamePageEpisodes(show: string, episode: number) : Promise<FrontEndEpisode[]> ;
+
 	getShowsData() : Promise<ShowData[]>;
 
 	getShowData(identifier : string) : Promise<ShowData> ;

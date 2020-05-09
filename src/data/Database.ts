@@ -486,7 +486,7 @@ export class Show implements ShowFields {
     }
 
 
-    public get_prev = (episode_number: number): Promise<Episode> => {
+    public get_prev = (episode_number: number): Promise<Episode> {
         return Database.getInstance().then(db => db.db.get("SELECT *, MAX(number) FROM episodes WHERE show=? AND number < ?", this.identifier, episode_number))
             .then((resp) => this.episodePostParse(resp)).catch((e) => this.get_episode_data(episode_number)).catch(() => undefined);
     }
@@ -495,6 +495,12 @@ export class Show implements ShowFields {
         return this.get_show_data()
             .then((show_data) => show_data[type])
             .then((episode: number) => this.get_next(episode));
+    }
+
+    public get_episodes_on_same_page(episode_number: number): Promise<Episode[]> {
+        return Promise.all([this.get_episode_data(episode_number), Database.getInstance()])
+            .then(([episode, db]) => db.db.all("SELECT * FROM episodes WHERE show=? AND page_url=?", this.identifier, episode.base_url))
+            .then(epsiodes => epsiodes.map((e) => this.episodePostParse(e))).all();
     }
 
     public deleteEpiosde(index: number): Promise<any> {
