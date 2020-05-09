@@ -124,6 +124,7 @@ export class ImageDisplay extends React.Component {
         if (this.state.current.length > 0) {
             elems.push(
                 <div style={{
+                    width: (resolve_width_int(this.props.width) - 100) + "px",
                     display: "flex",
                     flexDirection: "row",
                     }}>
