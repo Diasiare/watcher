@@ -57,7 +57,15 @@
                 },
                 "sequence-navigator" : {
                     "next_xpath" : "//a[@class='back']"
-                }
+                },
+                "manelo" : {
+                    "image-extractor" : {
+                        "image_xpath" : "//a[starts-with(@class, 'navi-change-chapter-btn-next')]"
+                    },
+                    "sequence-navigator" : {
+                        "next_xpath" : "//div[@class='container-chapter-reader']/img"
+                    }              
+                }    
             }
         }
     },
