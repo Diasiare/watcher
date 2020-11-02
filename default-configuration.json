@@ -57,8 +57,9 @@
                 },
                 "sequence-navigator" : {
                     "next_xpath" : "//a[@class='back']"
-                },
-                "manelo" : {
+                }
+            },
+            "manelo" : {
                     "image-extractor" : {
                         "image_xpath" : "//a[starts-with(@class, 'navi-change-chapter-btn-next')]"
                     },
@@ -67,7 +68,6 @@
                     }              
                 }    
             }
-        }
     },
     "manhwa" : {
         "displayname" : {
