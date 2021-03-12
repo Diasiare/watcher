@@ -54,7 +54,7 @@
     "style-loader": "^0.18.2",
     "ts-dynamic-type-checker": "0.0.13",
     "webtorrent": "^0.98.20",
-    "xmldom": "^0.1.27",
+    "xmldom": "^0.5.0",
     "xmlserializer": "0.6.0",
     "xpath": "^0.0.24"
   },
