@@ -13,7 +13,9 @@ export function getPuppeteerBrowser(headless ?: boolean) : Promise<PuppeteerBrow
         allocator = new LimitedResourceAllocator(
             10,
             (b : puppeteer.Browser) => Promise.resolve(b.newPage()),
-            (page : Page) => Promise.resolve(page.close()),
+            (page : Page) => Promise.resolve(page.close()).catch((e) => {
+                debug("Could not close page", e);
+            }),
             () =>  Promise.resolve(
                 puppeteer.launch({
                     headless : headless,
@@ -22,7 +24,9 @@ export function getPuppeteerBrowser(headless ?: boolean) : Promise<PuppeteerBrow
                     executablePath: '/usr/bin/chromium-browser'
                 }))
             ),
-            (browser : puppeteer.Browser) => Promise.resolve(browser.close())
+            (browser : puppeteer.Browser) => Promise.resolve(browser.close()).catch((e) => {
+                debug("Could not close browser", e);
+            })
         )
     }
     return allocator.allocate().then(page => new PuppeteerBrowser(page));
