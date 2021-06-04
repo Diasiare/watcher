@@ -61,10 +61,10 @@
             },
             "manelo" : {
                     "image-extractor" : {
-                        "image_xpath" : "//a[starts-with(@class, 'navi-change-chapter-btn-next')]"
+                        "image_xpath" : "//div[@class='container-chapter-reader']/img"
                     },
                     "sequence-navigator" : {
-                        "next_xpath" : "//div[@class='container-chapter-reader']/img"
+                        "next_xpath" : "//a[starts-with(@class, 'navi-change-chapter-btn-next')]"
                     }              
                 }    
             }
