@@ -70,6 +70,7 @@ class ImageResourceExtractor implements ResourceExtractor {
         let base_count = this.show.number;
 
         return browser.runXPath(this.show.image_xpath, ['src', 'alt', "title"])
+            .filter(([src, alt, title] : string) => !!src)
             .map(([src, alt, title] : string, index) : [Episode, Resource[]] => {
                 let episode : Episode = {
                     base_url : browser.getUrl(),

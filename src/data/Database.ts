@@ -486,7 +486,7 @@ export class Show implements ShowFields {
     }
 
 
-    public get_prev = (episode_number: number): Promise<Episode> {
+    public get_prev = (episode_number: number): Promise<Episode> => {
         return Database.getInstance().then(db => db.db.get("SELECT *, MAX(number) FROM episodes WHERE show=? AND number < ?", this.identifier, episode_number))
             .then((resp) => this.episodePostParse(resp)).catch((e) => this.get_episode_data(episode_number)).catch(() => undefined);
     }

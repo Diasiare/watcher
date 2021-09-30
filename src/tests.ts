@@ -47,7 +47,7 @@ function getWatcher() {
     .then(() => nav.next(browser))
     .delay(5000)
     .finally(() => browser.close());
-  });
+  })();
 
   (async () => {
     console.log("starting")
@@ -176,4 +176,4 @@ function getWatcher() {
         }
         console.log("Ending: " + show.name);
     }
-  })();
+  });

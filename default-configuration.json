@@ -106,6 +106,18 @@
             "name" : "contentLanguage",
             "value" : "en",
             "domain" : "webtoons.com"
+        },{
+            "name" : "wts",
+            "value" : "1633028335324",
+            "domain" : "webtoons.com"
+        },{
+            "name" : "wtv",
+            "value" : "1",
+            "domain" : "webtoons.com"
+        },{
+            "name" : "wtu",
+            "value" : "300a67227f7ecfdc4f0763ecc03e8e35",
+            "domain" : "webtoons.com"
         }]
     }
 }

@@ -8,7 +8,9 @@ import Link from './link/BackLink';
 
 
 const db_name = "database.sqlite"
+const specific_show: string = process.env.ONE_SHOW;
 
+console.log("SPECIFIC_SHOW: " + specific_show);
 
 let start = function (db_name) {
         return Promise.resolve()
@@ -17,8 +19,17 @@ let start = function (db_name) {
             .then(()=>Database.getInstance())
             .then((db)=>Promise.resolve()
                 .then(db.get_shows)
-                .then((shows) => app.start_all(shows, Link))
+                .then((shows) => { 
+                    return app.start_all(shows, Link);
+                })
                 .then(db.get_shows)
+                .then((shows) => {
+                    if (specific_show) {
+                        return shows.filter((show) => show.identifier === specific_show);
+                    } else {
+                        return shows;
+                    }
+                })
                 .then(manager.start_watchers))
             .done();
 }

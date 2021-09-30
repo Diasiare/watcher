@@ -4,3 +4,5 @@ resources/bundle.js
 .idea/*
 dist/*
 testTarget/*
+*.log
+core
