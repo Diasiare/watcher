@@ -11,9 +11,11 @@ export function downloadImage(url : string, targetFolder : string, name : string
     return new Promise((r, reject) => {
         let filename = path.join(targetFolder, name + ".jpg");
         let image;
+        let failed = false;
         if (url.startsWith("data:")) {
                 let [prelim, raw] = url.split(',');
                 image = gm(Buffer.from(raw, 'base64'));
+                r(saveImage(image, filename));
         } else {
             let headers = {
                 'User-Agent': "request",
@@ -22,26 +24,21 @@ export function downloadImage(url : string, targetFolder : string, name : string
                 headers["Referer"] = referer;
             }
 
-            image = gm(request({
+            request({
                 url: url,
                 method: 'GET',
                 encoding: null,
                 headers,
-            }).on('error', (error => {
-                debug("Problem downloading image", error)
-                reject(error)
-            })));
-        }
-
-        image.selectFrame(0)
-            .flatten()
-            .write(filename, (e) => {
-                if (e) {
-                    debug("Problem writing image", e);
-                    reject(e);
+            }, (error, response, buff) => {
+                debug("Image download response", response.statusCode, error);
+                if (!error && response.statusCode < 400) {
+                    r(saveImage(gm(buff), filename));
+                } else {
+                    debug("Problem downloading image", url, response.statusCode, response.statusMessage, error);
+                    reject(new Error(`Problem downloading image, ${url}, ${response.statusCode}`, {cause : error}));
                 }
-                else r(filename);
             });
+        }
     }).catch(error => {
         debug("Failed to download ", url, "to ", name, " due to " , error);
         if (retries > 0) {
@@ -49,5 +46,19 @@ export function downloadImage(url : string, targetFolder : string, name : string
             return Promise.delay(100).then(() => downloadImage(url, targetFolder, name , retries - 1));
         }
         throw error;
+    });
+}
+
+function saveImage(image: any, filename): Promise<any> {
+   return new Promise((r, reject) => { 
+    image.selectFrame(0)
+        .flatten()
+        .write(filename, (e) => {
+            if (e) {
+                debug("Problem writing image", e);
+                reject(e);
+            }
+            else r(filename);
+        });
     });
 }
