@@ -48,7 +48,7 @@
     "react-tap-event-plugin": "^2.0.1",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
-    "shelljs": "^0.7.8",
+    "shelljs": "^0.8.5",
     "sqlite": "^2.9.2",
     "sqlite3": "^4.2.0",
     "style-loader": "^0.18.2",
